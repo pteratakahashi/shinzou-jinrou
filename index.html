@@ -43,6 +43,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .glyph{font-family:var(--display);font-size:3.3em;line-height:1;color:rgba(255,255,255,.94);text-shadow:0 .06em .25em rgba(0,0,0,.55)}
 .catl{position:absolute;left:.3em;bottom:.25em;font-size:.6em;letter-spacing:.1em;padding:0 .4em;border-radius:.3em;background:rgba(10,13,28,.72)}
 .tart img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;image-rendering:pixelated;border-radius:inherit}
+.tart img{-webkit-mask-image:linear-gradient(to bottom,#000 80%,transparent 99%);mask-image:linear-gradient(to bottom,#000 80%,transparent 99%)}
 .ttext{font-size:.82em;line-height:1.38;background:rgba(0,0,0,.38);border-radius:.3em;padding:.32em .42em;min-height:5em;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .r-R{box-shadow:0 0 0 .08em #c9d6f5 inset,0 .35em .9em rgba(0,0,0,.45)}
 .r-L{border-color:#e9b54c;box-shadow:0 0 1.1em rgba(233,181,76,.45),0 .35em .9em rgba(0,0,0,.45)}
@@ -53,9 +54,9 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .tcg.m{width:86px;font-size:10px}
 .tcg.p{width:100%;font-size:11px}
 .tcg.l{width:min(230px,64vw);font-size:15px}
-.tcg.back{--cc:#5b4a8a;background:repeating-linear-gradient(45deg,#2a2350 0 .5em,#1d1838 .5em 1em);align-items:center;justify-content:center}
-.tcg.back .bk{font-family:var(--display);color:var(--blood);font-size:2.4em;text-shadow:0 0 .4em rgba(220,82,92,.6)}
-.tcg.back .bl{font-size:.8em;color:var(--muted)}
+.tcg.back{--cc:#8a6a34;background:#16142f url(scenes/back.png) center/100% 100% no-repeat;image-rendering:pixelated;padding:0;border-width:.12em;align-items:center;justify-content:flex-end}
+.tcg.back .bk{display:none}
+.tcg.back .bl{font-size:.8em;color:var(--ink);background:rgba(8,8,20,.75);border-radius:.3em;padding:0 .4em;margin-bottom:12%}
 
 /* ---- menu ---- */
 .hero{display:flex;flex-direction:column;gap:14px;align-items:flex-start;padding:8px 0}
@@ -162,7 +163,7 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 .tableRow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
 .slot{display:flex;flex-direction:column;gap:4px;align-items:center;font-size:10px;color:var(--muted)}
 .emptySlot{width:56px;aspect-ratio:5/7;border:1px dashed var(--line);border-radius:6px}
-.deckPile{width:56px;aspect-ratio:5/7;border-radius:6px;background:repeating-linear-gradient(45deg,#2a2350 0 4px,#1d1838 4px 8px);border:2px solid #5b4a8a;box-shadow:2px 2px 0 #1d1838,4px 4px 0 #2a2350;display:flex;align-items:center;justify-content:center;font-weight:700;font-variant-numeric:tabular-nums}
+.deckPile{width:56px;aspect-ratio:5/7;border-radius:6px;background:#16142f url(scenes/back.png) center/100% 100% no-repeat;image-rendering:pixelated;border:1px solid #8a6a34;box-shadow:2px 2px 0 #3a2c18,4px 4px 0 #1d1838;display:flex;align-items:flex-end;justify-content:center;font-weight:700;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000,0 0 6px #000;padding-bottom:18%}
 .oppHand{display:flex;padding-left:14px;flex:1;min-width:0;overflow:hidden;align-self:center}
 .oppHand .tcg{margin-left:-14px}
 .tracker .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
