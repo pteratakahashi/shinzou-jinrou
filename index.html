@@ -169,6 +169,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .hc.drawn{animation:drawIn .5s ease-out both}
 @keyframes drawIn{from{transform:translate(40px,-40px) rotate(12deg);opacity:0}}
 .hc .twin{position:absolute;top:-8px;left:4px;font-size:9px;background:var(--blood);color:#fff;border-radius:99px;padding:0 6px;z-index:1}
+.hc .hinfo{position:absolute;bottom:-4px;left:-3px;z-index:2;width:22px;height:22px;border-radius:50%;background:var(--panel2,#1d2140);border:1.5px solid var(--candle);color:var(--candle);font:700 13px/19px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.hc{-webkit-touch-callout:none;user-select:none}
 .hc .twin.res{background:var(--candle);color:#1b1408}
 .hc.glow .tcg{box-shadow:0 0 0 2px var(--candle),0 0 16px 3px rgba(233,166,76,.55);animation:resGlow 1.6s ease-in-out infinite}
 @keyframes resGlow{50%{box-shadow:0 0 0 2px var(--candle),0 0 26px 8px rgba(233,166,76,.85)}}
@@ -268,7 +270,7 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .fxcard{position:relative}
 .banner.res{font-size:clamp(30px,9vw,50px);text-shadow:0 0 18px rgba(255,200,90,.9)}
 .vs{display:flex;align-items:center;justify-content:center;gap:clamp(10px,4vw,40px);width:100%;padding:24px 12px;background:linear-gradient(90deg,rgba(80,20,30,.92),rgba(10,12,28,.95) 45%,rgba(10,12,28,.95) 55%,rgba(60,40,10,.92));animation:vsIn .5s ease-out both}
-@keyframes vsIn{from{transform:scaleY(0)}}
+@keyframes vsIn{from{clip-path:inset(50% 0)}to{clip-path:inset(0 0)}}
 .vsSide{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .vsSide b{font-family:var(--display);font-weight:400;font-size:22px}
 .vsSide span{font-size:11px;color:var(--muted);text-align:center}
@@ -365,8 +367,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tbEn{font-family:var(--body);font-weight:700;font-style:italic;font-size:clamp(34px,11vw,64px);line-height:1;letter-spacing:.06em;color:#fff;text-shadow:0 0 16px var(--tc),0 0 34px var(--tc);animation:tbTx 1.1s cubic-bezier(.2,.9,.3,1) both}
 .tbJp{font-family:var(--display);font-size:15px;letter-spacing:.3em;color:var(--tc)}
 .tbShine{position:absolute;inset:0;background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);background-size:300% 100%;animation:glare .6s .2s ease-out both;background-position:130% 0}
-@keyframes tbIn{0%{transform:scaleY(0);opacity:0}15%{transform:none;opacity:1}85%{opacity:1}100%{opacity:0;transform:scaleY(.2)}}
-@keyframes tbTx{0%{transform:translateX(50vw) skewX(-20deg)}22%{transform:translateX(-8px) skewX(0)}30%,80%{transform:none}100%{transform:translateX(-50vw) skewX(20deg)}}
+@keyframes tbIn{0%{clip-path:inset(50% 0);opacity:0}15%{clip-path:inset(0 0);opacity:1}85%{clip-path:inset(0 0);opacity:1}100%{clip-path:inset(50% 0);opacity:0}}
+@keyframes tbTx{0%{transform:translateX(50vw)}22%{transform:translateX(-8px)}30%,80%{transform:none}100%{transform:translateX(-50vw)}}
 /* 的中の斬撃とヒットストップ */
 .slashes{position:fixed;inset:0;pointer-events:none;z-index:2}
 .slashes i{position:absolute;left:-20%;width:140%;height:6px;top:46%;background:linear-gradient(90deg,transparent,#fff 30%,#ffd6da 70%,transparent);box-shadow:0 0 18px #ef5a68,0 0 4px #fff;rotate:-24deg;transform-origin:center;animation:slash .35s cubic-bezier(.2,.9,.3,1) both}
@@ -1631,7 +1633,7 @@ function render(){
   else if(ph==='play')phase=me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。ターンを終了してください。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。';
   const resOk=c=>!C[c.type].single&&!C[c.type].set&&(me.lastCat===C[c.type].cat||me.f.forceRes);
-  const myHand=me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}</button>`}).join('');
+  const myHand=me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
@@ -1678,8 +1680,13 @@ function render(){
   $('#snd').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.turn();render()};
   document.querySelectorAll('.hc').forEach(b=>{const t=b.querySelector('.tcg');b.onpointermove=e=>{if(e.pointerType!=='mouse'||RM)return;const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(500px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.08)`};b.onpointerleave=()=>{t.style.transform=''}});
   document.querySelectorAll('.hc').forEach(b=>{
-    b.onclick=()=>{if(ph!=='play'||S.busy)return;const c=me.hand[+b.dataset.i];S.sel=S.sel===c?null:c;render()};
-    b.ondblclick=()=>{if(ph!=='play'||S.busy)return;S.sel=me.hand[+b.dataset.i];onPlay()};
+    const card=()=>me.hand[+b.dataset.i];let lp=0,lpFired=false;
+    b.onpointerdown=e=>{lpFired=false;clearTimeout(lp);lp=setTimeout(()=>{lpFired=true;showCardInfo(card().type)},450)};
+    b.onpointerup=b.onpointercancel=()=>clearTimeout(lp);
+    b.onpointerleave=(f=>e=>{clearTimeout(lp);f&&f(e)})(b.onpointerleave);
+    b.oncontextmenu=e=>e.preventDefault();
+    b.onclick=e=>{if(lpFired){lpFired=false;return}if(e.target.closest('.hinfo')||ph!=='play'||S.busy)return showCardInfo(card().type);const c=card();S.sel=S.sel===c?null:c;render()};
+    b.ondblclick=()=>{if(ph!=='play'||S.busy)return;S.sel=card();onPlay()};
   });
   $('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd;
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
