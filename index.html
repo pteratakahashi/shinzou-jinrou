@@ -436,9 +436,46 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .heroOcto{width:92px;height:92px;animation:octoBob 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
 @keyframes octoBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
 @media (prefers-reduced-motion:reduce){.octo,.octo *{animation:none!important}.oh.break .oha,.osh{display:none}.oh.break .ohd{opacity:1}}
+
+#bgArt{position:fixed;inset:0;z-index:0;pointer-events:none;background-size:cover;background-position:50% 12%;image-rendering:pixelated;opacity:0;transition:opacity .7s}
+#bgArt.on{opacity:1}
+#bgArt::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,14,30,.62),rgba(12,14,30,.9) 50%,rgba(12,14,30,.97))}
+#bgArt.lite::after{background:linear-gradient(180deg,rgba(12,14,30,.72),rgba(12,14,30,.1) 18%,rgba(12,14,30,.15) 42%,rgba(12,14,30,.85) 62%,rgba(12,14,30,.95))}
+#bgArt.lite~.wrap .packStage{padding-top:min(36vh,330px)}
+#bgArt.dark::after{background:linear-gradient(180deg,rgba(12,14,30,.8),rgba(12,14,30,.93) 40%,rgba(12,14,30,.97))}
+.homeArt{position:relative;margin:-12px -16px 0;aspect-ratio:133/200;max-height:86vh;overflow:hidden;border-radius:0 0 18px 18px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+@media (min-width:792px){.homeArt{margin:0;border-radius:18px;aspect-ratio:auto;height:min(86vh,980px)}}
+.haImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0;image-rendering:pixelated;animation:haIn 1.4s ease-out both}
+@keyframes haIn{from{opacity:0;filter:brightness(2.2) saturate(.3)}to{opacity:1;filter:none}}
+.homeArt::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 55%,rgba(10,12,26,.75) 80%,var(--table) 100%)}
+.haFog{position:absolute;left:-50%;right:-50%;bottom:16%;height:22%;pointer-events:none;background:radial-gradient(ellipse at 30% 50%,rgba(180,190,230,.16),transparent 60%),radial-gradient(ellipse at 75% 60%,rgba(180,190,230,.12),transparent 55%);animation:haFog 18s linear infinite alternate}
+.haFog.b{bottom:6%;animation-duration:26s;animation-direction:alternate-reverse;opacity:.8}
+@keyframes haFog{from{transform:translateX(-12%)}to{transform:translateX(12%)}}
+.haTitle{position:absolute;left:0;right:0;bottom:5%;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;animation:haTitle 1s .5s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes haTitle{from{opacity:0;transform:translateY(18px) scale(.9)}to{opacity:1;transform:none}}
+.haTitle h1{margin:0;font-size:clamp(48px,15vw,84px);line-height:1;letter-spacing:.06em;color:#f6ecd8;text-shadow:0 0 2px #000,3px 3px 0 #1a0f1c,0 0 24px rgba(255,90,110,.55)}
+.haTitle h1 span{color:#ff4d63;text-shadow:0 0 2px #000,3px 3px 0 #2a0610,0 0 28px rgba(255,59,84,.9);animation:haBeat 2.4s ease-in-out infinite}
+@keyframes haBeat{0%,60%,100%{text-shadow:0 0 2px #000,3px 3px 0 #2a0610,0 0 22px rgba(255,59,84,.7)}10%,30%{text-shadow:0 0 2px #000,3px 3px 0 #2a0610,0 0 40px rgba(255,59,84,1)}}
+.haSub{font-family:var(--display);font-size:14px;letter-spacing:.3em;color:#e8c98a;text-shadow:0 2px 0 #000}
+.mi{position:relative;overflow:hidden;min-height:96px;padding-right:118px;justify-content:center}
+.mi>b,.mi>span{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.miArt{position:absolute;right:0;top:0;height:100%;aspect-ratio:1;object-fit:cover;object-position:50% 15%;image-rendering:pixelated;-webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);mask-image:linear-gradient(90deg,transparent,#000 55%);opacity:.92;transition:transform .25s}
+.mi:hover .miArt,.mi:focus-visible .miArt{transform:scale(1.08)}
+.resArt{width:100%;border-radius:10px;image-rendering:pixelated;border:1px solid var(--line);animation:resIn .6s ease-out both}
+@keyframes resIn{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:none}}
+.sceneBanner{position:relative;margin:-12px -16px 0;aspect-ratio:16/10;max-height:46vh;overflow:hidden;border-radius:0 0 16px 16px}
+@media (min-width:792px){.sceneBanner{margin:0;border-radius:16px}}
+.sceneBanner img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;image-rendering:pixelated}
+.sceneBanner::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(10,12,26,.9))}
+.sbText{position:absolute;left:16px;bottom:12px;z-index:1;display:flex;flex-direction:column}
+.sbText b{font-family:var(--display);font-weight:400;font-size:28px;text-shadow:2px 2px 0 #000}
+.sbText span{font-size:12px;color:#e8c98a}
+.flip.still{animation:none}.flip.still .inner{transition:none}.flip.still.on .front .tcg{animation:none}
+.flip.still.on.rr-L::before,.flip.still.on.rr-R::before{animation:raysSpin 10s linear infinite}
+@media (prefers-reduced-motion:reduce){.haImg,.haTitle,.haFog,.haTitle h1 span,.resArt{animation:none!important}}
 </style>
 
-<div class="wrap" id="app"></div>
+<div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
 <div id="fx" hidden></div>
 <div id="flash"></div>
 <canvas id="fxc" aria-hidden="true"></canvas>
@@ -707,7 +744,11 @@ function deckIssues(){
 /* ================= views ================= */
 let VIEW='menu';
 function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
+// 画面ごとの背景の一枚絵（ドット絵）。name なしで消す
+function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
+  el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
+  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs')setBg(null);
   if(VIEW==='menu')renderMenu();
   else if(VIEW==='packs')renderPacks();
   else if(VIEW==='deck')renderDeck();
@@ -723,18 +764,18 @@ function renderMenu(){
   const iss=deckIssues();
   const fan=['wolf','seer','fox','greatdet','hunter'];
   $('#app').innerHTML=`
+  <div class="homeArt"><img class="haImg" src="scenes/home_a.png" alt="夜の村の広場。井戸の上にタコ、占い師と狩人、物陰に人狼"><div class="haFog"></div><div class="haFog b"></div>
+    <div class="haTitle"><div class="haSub">― 3つの心臓を守りぬけ ―</div><h1>心臓<span>人狼</span></h1></div></div>
   <div class="hero">
-    <div class="fan" aria-hidden="true">${fan.map((k,i)=>`<div style="transform:rotate(${(i-2)*7}deg) translateY(${Math.abs(i-2)*6}px)">${cardHTML(k,'m')}</div>`).join('')}</div>
-    <div class="heroTitle">${octoSVG(3,3,'heroOcto')}<h1>心臓<span>人狼</span></h1></div>
     <p>デッキの40枚のうち1枚が、あなたの心臓。カードを使うほど正体は透けていく。相手の心臓を3回射抜いた方の勝ち。</p>
     <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span><span>カード <b>${CARDS.length}</b>種</span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div>
   </div>
   <div class="menu">
-    ${savedG?`<button type="button" class="mi main" id="mResume"><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
-    ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
-    <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
-    <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
-    <button type="button" class="mi" id="mRules"><b>ルールとカード一覧</b><span>全${CARDS.length}種の効果</span></button>
+    ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
+    ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
+    <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
+    <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
+    <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>ルールとカード一覧</b><span>全${CARDS.length}種の効果</span></button>
   </div>
   <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   $('#mBattle').onclick=()=>startDraft();
@@ -862,10 +903,12 @@ function renderDraft(){
         <div class="note">1パック6枚。最後の1枚は必ずシングルカード。通常カードは1枚出ると3枚デッキに入れられます。</div></div>`;
     }else{
       const all=d.cur.every(c=>c.on);
-      body=`<div class="reveal reveal6">${d.cur.map((c,i)=>{const r=C[c.k].r==='S'?'C':C[c.k].r;return`<button type="button" class="flip rr-${r} ${c.on?'on':''}" data-i="${i}" style="animation-delay:${i*80}ms" aria-label="${c.on?N(c.k):'カードをめくる'}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(c.k,'p')}</div></div><div class="res ${c.res.type}">${c.res.txt}</div></button>`}).join('')}</div>
+      body=`<div class="reveal reveal6">${d.cur.map((c,i)=>{const r=C[c.k].r==='S'?'C':C[c.k].r;return`<button type="button" class="flip rr-${r} ${c.on?'on':''} ${d.cur.dealt?'still':''}" data-i="${i}" style="animation-delay:${i*80}ms" aria-label="${c.on?N(c.k):'カードをめくる'}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(c.k,'p')}</div></div><div class="res ${c.res.type}">${c.res.txt}</div></button>`}).join('')}</div>
       <div class="btns" style="justify-content:center">${all?(d.i<7?`<button type="button" class="b primary" id="nextPack">次のパック（${d.i+1}/7）</button>`:`<button type="button" class="b primary" id="toBuild">デッキを組む</button>`):`<button type="button" class="b primary" id="flipAll">すべてめくる</button>`}</div>`;
     }
+    setBg('pack',d.cur?'':'lite');
     $('#app').innerHTML=`<div class="top"><h1>パック開封</h1><div class="btns"><span class="muted">${d.i}/7開封・通常${d.pool.length}種・シングル${d.singles.length}種</span><button type="button" class="b small" id="skipAll" ${d.i>=7?'disabled':''}>残りを全部開ける</button><button type="button" class="b small" id="back">やめる</button></div></div>${body}`;
+    if(d.cur)d.cur.dealt=true;
     $('#back').onclick=()=>go('menu');
     $('#skipAll').onclick=()=>{while(d.i<7){addPulls(d,d.packs[d.i]);d.i++}d.cur=null;toBuild()};
     const pb=$('#packBtn');
@@ -878,6 +921,7 @@ function renderDraft(){
   }
   const dk=d.deck,n=dk.types.length,ok=n===13&&dk.single;
   const list=[...d.pool].sort((a,b)=>Object.keys(CAT).indexOf(C[a].cat)-Object.keys(CAT).indexOf(C[b].cat)).filter(k=>DF2==='all'||(DF2==='in'?dk.types.includes(k):C[k].cat===DF2));
+  setBg('pack');
   $('#app').innerHTML=`<div class="top"><h1>デッキを組む</h1><button type="button" class="b small" id="back">やめる</button></div>
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${dk.single?1:0}/1</span></div>
     <div class="btns"><button type="button" class="b small" id="auto">おまかせで組む</button><button type="button" class="b small" id="clear">全部外す</button><button type="button" class="b primary" id="go" ${ok?'':'disabled'}>${NET.conn?'このデッキで友達と対戦':'このデッキで対戦'}</button></div></div>
@@ -1463,7 +1507,7 @@ async function gameOver(w){
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
-  await modal(`<div class="result"><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span><p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span><p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
@@ -1573,6 +1617,7 @@ function showCardInfo(k){
   });
 }
 function render(){
+  if(VIEW==='battle')setBg('home_a','dark');
   if(S&&S.online&&!S.guest)NET.sync();
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
@@ -1834,6 +1879,7 @@ async function guestAsk(m){
 function roomLink(){return location.origin+location.pathname+'?room='+NET.code}
 function renderOnline(){
   if(VIEW!=='online')return;
+  setBg(null);
   const st=NET.state,on=!!(NET.conn&&NET.conn.open);
   let body='';
   if(on){
@@ -1860,7 +1906,7 @@ function renderOnline(){
         <div class="mi"><b>部屋に参加する</b><span>友達から届いた5文字のコードを入れます。</span><div class="btns"><input id="oCode" class="codeIn" maxlength="5" autocapitalize="characters" autocomplete="off" value="${esc(NET.code||'')}" placeholder="ABCDE"><button type="button" class="b primary" id="oJoin">参加する</button></div></div>
       </div>`;
   }
-  $('#app').innerHTML=`<div class="top"><h1>友達と対戦</h1><button type="button" class="b small" id="oBack">${on?'接続を切ってメニューへ':'メニューへ'}</button></div>
+  $('#app').innerHTML=`<div class="sceneBanner"><img src="scenes/home_b.png" alt=""><div class="sbText"><b>友達と対戦</b><span>部屋を作って、リンクを送るだけ</span></div></div><div class="top"><span></span><button type="button" class="b small" id="oBack">${on?'接続を切ってメニューへ':'メニューへ'}</button></div>
     ${NET.err?`<div class="onErr">${esc(NET.err)}</div>`:''}
     ${body}
     <p class="note">通信はブラウザどうしで直接つなぎます（PeerJS）。学校や会社のネットワークでは、つながらないことがあります。</p>`;
