@@ -536,7 +536,7 @@ const RAW=[
  ['nekomata','猫又','猫','grd','R','1枚引く。相手のカードの効果で捨てられたとき、相手の心臓を含む4種類の候補を知る。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['bodyguard','用心棒','盾','grd','R','【伏せ専用】心臓を当てられたとき発動。ライフが減らない（心臓の選び直しは行う）。代償：次の自分のターンは宣言できず、選び直した後の手札は2枚になる。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['inquisitor','審問官','審','info','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。'],
+ ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。'],
  ['cursewolf','呪狼','呪','atk','R','相手の手札をランダムに2枚捨てさせる。代償：自分も1枚捨てる。共鳴：代償なし。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['cryboy','狼少年','嘘','sup','R','このターン、宣言+1回。代償：このターンに宣言を外すと3枚捨てる。共鳴：代償なし。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
@@ -1076,7 +1076,6 @@ function forcedDiscard(victim,c,attacker){
     if(attacker.hand.length){const x=rand(attacker.hand);toDiscard(attacker,x);log(`${attacker.name}の手札から〈${N(x.type)}〉が捨てられた。`);if(x.type==='nekomata')nekoCurse(attacker)}
     return;
   }
-  if(victim.setCard&&(victim.f.damp||0)<2){victim.f.damp=(victim.f.damp||0)+1;log(`${victim.name}の伏せカードが盾になり、1枚捨てずに済んだ。`,whoOf(victim));return}
   toDiscard(victim,c);log(`${victim.name}の手札から〈${N(c.type)}〉が捨てられた。`);
   if(c.type==='nekomata')nekoCurse(victim);
 }
@@ -1108,7 +1107,7 @@ function fxClear(){const fx=$('#fx');fx.hidden=true;fx.innerHTML=''}
 async function fxSet(who){await fxShow(`<div class="fxcard">${backHTML('l','伏せ')}<div class="by">${who==='me'?'あなた':OPN()}がカードを伏せた</div></div>`,who==='me'?800:1300);fxClear()}
 async function fxTrap(k){VOICE.say('Trap card!');await fxStamp('発動','guard',k)}
 async function fxRaid(){VOICE.say('Raid!');await fxStamp('襲撃','hit')}
-async function fxRes(ch){VOICE.say(ch>3?'Great combo!':ch>2?'Combo!':'Resonance!',{pitch:.7});screenFlash('gold');FXC.embers('#f0c060');await fxShow(`<div class="banner res">共鳴${ch>2?` ×${ch-1}`:''}</div>`,700);fxClear()}
+async function fxRes(){VOICE.say('Resonance!',{pitch:.7});screenFlash('gold');FXC.embers('#f0c060');await fxShow(`<div class="banner res">共鳴</div>`,700);fxClear()}
 async function fxVs(){SFX.pack();await fxShow(`<div class="vs"><div class="vsSide l">${cardHTML(S.me.single,'m')}<b>あなた</b><span>${catSummary(S.me.types)}</span></div><div class="vsMid">VS</div><div class="vsSide r">${cardHTML(S.cpu.single,'m')}<b>${OPN()}</b><span>${catSummary(S.cpu.types)}</span></div></div>`,1900);fxClear()}
 async function fxFight(){VOICE.say('Round one... Fight!');await fxShow('<div class="roundWrap"><div class="roundT">ROUND 1</div><div class="roundS">FIGHT!</div></div>',1500);fxClear()}
 async function fxCutin(k,who){
@@ -1223,13 +1222,13 @@ function reveal(p,cards){
 async function playCard(p,c,copy=false){const pv=S.decider;S.decider=p;try{return await playCard0(p,c,copy)}finally{if(S)S.decider=pv}}
 async function playCard0(p,c,copy=false){
   const o=opp(p),w=whoOf(p);
-  S.me.f.reflect=S.cpu.f.reflect=false;S.me.f.damp=S.cpu.f.damp=0;
+  S.me.f.reflect=S.cpu.f.reflect=false;
   const R=!C[c.type].single&&(p.lastCat===C[c.type].cat||!!p.f.forceRes);if(!C[c.type].single)p.f.forceRes=false;p.lastCat=C[c.type].cat;
   if(copy)log(`${p.name}は妖狐で〈${N(c.type)}〉に化けた。`,w);
   else{toDiscard(p,c);log(`${p.name}は〈${N(c.type)}〉を使った。`,w);S.hist.push({who:w,k:c.type,turn:S.turnNo})}
   render();await fxPlay(c.type,w);
   if(!C[c.type].single)p.chain=R?(p.chain||1)+1:1;
-  if(R){log(`共鳴！（${CAT[C[c.type].cat]}系${p.chain>2?`・${p.chain-1}連鎖`:''}）`,w);await fxRes(p.chain)}
+  if(R){log(`共鳴！（${CAT[C[c.type].cat]}系）`,w);await fxRes()}
   if(p.f.watched){
     const same=C[c.type].cat===C[p.heart.type].cat;const k=K(o);
     if(same)narrow(o,typesOf(p).filter(t=>C[t].cat===C[c.type].cat));else typesOf(p).filter(t=>C[t].cat===C[c.type].cat).forEach(t=>k.excluded.add(t));
@@ -1407,7 +1406,7 @@ function cpuScore(p,c){
   switch(c.type){
     case 'seer':s=live>2?4:.5;break;case 'astrologer':s=live>3?4.3:.5;break;
     case 'medium':s=(live>3?3.8:.6)*ward;break;case 'necro':s=(live>3?3.6:.6)*ward;break;
-    case 'detective':s=(o.deck.length>10&&live>3?3.4:.5)*ward;break;case 'watchdog':s=live>3?2.6:.6;break;case 'inquisitor':s=(o.hand.length>2?2.6:.6)*ward;break;    case 'wolf':s=o.hand.length?2.5:.3;break;case 'vampire':s=o.hand.length?2.8:1;break;case 'cursewolf':s=o.hand.length>=2?3:.5;break;
+    case 'detective':s=(o.deck.length>10&&live>3?3.4:.5)*ward;break;case 'watchdog':s=live>3?2.6:.6;break;case 'inquisitor':s=o.hand.length>2?2.6:.6;break;    case 'wolf':s=o.hand.length?2.5:.3;break;case 'vampire':s=o.hand.length?2.8:1;break;case 'cursewolf':s=o.hand.length>=2?3:.5;break;
     case 'phantom':s=o.deck.length?2:.2;break;case 'greatwolf':s=o.hand.length>=3?4.5:1;break;case 'madman':s=2.6;break;
     case 'assassin':s=maxP>=.3?6:-3;break;
     case 'hunter':s=threat>.2?4.5:1.8;break;case 'fox':{const others=p.hand.filter(h=>h!==c&&!C[h.type].set&&h.type!=='fox').map(h=>cpuScore(p,h));s=others.length?Math.max(...others)*.95:-1;break}case 'trapper':s=2.2;break;
@@ -1561,7 +1560,7 @@ async function startBattle(){
 
 /* ---- battle render ---- */
 function hudHTML(){
-  const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?'あなた':OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b>${(p.chain||0)>1?` 共鳴<b>${p.chain-1}連鎖</b>`:''}${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
+  const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?'あなた':OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b>${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
   return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}</div>${side(S.me,true)}</div>`;
 }
 function handFit(n){
@@ -1600,7 +1599,7 @@ function badges(p){
   if(p.f.extraTurn)b.push(['追加ターン','ok']);
   return b.length?`<div class="badges">${b.map(x=>`<span class="badge ${x[1]}">${x[0]}</span>`).join('')}</div>`:'';
 }
-function stats(p){return`<div class="stats"><span>前回 <b>${p.lastCat?CAT[p.lastCat]+'系':'なし'}</b>${(p.chain||0)>1?` <span class="chainTag">共鳴${p.chain-1}連鎖中</span>`:''}</span><span>手札 <b>${p.hand.length}</b></span><span>山札 <b>${p.deck.length}</b></span><span>捨て札 <b>${p.discard.length}</b></span><span>シングル <b>${N(p.single)}</b></span></div>`}
+function stats(p){return`<div class="stats"><span>前回 <b>${p.lastCat?CAT[p.lastCat]+'系':'なし'}</b></span><span>手札 <b>${p.hand.length}</b></span><span>山札 <b>${p.deck.length}</b></span><span>捨て札 <b>${p.discard.length}</b></span><span>シングル <b>${N(p.single)}</b></span></div>`}
 function piles(p){
   const top=p.discard[p.discard.length-1];
   return`<div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><div class="slot">${top?`<button type="button" class="cardBtn" data-card="${top.type}" aria-label="${N(top.type)}の効果を見る">${cardHTML(top.type,'s')}</button>`:'<div class="emptySlot"></div>'}捨て札</div>`;
