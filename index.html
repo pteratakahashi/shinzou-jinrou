@@ -70,12 +70,19 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .mi span{font-size:12px;color:var(--muted)}
 .mi.main{background:linear-gradient(135deg,#4a2230,#2a1d3e);border-color:var(--blood)}
 .mi:disabled{opacity:.45;cursor:not-allowed}
+.mmCard{align-items:center;text-align:center}
+.mmSpin{width:46px;height:46px;border-radius:50%;border:4px solid rgba(255,255,255,.12);border-top-color:var(--candle);animation:mmSpin 1s linear infinite}
+@keyframes mmSpin{to{transform:rotate(360deg)}}
 .rankCard{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);margin:4px 0 12px}
 .rankCard .btns{margin:0}
 .rkTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .rkMain{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .rkRate{font-family:var(--display);font-weight:400;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
 .rkSub{color:var(--muted);font-size:13px}
+.rkTier{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.1;color:var(--tc);text-shadow:0 0 14px color-mix(in srgb,var(--tc) 45%,transparent)}
+.rkTier small{font-size:.6em}
+.rkBar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.rkBar i{display:block;height:100%;background:var(--tc);border-radius:inherit}
+.rkLadder{display:flex;gap:4px}.rkLadder i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.1)}.rkLadder i.done{background:color-mix(in srgb,var(--tc) 55%,transparent)}.rkLadder i.cur{background:var(--tc);box-shadow:0 0 6px var(--tc)}
 .tier{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#141625;background:var(--tc);white-space:nowrap}
 .board{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:46vh;overflow:auto}
 .board li{display:grid;grid-template-columns:2.4em 1fr auto 3.4em 3.4em;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:var(--panel2,rgba(255,255,255,.04));font-size:14px;font-variant-numeric:tabular-nums}
@@ -1526,9 +1533,9 @@ async function gameOver(w){
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
-  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">レートを集計しています…</p>':''}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
-      el.innerHTML=st==='done'?`レート <b>${d.won?'+':'-'}${d.delta}</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
+      el.innerHTML=st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
     m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
@@ -1735,9 +1742,10 @@ const netName=()=>String(SV.nick||'').replace(/[<>&"]/g,'').trim().slice(0,10)||
 /* ---- 対人レート（Supabase + Googleログイン） ----
    設定方法は supabase/README.md。url と key が空のあいだは、ランク機能は表示されない。 */
 const RANK_CFG={url:'https://evxljdiiyzynvhcznpou.supabase.co',key:'sb_publishable_QlWNeJa-wZmJ3Cq8v5Pbpg_MFcu_Q-T'};
-const TIERS=[[1900,'マスター','#ff7ad9'],[1750,'ダイヤ','#7fe3ff'],[1600,'プラチナ','#9ff0d0'],[1450,'ゴールド','#f3cf6d'],[1300,'シルバー','#cfd6e4'],[0,'ブロンズ','#d39a6a']];
-const PLACEMENT=5;
-const tierOf=r=>TIERS.find(t=>r>=t[0]);
+// ランクはランクポイント(rp)で上がる。100ptごとに次のランク、各ランクはIII→II→I。500ptでマスター、そこから内部レートを公開
+const TIERS=[['ブロンズ','#d39a6a'],['シルバー','#cfd6e4'],['ゴールド','#f3cf6d'],['プラチナ','#9ff0d0'],['ダイヤ','#7fe3ff'],['マスター','#ff7ad9']];
+const MASTER_RP=500;
+function rankOf(rp){rp=Math.max(0,rp||0);if(rp>=MASTER_RP)return{i:5,name:'マスター',col:TIERS[5][1],div:'',master:true};const i=Math.floor(rp/100),w=rp%100;return{i,name:TIERS[i][0],col:TIERS[i][1],div:w<34?'III':w<67?'II':'I',w,next:TIERS[i+1][0]}}
 const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
   on(){return!!(RANK_CFG.url&&RANK_CFG.key)},
@@ -1780,37 +1788,64 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     return{status:'error'};
   }
 };
-function tierHTML(r,games,short){
-  if(games<PLACEMENT)return`<span class="tier" style="--tc:#9aa3c0">${short?'判定中':`ランク判定中 ${games}/${PLACEMENT}`}</span>`;
-  const t=tierOf(r);return`<span class="tier" style="--tc:${t[2]}">${t[1]}</span>`;
-}
+function tierHTML(rp){const r=rankOf(rp);return`<span class="tier" style="--tc:${r.col}">${r.name}${r.div?' '+r.div:''}</span>`}
 function rankCardHTML(){
   if(!LADDER.on())return'';
   const st=LADDER.state;
   if(st==='loading')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">読み込み中…</p></div>`;
   if(st==='err')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">${esc(LADDER.err)}</p><div class="btns"><button type="button" class="b small" id="rkRetry">もう一度</button></div></div>`;
   if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、友達との対戦がレート戦になり、戦績とランクが記録されます（おたがいログインしているときだけ）。</p><div class="btns"><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div></div>`;
-  const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0;
-  return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span>${tierHTML(p.rating,g)}</div>
-    <div class="rkMain"><b class="rkRate">${g<PLACEMENT?'－':p.rating}</b><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
+  const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0,rk=rankOf(p.rp);
+  const ladder=TIERS.map((t,i)=>`<i class="${i<rk.i?'done':i===rk.i?'cur':''}" style="--tc:${t[1]}" title="${t[0]}"></i>`).join('');
+  return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
+    <div class="rkMain"><b class="rkTier" style="--tc:${rk.col}">${rk.name}${rk.div?`<small> ${rk.div}</small>`:''}</b>${rk.master?`<span class="rkSub">マスターレート <b class="rkRate">${p.rating}</b></span>`:''}</div>
+    ${rk.master?'':`<div class="rkBar" style="--tc:${rk.col}"><i style="width:${rk.w}%"></i></div><span class="rkSub">あと${100-rk.w}ptで${rk.next}${rk.i===4?'（マスターになるとレートが公開されます）':''}</span>`}
+    <div class="rkLadder">${ladder}</div>
     <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span><span>名前 <b>${esc(p.name)}</b></span></div>
-    <div class="btns"><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
+    <div class="btns"><button type="button" class="b primary small" id="rkMatch">ランクマッチ</button><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
 }
 function bindRankCard(){
   const a=$('#rkLogin');if(a)a.onclick=()=>LADDER.login();
   const b=$('#rkLogout');if(b)b.onclick=()=>LADDER.logout();
   const c=$('#rkRetry');if(c)c.onclick=()=>{LADDER.state='loading';LADDER.redraw();LADDER.sb?LADDER.refresh():LADDER.init()};
   const d=$('#rkBoard');if(d)d.onclick=showBoard;
+  const mt=$('#rkMatch');if(mt)mt.onclick=()=>{NET.err='';mmStart()};
 }
+/* ランクマッチ：待機列に入って、先に待っている人がいればその部屋に入る。いなければ自分が部屋を作って待つ */
+const MM={fails:0,on:false,timer:0,t0:0,waiting:0,joining:false,clock:0};
+async function mmStart(){
+  if(!LADDER.uid()){NET.err='ランクマッチはGoogleでログインすると遊べます。';return go('online')}
+  if(NET.conn)return go('online');
+  if(!MM.on)MM.fails=0;MM.on=true;MM.joining=false;MM.t0=MM.t0||Date.now();MM.waiting=0;
+  clearInterval(MM.timer);MM.timer=setInterval(mmTick,4000);
+  clearInterval(MM.clock);MM.clock=setInterval(()=>{const el=$('#mmTime');if(el)el.textContent=mmElapsed()},1000);
+  VIEW='online';await netHost();
+}
+function mmElapsed(){const t=Math.floor((Date.now()-MM.t0)/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`}
+async function mmTick(){
+  if(!MM.on||MM.joining||NET.conn||NET.state!=='waiting'||!NET.code)return;
+  const code=NET.code;
+  const {data,error}=await LADDER.sb.rpc('mm_poll',{p_code:code});
+  if(!MM.on||NET.code!==code||NET.conn)return;
+  if(error){console.error(error);return}
+  if(data.state==='join'){MM.joining=true;netJoin(data.code)}
+  else if(data.state==='wait'){MM.waiting=data.waiting||0;const el=$('#mmCount');if(el)el.textContent=MM.waiting}
+}
+function mmStop(){
+  if(!MM.on)return;
+  MM.on=false;MM.joining=false;MM.t0=0;clearInterval(MM.timer);clearInterval(MM.clock);
+  if(LADDER.sb&&LADDER.uid())LADDER.sb.rpc('mm_leave').then(({error})=>{if(error)console.error(error)});
+}
+addEventListener('pagehide',()=>{if(MM.on)mmStop()});
 async function showBoard(){
   const close=`<div class="btns"><button type="button" class="b" id="bdClose">閉じる</button></div>`;
   const p=modal(`<h2>ランキング</h2><p class="note">読み込み中…</p>${close}`,(m,done)=>{m.querySelector('#bdClose').onclick=()=>done();m.onclick=e=>{if(e.target===m){m.onclick=null;done()}}});
   const {data,error}=await LADDER.sb.rpc('leaderboard',{p_limit:50});
   const sh=document.querySelector('#modal .sheet');if(!sh)return p;
   const me=LADDER.prof;
-  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const g=r.wins+r.losses,mine=me&&r.name===me.name&&r.rating===me.rating;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rating,g,1)}<span class="bdRate">${r.rating}</span><span class="bdWl">${r.wins}-${r.losses}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
-  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta:''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
-  sh.innerHTML=`<h2>ランキング</h2><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、レートは動きません。</p>${close}`;
+  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span><span class="bdWl">${r.wins}-${r.losses}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
+  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt':''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
+  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
   sh.querySelector('#bdClose').onclick=()=>{const m=$('#modal');m.hidden=true;m.innerHTML=''};
   return p;
 }
@@ -1822,9 +1857,9 @@ function netReset(){
   clearTimeout(NET.joinTimer);
   const p=NET.peer;NET.peer=null;NET.conn=null;
   try{if(p)p.destroy()}catch(e){}
-  Object.assign(NET,{state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRate:null,mid:null});
+  Object.assign(NET,{state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRp:null,mid:null,ranked:false});
 }
-function netFail(msg){netReset();NET.err=msg;VIEW='online';window.scrollTo(0,0);renderOnline()}
+function netFail(msg){if(MM.on&&++MM.fails>3)mmStop();if(MM.on){netReset();MM.joining=false;setTimeout(()=>{if(MM.on)mmStart()},800);return}netReset();NET.err=msg;VIEW='online';window.scrollTo(0,0);renderOnline()}
 function netErr(e){
   const t=e&&e.type;
   if(t==='peer-unavailable')return'その部屋は見つかりませんでした。コードを確かめてください（部屋を作った人が画面を閉じると、部屋は消えます）。';
@@ -1838,7 +1873,7 @@ async function netHost(){
   const code=Array.from({length:5},()=>CODE_CH[Math.floor(Math.random()*CODE_CH.length)]).join('');
   NET.code=code;
   const peer=NET.peer=new Peer(ROOM_PREFIX+code);
-  peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';if(VIEW==='online')renderOnline()});
+  peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';if(VIEW==='online')renderOnline();if(MM.on)mmTick()});
   peer.on('connection',c=>{if(NET.peer!==peer)return;if(NET.conn){c.on('open',()=>{try{c.send({t:'full'})}catch(e){}setTimeout(()=>c.close(),800)});return}netBind(c)});
   peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(NET.peer!==peer)return;if(e.type==='unavailable-id')return netHost();if(NET.conn&&e.type!=='peer-unavailable')return;netFail(netErr(e))});
@@ -1855,7 +1890,7 @@ async function netJoin(code){
 }
 function netBind(c){
   NET.conn=c;
-  c.on('open',()=>{clearTimeout(NET.joinTimer);NET.state='connected';NET.send({t:'hello',name:netName(),v:1,uid:LADDER.uid(),rating:LADDER.prof&&LADDER.prof.wins+LADDER.prof.losses>=PLACEMENT?LADDER.prof.rating:null});SFX.res();if(VIEW==='online')renderOnline()});
+  c.on('open',()=>{clearTimeout(NET.joinTimer);NET.state='connected';if(MM.on){NET.ranked=true;MM.fails=0;mmStop()}NET.send({t:'hello',name:netName(),v:1,uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});SFX.res();if(VIEW==='online')renderOnline()});
   c.on('data',m=>{try{netRecv(m)}catch(e){console.error(e)}});
   c.on('close',()=>netLost());
   c.on('error',()=>netLost());
@@ -1871,12 +1906,12 @@ function netLost(msg){
   if(S&&S.online&&VIEW==='battle'){S=null}
   VIEW='online';window.scrollTo(0,0);renderOnline();
 }
-function netLeave(){NET.send({t:'bye'});NET.leaving=true;setTimeout(()=>{netReset()},300);if(S&&S.online)S.over=true;go('menu')}
+function netLeave(){mmStop();NET.send({t:'bye'});NET.leaving=true;setTimeout(()=>{netReset()},300);if(S&&S.online)S.over=true;go('menu')}
 
 function netRecv(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){
-    case'hello':NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';NET.oppUid=typeof m.uid==='string'&&UUID_RE.test(m.uid)?m.uid:null;NET.oppRate=Number.isFinite(m.rating)?m.rating:null;if(VIEW==='online')renderOnline();break;
+    case'hello':NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';NET.oppUid=typeof m.uid==='string'&&UUID_RE.test(m.uid)?m.uid:null;NET.oppRp=Number.isFinite(m.rp)?m.rp:null;if(VIEW==='online')renderOnline();break;
     case'full':netFail('その部屋はもう対戦が始まっています。');break;
     case'bye':netLost(`${NET.opp||'相手'}さんが対戦をやめました。`);break;
     case'deck':if(!deckOk(m.deck))return;NET.ready.cpu=m.deck;if(NET.host)netMaybeStart();if(VIEW==='online')renderOnline();break;
@@ -1999,14 +2034,17 @@ function renderOnline(){
     const me=NET.ready.me,op=NET.ready.cpu;
     body=`<div class="onCard"><p class="onBig">${esc(NET.opp||'相手')} さんとつながりました</p>
       <div class="onStat"><span>あなた：<b>${me?'デッキ準備OK':'デッキ準備中'}</b></span><span>${esc(NET.opp||'相手')}：<b>${op?'デッキ準備OK':'デッキ準備中'}</b></span></div>
-      ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>レート戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRate!=null?`${tierOf(NET.oppRate)[1]} ${NET.oppRate}`:'ランク判定中'}`:LADDER.uid()?`${esc(NET.opp||'相手')}さんがログインしていないので、レートなしの対戦になります。`:'あなたがログインしていないので、レートなしの対戦になります（メニューからGoogleでログインできます）。'}</p>`:''}
+      ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:LADDER.uid()?`${esc(NET.opp||'相手')}さんがログインしていないので、ランクに関係しない対戦になります。`:'あなたがログインしていないので、ランクに関係しない対戦になります（メニューからGoogleでログインできます）。'}</p>`:''}
       ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p>`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
           <button type="button" class="mi main" id="oDraft"><b>7パック開けてデッキを作る</b><span>いつもの対戦と同じく、出たカードでデッキを組みます</span></button>
           <button type="button" class="mi" id="oQuick"><b>おまかせデッキですぐ対戦</b><span>パックを自動で開けて、デッキも自動で組みます</span></button>
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
   }else if(st==='opening'||st==='joining'){
-    body=`<div class="onCard"><p class="onBig">${st==='opening'?'部屋を用意しています…':'部屋につないでいます…'}</p>${st==='joining'?`<p class="note">部屋コード <b>${esc(NET.code)}</b></p>`:''}</div>`;
+    body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div></div>`
+    :`<div class="onCard"><p class="onBig">${st==='opening'?'部屋を用意しています…':'部屋につないでいます…'}</p>${st==='joining'?`<p class="note">部屋コード <b>${esc(NET.code)}</b></p>`:''}</div>`;
+  }else if(st==='waiting'&&MM.on){
+    body=`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">対戦相手を探しています…</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b>・いま探している人 <b id="mmCount">${MM.waiting||1}</b>人</p><p class="note">この画面を開いたまま待ってください。見つかると自動でつながります。</p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div></div>`;
   }else if(st==='waiting'){
     body=`<div class="onCard"><p class="label">部屋コード</p><div class="roomCode">${esc(NET.code)}</div>
       <p class="note">このリンクを友達に送ってください。友達がリンクを開いて「参加する」を押すとつながります。</p>
@@ -2016,6 +2054,7 @@ function renderOnline(){
   }else{
     body=`<div class="onCard"><label class="onField"><span class="label">あなたの名前（相手に表示されます）</span><input id="oName" maxlength="10" value="${esc(String(SV.nick||''))}" placeholder="プレイヤー"></label></div>
       <div class="menu">
+        ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns">${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div></div>`:''}
         <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
         <div class="mi"><b>部屋に参加する</b><span>友達から届いた5文字のコードを入れます。</span><div class="btns"><input id="oCode" class="codeIn" maxlength="5" autocapitalize="characters" autocomplete="off" value="${esc(NET.code||'')}" placeholder="ABCDE"><button type="button" class="b primary" id="oJoin">参加する</button></div></div>
       </div>`;
@@ -2027,6 +2066,9 @@ function renderOnline(){
   const bk=$('#oBack');bk.onclick=()=>{if(on||NET.peer){NET.err='';netLeave()}else{NET.err='';go('menu')}};
   const nmIn=$('#oName');if(nmIn)nmIn.oninput=()=>{SV.nick=nmIn.value.slice(0,10);save()};
   const h=$('#oHost');if(h)h.onclick=()=>netHost();
+  const om=$('#oMatch');if(om)om.onclick=()=>{NET.err='';mmStart()};
+  const ol=$('#oLogin');if(ol)ol.onclick=()=>LADDER.login();
+  const mc=$('#mmCancel');if(mc)mc.onclick=()=>{mmStop();netReset();NET.err='';renderOnline()};
   const j=$('#oJoin');if(j){const ci=$('#oCode');j.onclick=()=>netJoin(ci.value);ci.onkeydown=e=>{if(e.key==='Enter')netJoin(ci.value)}}
   const cp=$('#oCopy');if(cp)cp.onclick=async()=>{const li=$('#oLink');try{await navigator.clipboard.writeText(li.value);cp.textContent='コピーしました'}catch(e){li.select();try{document.execCommand('copy');cp.textContent='コピーしました'}catch(_){cp.textContent='上の文字を長押ししてコピー'}}};
   const sh=$('#oShare');if(sh)sh.onclick=()=>{navigator.share({title:'心臓人狼',text:'心臓人狼で対戦しよう！',url:roomLink()}).catch(()=>{})};

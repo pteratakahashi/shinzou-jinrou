@@ -30,6 +30,24 @@ create table if not exists public.matches (
   created_at timestamptz not null default now(),
   decided_at timestamptz
 );
+-- ランクポイント（ブロンズ→マスター）。内部レート(rating)とは別に、勝つと多めに増え、負けると少なめに減る
+alter table public.players add column if not exists rp integer not null default 0;
+alter table public.matches add column if not exists rp_win integer;
+alter table public.matches add column if not exists rp_loss integer;
+
+-- ランクマッチの待機列
+create table if not exists public.queue (
+  uid uuid primary key references public.players(id) on delete cascade,
+  code text not null,
+  rating integer not null,
+  created_at timestamptz not null default now(),
+  seen_at timestamptz not null default now(),
+  claimed_by uuid,
+  claimed_at timestamptz
+);
+alter table public.queue enable row level security;
+revoke all on public.queue from anon, authenticated;
+
 create index if not exists matches_p1 on public.matches(p1, created_at desc);
 create index if not exists matches_p2 on public.matches(p2, created_at desc);
 create index if not exists players_rating on public.players(rating desc);
@@ -52,14 +70,16 @@ create or replace function public._decide(m public.matches, w uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare
   l uuid := case when w = m.p1 then m.p2 else m.p1 end;
-  rw integer; rl integer; d integer;
+  rw integer; rl integer; d integer; gw integer; gl integer;
 begin
   select rating into rw from players where id = w for update;
   select rating into rl from players where id = l for update;
   d := greatest(1, round(32 * (1 - 1 / (1 + power(10, (rl - rw) / 400.0))))::integer);
-  update players set rating = rating + d, wins = wins + 1, updated_at = now() where id = w;
-  update players set rating = greatest(0, rating - d), losses = losses + 1, updated_at = now() where id = l;
-  update matches set winner = w, status = 'done', delta = d, decided_at = now() where id = m.id;
+  gw := d + 8;                      -- 勝ち：格上に勝つほど多い（約12〜40）
+  gl := greatest(4, d - 6);         -- 負け：格下に負けるほど多い（4〜26）
+  update players set rating = rating + d, rp = rp + gw, wins = wins + 1, updated_at = now() where id = w;
+  update players set rating = greatest(0, rating - d), rp = greatest(0, rp - gl), losses = losses + 1, updated_at = now() where id = l;
+  update matches set winner = w, status = 'done', delta = d, rp_win = gw, rp_loss = gl, decided_at = now() where id = m.id;
 end $$;
 
 -- 片方しか報告しないまま10分たった試合は、報告どおりに確定させる（負けた側がページを閉じた場合など）
@@ -90,12 +110,14 @@ begin
       where id = me and name is distinct from left(regexp_replace(trim(p_name), '[<>&"]', '', 'g'), 10);
   end if;
   select json_build_object(
-    'id', p.id, 'name', p.name, 'rating', p.rating, 'wins', p.wins, 'losses', p.losses,
-    'pos', (select count(*) + 1 from players q where q.rating > p.rating and q.wins + q.losses > 0),
+    'id', p.id, 'name', p.name, 'rating', p.rating, 'rp', p.rp, 'wins', p.wins, 'losses', p.losses,
+    'pos', (select count(*) + 1 from players q where q.wins + q.losses > 0
+             and (q.rp >= 500, case when q.rp >= 500 then q.rating else q.rp end) > (p.rp >= 500, case when p.rp >= 500 then p.rating else p.rp end)),
     'total', (select count(*) from players q where q.wins + q.losses > 0),
     'recent', coalesce((
       select json_agg(x order by x.at desc) from (
-        select coalesce(m.decided_at, m.created_at) as at, m.status, m.delta,
+        select coalesce(m.decided_at, m.created_at) as at, m.status,
+               case when m.winner = me then m.rp_win else m.rp_loss end as delta,
                (m.winner = me) as won,
                (select name from players o where o.id = case when m.p1 = me then m.p2 else m.p1 end) as opp
         from matches m where me in (m.p1, m.p2) and m.p1_in and m.p2_in order by m.created_at desc limit 10
@@ -134,7 +156,7 @@ begin
   select * into m from matches where id = p_match for update;
   if not found or m.p1 <> a or m.p2 <> b then raise exception 'unknown match'; end if;
   if not (m.p1_in and m.p2_in) then raise exception 'match was not started by both players'; end if;
-  if m.status <> 'pending' then return json_build_object('status', m.status, 'delta', m.delta, 'won', m.winner = me); end if;
+  if m.status <> 'pending' then return json_build_object('status', m.status, 'delta', case when m.winner = me then m.rp_win else m.rp_loss end, 'won', m.winner = me); end if;
   if me = m.p1 and m.p1_says is null then
     update matches set p1_says = p_winner, p1_reason = left(p_reason, 16) where id = p_match;
   elsif me = m.p2 and m.p2_says is null then
@@ -149,16 +171,56 @@ begin
     end if;
     select * into m from matches where id = p_match;
   end if;
-  return json_build_object('status', m.status, 'delta', m.delta, 'won', m.winner = me);
+  return json_build_object('status', m.status, 'delta', case when m.winner = me then m.rp_win else m.rp_loss end, 'won', m.winner = me);
 end $$;
 
 -- ランキング上位
+drop function if exists public.leaderboard(integer);
 create or replace function public.leaderboard(p_limit integer default 50)
-returns table(pos bigint, name text, rating integer, wins integer, losses integer)
+returns table(pos bigint, name text, rating integer, rp integer, wins integer, losses integer)
 language sql security definer set search_path = public stable as $$
-  select rank() over (order by rating desc), name, rating, wins, losses
+  select rank() over (order by rp >= 500 desc, case when rp >= 500 then rating else rp end desc),
+         name, case when rp >= 500 then rating end, rp, wins, losses
   from players where wins + losses > 0
-  order by rating desc limit least(greatest(p_limit, 1), 100);
+  order by rp >= 500 desc, case when rp >= 500 then rating else rp end desc
+  limit least(greatest(p_limit, 1), 100);
+$$;
+
+-- ランクマッチ：待機列に入る／待機を続ける。数秒ごとに呼ぶ。
+-- 自分より前から待っている人がいれば、その人を確保して部屋コードを返す（後から来た側が先に来た側に入る）
+create or replace function public.mm_poll(p_code text)
+returns json language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); my public.queue; t public.queue; r integer;
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  if p_code !~ '^[A-Z0-9]{5}$' then raise exception 'bad code'; end if;
+  insert into players(id) values (me) on conflict (id) do nothing;
+  select rating into r from players where id = me;
+  delete from queue where seen_at < now() - interval '20 seconds';
+  insert into queue(uid, code, rating) values (me, p_code, r)
+    on conflict (uid) do update set code = excluded.code, rating = excluded.rating, seen_at = now(),
+      created_at = case when queue.code = excluded.code then queue.created_at else now() end;
+  select * into my from queue where uid = me for update;
+  if my.claimed_by is not null then
+    if my.claimed_at > now() - interval '25 seconds' then return json_build_object('state', 'claimed'); end if;
+    update queue set claimed_by = null, claimed_at = null where uid = me;   -- 相手が来なかった
+  end if;
+  select * into t from queue
+    where uid <> me and claimed_by is null and seen_at > now() - interval '20 seconds'
+      and (created_at, uid) < (my.created_at, me)
+    order by abs(rating - r), created_at
+    limit 1 for update skip locked;
+  if found then
+    update queue set claimed_by = me, claimed_at = now() where uid = t.uid;
+    delete from queue where uid = me;
+    return json_build_object('state', 'join', 'code', t.code);
+  end if;
+  return json_build_object('state', 'wait', 'waiting', (select count(*) from queue where seen_at > now() - interval '20 seconds'));
+end $$;
+
+create or replace function public.mm_leave()
+returns void language sql security definer set search_path = public as $$
+  delete from queue where uid = auth.uid();
 $$;
 
 revoke all on function public._decide(public.matches, uuid) from public, anon, authenticated;
@@ -167,3 +229,5 @@ grant execute on function public.my_profile(text) to authenticated;
 grant execute on function public.start_match(text, uuid) to authenticated;
 grant execute on function public.report_result(text, uuid, uuid, text) to authenticated;
 grant execute on function public.leaderboard(integer) to anon, authenticated;
+grant execute on function public.mm_poll(text) to authenticated;
+grant execute on function public.mm_leave() to authenticated;
