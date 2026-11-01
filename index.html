@@ -1734,7 +1734,7 @@ const netName=()=>String(SV.nick||'').replace(/[<>&"]/g,'').trim().slice(0,10)||
 
 /* ---- 対人レート（Supabase + Googleログイン） ----
    設定方法は supabase/README.md。url と key が空のあいだは、ランク機能は表示されない。 */
-const RANK_CFG={url:'',key:''};
+const RANK_CFG={url:'https://evxljdiiyzynvhcznpou.supabase.co',key:'sb_publishable_QlWNeJa-wZmJ3Cq8v5Pbpg_MFcu_Q-T'};
 const TIERS=[[1900,'マスター','#ff7ad9'],[1750,'ダイヤ','#7fe3ff'],[1600,'プラチナ','#9ff0d0'],[1450,'ゴールド','#f3cf6d'],[1300,'シルバー','#cfd6e4'],[0,'ブロンズ','#d39a6a']];
 const PLACEMENT=5;
 const tierOf=r=>TIERS.find(t=>r>=t[0]);
