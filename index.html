@@ -70,6 +70,20 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .mi span{font-size:12px;color:var(--muted)}
 .mi.main{background:linear-gradient(135deg,#4a2230,#2a1d3e);border-color:var(--blood)}
 .mi:disabled{opacity:.45;cursor:not-allowed}
+.rankCard{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);margin:4px 0 12px}
+.rankCard .btns{margin:0}
+.rkTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rkMain{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rkRate{font-family:var(--display);font-weight:400;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.rkSub{color:var(--muted);font-size:13px}
+.tier{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#141625;background:var(--tc);white-space:nowrap}
+.board{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:46vh;overflow:auto}
+.board li{display:grid;grid-template-columns:2.4em 1fr auto 3.4em 3.4em;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:var(--panel2,rgba(255,255,255,.04));font-size:14px;font-variant-numeric:tabular-nums}
+.board li.me{outline:1.5px solid var(--candle)}
+.board .bdPos{color:var(--muted);text-align:right}.board .bdName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.board .bdRate,.board .bdWl{text-align:right}.board .bdWl{color:var(--muted);font-size:12px}
+ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
+.bdRes{font-weight:700;color:var(--muted)}.bdRes.w{color:var(--candle)}.bdRes.l{color:var(--blood)}
+.rateLine{margin:0;font-size:14px;color:var(--muted)}.rateLine b{color:var(--ink)}
 .statline{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .statline b{color:var(--ink)}
 
@@ -772,6 +786,7 @@ function renderMenu(){
     <p>デッキの40枚のうち1枚が、あなたの心臓。カードを使うほど正体は透けていく。相手の心臓を3回射抜いた方の勝ち。</p>
     <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span><span>カード <b>${CARDS.length}</b>種</span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div>
   </div>
+  ${rankCardHTML()}
   <div class="menu">
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
@@ -785,6 +800,7 @@ function renderMenu(){
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
   $('#mRules').onclick=()=>go('rules');
   $('#mOnline').onclick=()=>go('online');
+  bindRankCard();
   let armed=false;
   $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();save();renderMenu()};
 }
@@ -1499,6 +1515,7 @@ async function gameOver(w){
   S.over=true;S.phase='none';render();
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest)NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});
+  const rated=on&&LADDER.rated()&&NET.mid,rp=rated?LADDER.report(NET.mid,win,'ko'):null;
   if(!on)lsDel(GAME_KEY);
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);quake();FXC.burst('#ffffff',120,12);
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();
@@ -1509,7 +1526,9 @@ async function gameOver(w){
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
-  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span><p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">レートを集計しています…</p>':''}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+    if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
+      el.innerHTML=st==='done'?`レート <b>${d.won?'+':'-'}${d.delta}</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
     m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
@@ -1712,6 +1731,90 @@ const NET={peer:null,conn:null,host:false,state:'idle',code:'',err:'',opp:null,r
   }
 };
 const netName=()=>String(SV.nick||'').replace(/[<>&"]/g,'').trim().slice(0,10)||'プレイヤー';
+
+/* ---- 対人レート（Supabase + Googleログイン） ----
+   設定方法は supabase/README.md。url と key が空のあいだは、ランク機能は表示されない。 */
+const RANK_CFG={url:'',key:''};
+const TIERS=[[1900,'マスター','#ff7ad9'],[1750,'ダイヤ','#7fe3ff'],[1600,'プラチナ','#9ff0d0'],[1450,'ゴールド','#f3cf6d'],[1300,'シルバー','#cfd6e4'],[0,'ブロンズ','#d39a6a']];
+const PLACEMENT=5;
+const tierOf=r=>TIERS.find(t=>r>=t[0]);
+const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
+  on(){return!!(RANK_CFG.url&&RANK_CFG.key)},
+  uid(){return LADDER.user&&LADDER.user.id||null},
+  rated(){return!!(LADDER.uid()&&NET.oppUid&&NET.oppUid!==LADDER.uid())},
+  lib(){return window.supabase?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc)})},
+  async init(){
+    if(!LADDER.on())return;
+    LADDER.state='loading';
+    try{
+      await LADDER.lib();
+      LADDER.sb=window.supabase.createClient(RANK_CFG.url,RANK_CFG.key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
+      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
+      const {data}=await LADDER.sb.auth.getSession();
+      LADDER.user=data&&data.session&&data.session.user||null;
+      try{const u=new URL(location.href);if(u.searchParams.has('code')){u.searchParams.delete('code');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
+      if(LADDER.user)await LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}
+    }catch(e){console.error(e);LADDER.state='err';LADDER.err='ランク機能につながりませんでした。';LADDER.redraw()}
+  },
+  async refresh(){
+    if(!LADDER.sb||!LADDER.user)return;
+    const {data,error}=await LADDER.sb.rpc('my_profile',{p_name:netName()});
+    if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in'}
+    LADDER.redraw();
+  },
+  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline()},
+  login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
+  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;LADDER.state='out';LADDER.redraw()},
+  async startMatch(mid){if(!LADDER.rated()||!mid)return;const {error}=await LADDER.sb.rpc('start_match',{p_match:mid,p_opp:NET.oppUid});if(error)console.error(error)},
+  async report(mid,won,reason,opp=NET.oppUid){
+    const me=LADDER.uid();
+    if(!me||!opp||opp===me||!mid||NET.reported===mid)return null;
+    NET.reported=mid;
+    // 相手の開始登録が届く前に終わった場合に備えて、少し待って再送する
+    for(let i=0;i<4;i++){
+      const {data,error}=await LADDER.sb.rpc('report_result',{p_match:mid,p_opp:opp,p_winner:won?me:opp,p_reason:reason||'ko'});
+      if(!error){setTimeout(()=>LADDER.refresh(),data&&data.status==='pending'?4000:300);return data}
+      console.error(error);await sleep(1500*(i+1));
+    }
+    return{status:'error'};
+  }
+};
+function tierHTML(r,games,short){
+  if(games<PLACEMENT)return`<span class="tier" style="--tc:#9aa3c0">${short?'判定中':`ランク判定中 ${games}/${PLACEMENT}`}</span>`;
+  const t=tierOf(r);return`<span class="tier" style="--tc:${t[2]}">${t[1]}</span>`;
+}
+function rankCardHTML(){
+  if(!LADDER.on())return'';
+  const st=LADDER.state;
+  if(st==='loading')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">読み込み中…</p></div>`;
+  if(st==='err')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">${esc(LADDER.err)}</p><div class="btns"><button type="button" class="b small" id="rkRetry">もう一度</button></div></div>`;
+  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、友達との対戦がレート戦になり、戦績とランクが記録されます（おたがいログインしているときだけ）。</p><div class="btns"><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div></div>`;
+  const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0;
+  return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span>${tierHTML(p.rating,g)}</div>
+    <div class="rkMain"><b class="rkRate">${g<PLACEMENT?'－':p.rating}</b><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
+    <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span><span>名前 <b>${esc(p.name)}</b></span></div>
+    <div class="btns"><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
+}
+function bindRankCard(){
+  const a=$('#rkLogin');if(a)a.onclick=()=>LADDER.login();
+  const b=$('#rkLogout');if(b)b.onclick=()=>LADDER.logout();
+  const c=$('#rkRetry');if(c)c.onclick=()=>{LADDER.state='loading';LADDER.redraw();LADDER.sb?LADDER.refresh():LADDER.init()};
+  const d=$('#rkBoard');if(d)d.onclick=showBoard;
+}
+async function showBoard(){
+  const close=`<div class="btns"><button type="button" class="b" id="bdClose">閉じる</button></div>`;
+  const p=modal(`<h2>ランキング</h2><p class="note">読み込み中…</p>${close}`,(m,done)=>{m.querySelector('#bdClose').onclick=()=>done();m.onclick=e=>{if(e.target===m){m.onclick=null;done()}}});
+  const {data,error}=await LADDER.sb.rpc('leaderboard',{p_limit:50});
+  const sh=document.querySelector('#modal .sheet');if(!sh)return p;
+  const me=LADDER.prof;
+  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const g=r.wins+r.losses,mine=me&&r.name===me.name&&r.rating===me.rating;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rating,g,1)}<span class="bdRate">${r.rating}</span><span class="bdWl">${r.wins}-${r.losses}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
+  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta:''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
+  sh.innerHTML=`<h2>ランキング</h2><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、レートは動きません。</p>${close}`;
+  sh.querySelector('#bdClose').onclick=()=>{const m=$('#modal');m.hidden=true;m.innerHTML=''};
+  return p;
+}
+
 const swR=r=>r==='me'?'cpu':r==='cpu'?'me':r;
 const deckOk=d=>d&&Array.isArray(d.types)&&d.types.length===13&&new Set(d.types).size===13&&d.types.every(k=>C[k]&&!C[k].single)&&C[d.single]&&C[d.single].single;
 
@@ -1719,7 +1822,7 @@ function netReset(){
   clearTimeout(NET.joinTimer);
   const p=NET.peer;NET.peer=null;NET.conn=null;
   try{if(p)p.destroy()}catch(e){}
-  Object.assign(NET,{state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false});
+  Object.assign(NET,{state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRate:null,mid:null});
 }
 function netFail(msg){netReset();NET.err=msg;VIEW='online';window.scrollTo(0,0);renderOnline()}
 function netErr(e){
@@ -1752,14 +1855,16 @@ async function netJoin(code){
 }
 function netBind(c){
   NET.conn=c;
-  c.on('open',()=>{clearTimeout(NET.joinTimer);NET.state='connected';NET.send({t:'hello',name:netName(),v:1});SFX.res();if(VIEW==='online')renderOnline()});
+  c.on('open',()=>{clearTimeout(NET.joinTimer);NET.state='connected';NET.send({t:'hello',name:netName(),v:1,uid:LADDER.uid(),rating:LADDER.prof&&LADDER.prof.wins+LADDER.prof.losses>=PLACEMENT?LADDER.prof.rating:null});SFX.res();if(VIEW==='online')renderOnline()});
   c.on('data',m=>{try{netRecv(m)}catch(e){console.error(e)}});
   c.on('close',()=>netLost());
   c.on('error',()=>netLost());
 }
 function netLost(msg){
   if(!NET.conn&&!NET.peer)return;
+  const live=!!(S&&S.online&&!S.over&&NET.mid),mid=NET.mid,opp=NET.oppUid;
   const leaving=NET.leaving;netReset();
+  if(live&&!leaving)LADDER.report(mid,true,'disconnect',opp);
   if(S&&S.online)S.over=true;
   if(leaving)return;
   NET.err=msg||'相手との接続が切れました。';
@@ -1771,12 +1876,12 @@ function netLeave(){NET.send({t:'bye'});NET.leaving=true;setTimeout(()=>{netRese
 function netRecv(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){
-    case'hello':NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';if(VIEW==='online')renderOnline();break;
+    case'hello':NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';NET.oppUid=typeof m.uid==='string'&&UUID_RE.test(m.uid)?m.uid:null;NET.oppRate=Number.isFinite(m.rating)?m.rating:null;if(VIEW==='online')renderOnline();break;
     case'full':netFail('その部屋はもう対戦が始まっています。');break;
     case'bye':netLost(`${NET.opp||'相手'}さんが対戦をやめました。`);break;
     case'deck':if(!deckOk(m.deck))return;NET.ready.cpu=m.deck;if(NET.host)netMaybeStart();if(VIEW==='online')renderOnline();break;
     // ここから下はゲストが受け取るもの
-    case'start':if(NET.host)return;NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();
+    case'start':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):null;LADDER.startMatch(NET.mid);NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();
       $('#app').innerHTML='<div class="onl"><p class="note">対戦を準備しています…</p></div>';break;
     case'snap':if(!NET.host)guestApply(m.s);break;
     case'fx':if(!NET.host)guestFx(m.n,m.a);break;
@@ -1799,7 +1904,8 @@ function netMaybeStart(){if(NET.host&&NET.conn&&NET.ready.me&&NET.ready.cpu){con
 async function startOnline(a,b){
   NET.sentQ=LOGQ;NET.lastSnap='';
   VIEW='battle';window.scrollTo(0,0);
-  NET.send({t:'start'});
+  NET.mid=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,'');
+  NET.send({t:'start',mid:NET.mid});LADDER.startMatch(NET.mid);
   S={me:newPlayer('@me',false,[...a.types],a.single),cpu:newPlayer('@cpu',false,[...b.types],b.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:Date.now(),names:{me:netName(),cpu:NET.opp||'相手'}};
   S.cpu.remote=true;const g=S;
   mkPool(S.me);mkPool(S.cpu);render();
@@ -1893,6 +1999,7 @@ function renderOnline(){
     const me=NET.ready.me,op=NET.ready.cpu;
     body=`<div class="onCard"><p class="onBig">${esc(NET.opp||'相手')} さんとつながりました</p>
       <div class="onStat"><span>あなた：<b>${me?'デッキ準備OK':'デッキ準備中'}</b></span><span>${esc(NET.opp||'相手')}：<b>${op?'デッキ準備OK':'デッキ準備中'}</b></span></div>
+      ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>レート戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRate!=null?`${tierOf(NET.oppRate)[1]} ${NET.oppRate}`:'ランク判定中'}`:LADDER.uid()?`${esc(NET.opp||'相手')}さんがログインしていないので、レートなしの対戦になります。`:'あなたがログインしていないので、レートなしの対戦になります（メニューからGoogleでログインできます）。'}</p>`:''}
       ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p>`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
           <button type="button" class="mi main" id="oDraft"><b>7パック開けてデッキを作る</b><span>いつもの対戦と同じく、出たカードでデッキを組みます</span></button>
@@ -1935,8 +2042,9 @@ $('#app').addEventListener('click',e=>{
   if(!el)return;
   showCardInfo(el.dataset.card||el.dataset.ty);
 });
-{const r=new URLSearchParams(location.search).get('room');if(r){NET.code=r.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);VIEW='online'}}
+{let r=new URLSearchParams(location.search).get('room');if(!r){try{r=sessionStorage.getItem('sj_room');sessionStorage.removeItem('sj_room')}catch(e){}}if(r){NET.code=r.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);VIEW='online'}}
 draw_();
+LADDER.init();
 </script>
 
 </body></html>
