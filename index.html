@@ -618,6 +618,62 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
 body.dragOn .btMid,body.dragOn .btField{outline:2px dashed rgba(233,166,76,.35);outline-offset:-2px}
 body.dropOk .btMid,body.dropOk .btField{outline-color:var(--candle);background-color:rgba(233,166,76,.06)}
 body.dragOn .btLast::after{content:'　↑ 上で離すと使う';color:var(--candle)}
+
+/* ===== ホーム：プロフィール・ミッション・タブ・ショップ ===== */
+body:has(.tabBar){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.tabBar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--table) 92%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:4px max(8px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabBar button{flex:1;max-width:160px;background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;font:inherit;font-size:11px;cursor:pointer;border-radius:10px}
+.tabBar button svg{width:24px;height:24px}
+.tabBar button.on{color:var(--candle)}.tabBar button.on svg{filter:drop-shadow(0 0 6px rgba(233,166,76,.6))}
+.prof{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--panel) 92%,transparent),color-mix(in srgb,var(--panel2) 80%,transparent));border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.avatar{flex:none;width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--candle);background:radial-gradient(circle at 50% 35%,#3a3f70,#141830);padding:0;cursor:pointer;box-shadow:0 0 14px rgba(233,166,76,.3)}
+.avatar img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;image-rendering:pixelated;transform:scale(1.25) translateY(8%)}
+.profMain{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.prof .menuName{margin:0}.prof .statline{font-size:12px}
+.profSub{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ptitle{font-size:11px;padding:1px 8px;border-radius:99px;background:linear-gradient(90deg,#5a3f18,#8a6428);color:#ffe7b0;border:1px solid #c79a4a}
+.ptitle.none{background:none;border-color:var(--line);color:var(--muted)}
+.prank{font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--tc);color:var(--tc)}
+.coin{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.3);border:1px solid #6b6f92;border-radius:99px;padding:3px 10px 3px 4px;white-space:nowrap}
+.coin i{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffffff,#cfd6e4 40%,#7d859f);box-shadow:inset 0 0 0 2px #9aa2bd}
+.coin.sm{padding:0 6px 0 2px;font-size:12px;background:none;border:0;gap:3px}.coin.sm i{width:13px;height:13px}
+.prof>.coin{align-self:flex-start}
+.coinFly{position:fixed;z-index:70;width:16px;height:16px;margin:-8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cfd6e4 40%,#7d859f);pointer-events:none;animation:coinFly 1s ease-out both}
+@keyframes coinFly{to{transform:translate(var(--dx),var(--dy)) scale(.4);opacity:0}}
+.msnBox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+.msnList{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.msnList li{display:flex;align-items:center;gap:8px;font-size:13px}
+.msnT{flex:1;min-width:0}
+.msnBar{height:5px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden}.msnBar i{display:block;height:100%;background:linear-gradient(90deg,#c58a34,#f3c77e)}
+.msnN{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.msnList li.ok .msnT{color:var(--candle)}
+.msnList li.claimed{opacity:.5}.msnC{font-size:11px;color:var(--muted)}
+.msnDone{color:var(--candle);font-size:13px}
+.lbox{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.lstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;width:100%}
+.lday{border:1px solid var(--line);border-radius:8px;padding:6px 2px;display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--muted)}
+.lday b{font-size:14px;color:var(--ink)}.lday.got{opacity:.45}
+.lday.now{border-color:var(--candle);box-shadow:0 0 12px rgba(233,166,76,.5);background:rgba(233,166,76,.1)}
+.lget{font-size:18px}.lget b{color:var(--candle);font-size:24px}
+.avGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;max-height:56vh;overflow-y:auto}
+.avOpt{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--muted);font-size:10px}
+.avOpt img{width:56px;height:56px;border-radius:50%;object-fit:cover;object-position:50% 20%;image-rendering:pixelated}
+.avOpt.on{border-color:var(--candle);color:var(--ink)}
+.shopH{font-size:17px;margin:14px 0 6px}
+.shopGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.shopIt{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.shopIt.on{border-color:var(--candle)}
+.shopPrev{display:flex;justify-content:center;padding:6px 0}
+.shopTitle{padding:10px 0}
+/* カードの縁（自分の手札・自分の場・ショップの見本） */
+:is(body[data-frame=gold] :is(.btHand,.btMe,.fldSide.me),.shopPrev[data-frame=gold]) .tcg:not(.back){border-color:#e8c060;box-shadow:0 0 0 1px #fff3c4 inset,0 0 14px rgba(240,200,90,.55),0 .35em .9em rgba(0,0,0,.45)}
+:is(body[data-frame=moon] :is(.btHand,.btMe,.fldSide.me),.shopPrev[data-frame=moon]) .tcg:not(.back){border-color:#bcd4ff;box-shadow:0 0 16px 2px rgba(170,200,255,.55),0 .35em .9em rgba(0,0,0,.45)}
+:is(body[data-frame=blood] :is(.btHand,.btMe,.fldSide.me),.shopPrev[data-frame=blood]) .tcg:not(.back){border-color:#ff4a5a;animation:bloodPulse 1.8s ease-in-out infinite}
+@keyframes bloodPulse{0%,100%{box-shadow:0 0 6px rgba(255,60,80,.4),0 .35em .9em rgba(0,0,0,.45)}50%{box-shadow:0 0 20px 4px rgba(255,60,80,.75),0 .35em .9em rgba(0,0,0,.45)}}
+:is(body[data-frame=rainbow] :is(.btHand,.btMe,.fldSide.me),.shopPrev[data-frame=rainbow]) .tcg:not(.back){border-color:transparent;background:linear-gradient(170deg,#2c3462,#161b36) padding-box,linear-gradient(var(--rb,0deg),#ff5a6a,#ffc85a,#6af08a,#5ac8ff,#b67aff,#ff5a6a) border-box;animation:rbSpin 3s linear infinite}
+@property --rb{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes rbSpin{to{--rb:360deg}}
+@media (prefers-reduced-motion:reduce){.tcg{animation:none!important}}
 </style>
 
 <div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -872,6 +928,7 @@ if(!SV||!SV.coll)SV=defaultSave();
 // 試作中は全カード所持扱い
 CARDS.forEach(c=>SV.coll[c.k]=maxOwn(c.k));
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}}
+ecoInit();applyFrame();
 const own=k=>SV.coll[k]||0;
 function addCard(k){
   const c=C[k];if(own(k)>=maxOwn(k)){SV.shards+=SHARD[c.r];return{type:'dup',txt:`かけら+${SHARD[c.r]}`}}
@@ -893,13 +950,14 @@ function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
-  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs')setBg(null);
+  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs'||VIEW==='shop')setBg(null);
   if(VIEW==='menu')renderMenu();
   else if(VIEW==='packs')renderPacks();
   else if(VIEW==='deck')renderDeck();
   else if(VIEW==='rules')renderRules();
   else if(VIEW==='battle')render();
   else if(VIEW==='watch')renderWatch();
+  else if(VIEW==='shop')renderShop();
   else if(VIEW==='draft')renderDraft();
   else if(VIEW==='online')renderOnline();
 }
@@ -914,11 +972,8 @@ function renderMenu(){
     <div class="haTitle"><div class="haSub">― 3つの心臓を守りぬけ ―</div><h1>心臓<span>人狼</span></h1></div></div>
   <div class="hero">
     <p>デッキの40枚のうち1枚が、あなたの心臓。カードを使うほど正体は透けていく。相手の心臓を3回射抜いた方の勝ち。</p>
-    <div class="menuName">名前 ${nameEdHTML('mName')}</div>
-    <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span><span>カード <b>${CARDS.length}</b>種</span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div>
   </div>
-  ${updatesHTML()}
-  ${rankCardHTML()}
+  ${profileHTML()}
   <div class="menu">
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
@@ -927,7 +982,11 @@ function renderMenu(){
     ${LADDER.on()&&!NET.conn?`<button type="button" class="mi" id="mWatch"><img class="miArt" src="art/spy.png" alt=""><b>試合を観戦する</b><span>いま対戦中の誰かの試合をランダムに見ます</span></button>`:''}
     <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>ルールとカード一覧</b><span>全${CARDS.length}種の効果</span></button>
   </div>
-  <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
+  ${missionsHTML()}
+  ${updatesHTML()}
+  ${rankCardHTML()}
+  <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>
+  ${tabBarHTML('menu')}`;
   $('#mBattle').onclick=()=>startDraft();
   const mr=$('#mResume');if(mr)mr.onclick=resumeGame;
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
@@ -937,9 +996,11 @@ function renderMenu(){
   bindRankCard();
   bindNameEd('mName',renderMenu);
   const ua=$('#updAll');if(ua)ua.onclick=showUpdates;
+  $('#pAvatar').onclick=pickAvatar;bindMissions();bindTabBar();
+  setTimeout(()=>{if(VIEW==='menu'&&$('#modal').hidden)loginBonus()},400);
   if(UPDATES.length&&(SV.updSeen||0)<UPDATES[0].id){updPrev();SV.updSeen=UPDATES[0].id;save()}
   let armed=false;
-  $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();save();renderMenu()};
+  $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();renderMenu()};
 }
 
 /* ---- packs ---- */
@@ -1022,8 +1083,9 @@ function rulesListHTML(){return`<div class="zone rules"><ul>
 function renderRules(){
   $('#app').innerHTML=`<div class="top"><h1>ルールとカード一覧</h1><button type="button" class="b small" id="back">戻る</button></div>
   ${rulesListHTML()}
-  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${CARDS.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>`;
-  $('#back').onclick=()=>go('menu');
+  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${CARDS.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>
+  ${tabBarHTML('rules')}`;
+  $('#back').onclick=()=>go('menu');bindTabBar();
 }
 
 // 対戦中に開くルール。#modal（カード選択など）とぶつからないよう専用の重ね画面にする。閉じれば対戦はそのまま
@@ -1688,10 +1750,11 @@ async function gameOver(w){
   await sleep(600);
   if(on){if(win)SV.ow=(SV.ow||0)+1;else SV.ol=(SV.ol||0)+1}else if(win)SV.wins++;else SV.losses++;
   save();
+  const msn=missionsAfterGame(win);
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
-  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
       el.innerHTML=st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
     m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
@@ -1933,6 +1996,136 @@ function dragCard(b,e,card,cancelLp){
   addEventListener('pointermove',move,{passive:false});addEventListener('pointerup',up);addEventListener('pointercancel',end);
 }
 
+
+/* ================= 銀貨・ログインボーナス・デイリーミッション・ショップ =================
+   すべてこの端末の SV に保存する（ゲームの強さには関係しない見た目だけ） */
+const dayStr=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const LOGIN_BONUS=[50,50,80,80,100,100,200];
+const MISSIONS=[
+  {id:'play1',t:'対戦を1回最後まで遊ぶ',n:1,r:60},
+  {id:'win1',t:'対戦で1回勝つ',n:1,r:100},
+  {id:'hit2',t:'相手の心臓を2回射抜く',n:2,r:80},
+  {id:'use15',t:'カードを15枚使う',n:15,r:60},
+  {id:'info6',t:'情報系のカードを6枚使う',n:6,r:70},
+  {id:'atk5',t:'攻撃系のカードを5枚使う',n:5,r:70},
+  {id:'grd4',t:'防御系のカードを4枚使う（伏せの発動も数える）',n:4,r:70},
+  {id:'sup6',t:'補助系のカードを6枚使う',n:6,r:70},
+  {id:'one1',t:'シングルカードを1回使う',n:1,r:80},
+  {id:'win2',t:'対戦で2回勝つ',n:2,r:150},
+];
+const SHOP=[
+  {id:'gold',kind:'frame',n:'金の縁',p:300,d:'自分のカードの縁が金色に光ります'},
+  {id:'moon',kind:'frame',n:'月光',p:500,d:'自分のカードに青白い月の光'},
+  {id:'blood',kind:'frame',n:'血の月',p:800,d:'自分のカードが赤く脈打ちます'},
+  {id:'rainbow',kind:'frame',n:'虹の縁',p:1500,d:'自分のカードの縁が虹色に流れます'},
+  {id:'t_novice',kind:'title',n:'見習い探偵',p:100},
+  {id:'t_guard',kind:'title',n:'夜の番人',p:200},
+  {id:'t_liar',kind:'title',n:'嘘つき村人',p:300},
+  {id:'t_breaker',kind:'title',n:'心臓破り',p:400},
+  {id:'t_wolf',kind:'title',n:'人狼の友',p:500},
+  {id:'t_moon',kind:'title',n:'月下の名探偵',p:800},
+  {id:'t_three',kind:'title',n:'三つの心臓',p:1200},
+];
+const shopItem=id=>SHOP.find(x=>x.id===id);
+function ecoInit(){
+  SV.coins=SV.coins||0;SV.owned=SV.owned||[];SV.equip=SV.equip||{frame:'',title:'',avatar:'villager'};
+  if(!C[SV.equip.avatar])SV.equip.avatar='villager';
+}
+function applyFrame(){document.body.dataset.frame=SV.equip&&SV.equip.frame||''}
+// 日付で決まる3つ（同じ日はいつ開いても同じ）
+function dailyMissions(){
+  const d=dayStr();
+  if(!SV.daily||SV.daily.day!==d){
+    let h=0;for(const ch of d)h=(h*31+ch.charCodeAt(0))>>>0;
+    const pool=[...MISSIONS],pick=[];
+    while(pick.length<3){h=(h*1103515245+12345)>>>0;pick.push(pool.splice(h%pool.length,1)[0].id)}
+    SV.daily={day:d,list:pick.map(id=>({id,prog:0,claimed:false}))};save();
+  }
+  return SV.daily.list.map(m=>({...MISSIONS.find(x=>x.id===m.id),...m})).filter(m=>m.t);
+}
+// 対戦が終わったら進める。進んだものを結果画面用に返す
+function missionsAfterGame(win){
+  if(!S)return'';
+  const mine=S.hist.filter(h=>h.who==='me'),cat=k=>mine.filter(h=>C[h.k]&&C[h.k].cat===k).length;
+  const add={play1:1,win1:win?1:0,win2:win?1:0,hit2:Math.max(0,3-(S.cpu.life||0)),use15:mine.length,info6:cat('info'),atk5:cat('atk'),grd4:cat('grd'),sup6:cat('sup'),one1:mine.filter(h=>C[h.k]&&C[h.k].single).length};
+  const ms=dailyMissions(),done=[];
+  SV.daily.list.forEach(m=>{const def=MISSIONS.find(x=>x.id===m.id);if(!def||m.prog>=def.n)return;const v=add[m.id]||0;if(!v)return;m.prog=Math.min(def.n,m.prog+v);if(m.prog>=def.n)done.push(def)});
+  save();
+  return done.length?`<p class="msnDone">デイリーミッション達成：${done.map(d=>`「${esc(d.t)}」`).join('')}　ホームで銀貨を受け取れます</p>`:'';
+}
+function coinsHTML(){return`<span class="coin" aria-label="銀貨 ${SV.coins}枚"><i></i>${SV.coins}</span>`}
+// ホームを開いたとき、その日の最初ならログインボーナス
+async function loginBonus(){
+  const d=dayStr();if(SV.login&&SV.login.last===d)return;
+  const y=new Date();y.setDate(y.getDate()-1);
+  const streak=SV.login&&SV.login.last===dayStr(y)?(SV.login.streak||0)+1:1;
+  const idx=(streak-1)%7,get=LOGIN_BONUS[idx];
+  SV.login={last:d,streak};SV.coins+=get;save();
+  await modal(`<div class="lbox"><h2>ログインボーナス</h2><p>${streak}日連続ログイン！</p>
+    <div class="lstrip">${LOGIN_BONUS.map((v,i)=>`<div class="lday ${i<idx?'got':i===idx?'now':''}"><span>${i+1}日目</span><b>${v}</b></div>`).join('')}</div>
+    <p class="lget">銀貨 <b>+${get}</b></p><div class="btns"><button type="button" class="b primary" id="lOk">受け取る</button></div></div>`,(m,done)=>{SFX.res&&SFX.res();m.querySelector('#lOk').onclick=()=>done()});
+  if(VIEW==='menu')renderMenu();
+}
+function missionsHTML(){
+  const ms=dailyMissions();
+  return`<section class="msnBox" aria-label="デイリーミッション"><div class="updHead"><span class="label">デイリーミッション（毎日0時に入れ替わり）</span></div>
+    <ul class="msnList">${ms.map((m,i)=>{const ok=m.prog>=m.n;return`<li class="${m.claimed?'claimed':ok?'ok':''}"><div class="msnT">${esc(m.t)}<div class="msnBar"><i style="width:${Math.round(m.prog/m.n*100)}%"></i></div></div><span class="msnN">${m.prog}/${m.n}</span>${m.claimed?'<span class="msnC">受取済み</span>':ok?`<button type="button" class="b primary small" data-claim="${i}">+${m.r}</button>`:`<span class="msnR">${coinsMini(m.r)}</span>`}</li>`}).join('')}</ul></section>`;
+}
+const coinsMini=n=>`<span class="coin sm"><i></i>${n}</span>`;
+function bindMissions(){
+  document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>{
+    const m=SV.daily.list[+b.dataset.claim],def=MISSIONS.find(x=>x.id===m.id);if(!def||m.claimed||m.prog<def.n)return;
+    m.claimed=true;SV.coins+=def.r;save();SFX.res&&SFX.res();
+    const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top+r.height/2);renderMenu();
+  });
+}
+function coinBurst(x,y){
+  if(RM)return;
+  for(let i=0;i<10;i++){const c=document.createElement('i');c.className='coinFly';c.style.left=x+'px';c.style.top=y+'px';c.style.setProperty('--dx',(Math.random()*160-80)+'px');c.style.setProperty('--dy',(-60-Math.random()*90)+'px');c.style.animationDelay=(i*25)+'ms';document.body.appendChild(c);setTimeout(()=>c.remove(),1100)}
+}
+function profileHTML(){
+  const t=SV.equip.title?shopItem(SV.equip.title):null,rk=LADDER.prof?rankOf(LADDER.prof.rp):null;
+  return`<section class="prof">
+    <button type="button" class="avatar" id="pAvatar" aria-label="アイコンを変える"><img src="art/${SV.equip.avatar}.png" alt=""></button>
+    <div class="profMain"><div class="menuName">${nameEdHTML('mName')}</div>
+      <div class="profSub">${t?`<span class="ptitle">${esc(t.n)}</span>`:'<span class="ptitle none">称号なし</span>'}${rk?`<span class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</span>`:''}</div>
+      <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div></div>
+    ${coinsHTML()}
+  </section>`;
+}
+function pickAvatar(){
+  modal(`<div class="info" style="width:100%"><div class="infoText" style="width:100%"><h2>アイコンを選ぶ</h2><div class="avGrid">${CARDS.map(c=>`<button type="button" class="avOpt ${c.k===SV.equip.avatar?'on':''}" data-av="${c.k}" aria-label="${c.n}"><img src="art/${c.k}.png" alt="" loading="lazy"><span>${c.n}</span></button>`).join('')}</div><div class="btns"><button type="button" class="b" id="avClose">閉じる</button></div></div></div>`,(m,done)=>{
+    m.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{SV.equip.avatar=b.dataset.av;save();done(1)});m.querySelector('#avClose').onclick=()=>done(0);
+  }).then(()=>{if(VIEW==='menu')renderMenu()});
+}
+function tabBarHTML(cur){
+  const T=[['menu','ホーム','home'],['rules','カード','cards'],['shop','ショップ','shop'],['rank','ランキング','rank']];
+  const ic={home:'<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',cards:'<rect x="4" y="3" width="11" height="15" rx="2"/><rect x="9" y="6" width="11" height="15" rx="2"/>',shop:'<path d="M4 8h16l-1.5 12h-13zM8 8V6a4 4 0 0 1 8 0v2"/>',rank:'<path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/>'};
+  return`<nav class="tabBar" aria-label="メニュー">${T.map(([v,l,i])=>`<button type="button" class="${v===cur?'on':''}" data-tab="${v}" ${v===cur?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic[i]}</svg><span>${l}</span></button>`).join('')}</nav>`;
+}
+function bindTabBar(){
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
+    const v=b.dataset.tab;
+    if(v==='rank'){if(LADDER.uid()&&LADDER.prof)return showBoard();return modal(`<div class="info"><div class="infoText"><h2>ランキング</h2><p>ランキングは、Googleでログインすると見られます。ホームの「対人ランク」からログインしてください。</p><div class="btns"><button type="button" class="b" id="rkC">閉じる</button></div></div></div>`,(m,done)=>{m.querySelector('#rkC').onclick=()=>done()})}
+    go(v);
+  });
+}
+function renderShop(){
+  ecoInit();
+  const card=it=>{const own=SV.owned.includes(it.id),on=it.kind==='frame'?SV.equip.frame===it.id:SV.equip.title===it.id;
+    return`<div class="shopIt ${it.kind} ${on?'on':''}">${it.kind==='frame'?`<div class="shopPrev" data-frame="${it.id}">${cardHTML('seer','m')}</div>`:`<div class="shopTitle"><span class="ptitle">${esc(it.n)}</span></div>`}
+      <b>${esc(it.n)}</b>${it.d?`<span class="note">${esc(it.d)}</span>`:''}
+      ${own?`<button type="button" class="b small ${on?'':'primary'}" data-eq="${it.id}">${on?'外す':'使う'}</button>`:`<button type="button" class="b small" data-buy="${it.id}" ${SV.coins<it.p?'disabled':''}>${coinsMini(it.p)}で交換</button>`}</div>`};
+  $('#app').innerHTML=`<div class="top"><h1>ショップ</h1>${coinsHTML()}</div>
+    <p class="note">銀貨は、毎日のログインボーナスとデイリーミッションでたまります。交換できるのは見た目だけで、強さは変わりません。</p>
+    <h2 class="shopH">カードの縁</h2><div class="shopGrid">${SHOP.filter(x=>x.kind==='frame').map(card).join('')}</div>
+    <h2 class="shopH">称号（ホームの名前の下に出ます）</h2><div class="shopGrid titles">${SHOP.filter(x=>x.kind==='title').map(card).join('')}</div>
+    ${tabBarHTML('shop')}`;
+  document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.buy);if(!it||SV.owned.includes(it.id)||SV.coins<it.p)return;SV.coins-=it.p;SV.owned.push(it.id);if(it.kind==='frame')SV.equip.frame=it.id;else SV.equip.title=it.id;save();applyFrame();SFX.res&&SFX.res();const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top);renderShop()});
+  document.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.eq);if(!it)return;const k=it.kind==='frame'?'frame':'title';SV.equip[k]=SV.equip[k]===it.id?'':it.id;save();applyFrame();renderShop()});
+  bindTabBar();
+}
+
 /* ---- online（友達と対戦） ----
    部屋を作った人（ホスト）のブラウザがゲームを進める。参加した人（ゲスト）には
    盤面（ゲストから見えてはいけないカードは伏せる）と演出を送り、ゲストの操作と選択を受け取る。
@@ -2123,6 +2316,9 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:23,d:'2026-11-03',t:'ショップができました。銀貨で「カードの縁」（金・月光・血の月・虹）と「称号」に交換できます（見た目だけで強さは変わりません）。'},
+  {id:22,d:'2026-11-03',t:'毎日のログインボーナスと、デイリーミッション（毎日3つ）で銀貨がもらえるようになりました。'},
+  {id:21,d:'2026-11-03',t:'ホーム画面を新しくしました。アイコン（タップで好きなカードの絵に変更）・名前・称号・銀貨が上に出て、画面の下のタブからホーム／カード／ショップ／ランキングに移れます。'},
   {id:20,d:'2026-11-03',t:'手札のカードを指（マウス）で上に引っ張って離すと、そのカードを使えるようになりました。'},
   {id:19,d:'2026-11-03',t:'対戦画面を作り直しました。スクロールせずに1画面で遊べます。スマホでは推理表をタブで切り替え、ログと使われたカードは右上の「記録」から見られます。パソコンでは、最後に使われたカードが盤面の真ん中に出ます。'},
   {id:18,d:'2026-11-02',t:'Googleログインが、このページの上に小窓が出る方式になりました（ログイン中にほかの住所へ移動しません）。'},
