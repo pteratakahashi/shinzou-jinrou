@@ -840,9 +840,9 @@ const RAW=[
  ['clairvoy','千里眼','眼','info','R','種類を1つ指定し、相手の心臓か判定する。違ったら1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['berserker','猛り狼','猛','atk','R','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストが1つになる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['ghoul','屍鬼','屍','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：自分の捨て札からランダムに1枚を手札に戻す。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['kidnapper','人さらい','攫','atk','C','相手の手札をランダムに1枚、相手の山札の一番下に戻す（捨て札にならないので反射されない）。共鳴：2枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['howler','遠吠え','吠','atk','C','相手の手札が5枚以上なら2枚、4枚以下なら1枚、ランダムに捨てさせる。共鳴：1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。共鳴：相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['kidnapper','人さらい','攫','atk','C','相手の手札をランダムに1枚、相手の山札の一番下に戻す（捨て札にならないので反射されない）。共鳴：1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['howler','遠吠え','吠','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：相手の手札が5枚以上なら、さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。共鳴：1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['wererat','鼠男','鼠','atk','C','相手の山札の上から4枚を捨て札にする。共鳴：さらに2枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['witch','魔女','魔','atk','R','相手は自分で選んだ手札を1枚捨てる。共鳴：2枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が5枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
@@ -1958,9 +1958,9 @@ async function playCard0(p,c,copy=false){
     case 'clairvoy':{const ty=(await chooseTypes(p,1,'千里眼：1種類を選ぶ','相手の心臓がこの種類かを判定します。'))[0];judge(p,[ty]);if(o.heart.type!==ty)draw(p,1);if(R)learnNot(p,2);break}
     case 'berserker':{const n=2;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'ghoul':{if(o.hand.length)forcedDiscard(o,rand(o.hand),p);const back=p.discard.filter(x=>x!==c);if(R&&back.length){const x=rand(back);rm(p.discard,x);p.hand.push(x);log(`${p.name}は捨て札から1枚を手札に戻した。`,w)}await raid(p,o);break}
-    case 'kidnapper':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++){const x=rand(o.hand);rm(o.hand,x);o.deck.unshift(x);log(`${o.name}の手札が1枚、山札の一番下に戻された。`,w)}await raid(p,o);break}
-    case 'howler':{const n=o.hand.length>=5?2:1;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);if(R)draw(p,1);await raid(p,o);break}
-    case 'nightmare':{const n=R?1:0;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
+    case 'kidnapper':{const n=1;if(R)draw(p,1);for(let i=0;i<n&&o.hand.length;i++){const x=rand(o.hand);rm(o.hand,x);o.deck.unshift(x);log(`${o.name}の手札が1枚、山札の一番下に戻された。`,w)}await raid(p,o);break}
+    case 'howler':{const n=1+(R&&o.hand.length>=5?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
+    case 'nightmare':{if(R)draw(p,1);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
     case 'wererat':{const n=4+(R?2:0);let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);await raid(p,o);break}
     case 'witch':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++){let x;if(o.isCpu)x=o.hand.map(h=>[h,cpuScore(o,h)]).sort((a,b)=>a[1]-b[1])[0][0];else x=await by(o,()=>pickCard(o.hand,`魔女：捨てるカードを選ぶ（${i+1}/${n}）`,'手札から捨てるカードを選んでください。'));forcedDiscard(o,x,p)}await raid(p,o);break}
     case 'alpha':{const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=5?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
