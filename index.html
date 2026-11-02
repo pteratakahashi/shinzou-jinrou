@@ -460,6 +460,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .linkBox input{width:100%;box-sizing:border-box;font-size:13px}
 .onField{display:flex;flex-direction:column;gap:6px}
 .nameRow{margin-top:6px;font-size:18px}
+.updBox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+.updHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.updList{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.55}
+.updList li{display:flex;gap:6px;align-items:baseline}
+.updD{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;min-width:2.6em}
+.updNew{flex:none;font-size:10px;font-weight:700;color:#1b1408;background:var(--candle);border-radius:99px;padding:0 6px}
+.updT{min-width:0}
 .menuName{margin:4px 0 6px;font-size:15px;color:var(--muted)}.menuName b{color:var(--ink);font-size:17px}
 .nmEd{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;vertical-align:middle}
 .nmEd .pen{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border-radius:6px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
@@ -830,6 +837,7 @@ function renderMenu(){
     <div class="menuName">名前 ${nameEdHTML('mName')}</div>
     <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span><span>カード <b>${CARDS.length}</b>種</span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div>
   </div>
+  ${updatesHTML()}
   ${rankCardHTML()}
   <div class="menu">
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
@@ -848,6 +856,8 @@ function renderMenu(){
   const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
   bindNameEd('mName',renderMenu);
+  const ua=$('#updAll');if(ua)ua.onclick=showUpdates;
+  if(UPDATES.length&&(SV.updSeen||0)<UPDATES[0].id){updPrev();SV.updSeen=UPDATES[0].id;save()}
   let armed=false;
   $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();save();renderMenu()};
 }
@@ -1938,6 +1948,41 @@ async function saveName(v){
     LADDER.prof.name=data.name;LADDER.prof.name_at=data.at;SV.nick=data.name;save();return null;
   }
   if(SV.nick)SV.nickAt=Date.now();SV.nick=v;save();return null;
+}
+/* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
+const UPDATES=[
+  {id:17,d:'2026-11-02',t:'試合の観戦ができるようになりました。メニューの「試合を観戦する」から、いま対戦中の誰かの試合をランダムに見られます（どちらの手札と心臓も見えません）。'},
+  {id:16,d:'2026-11-02',t:'メニューの名前の右のペンから、名前を変えられるようになりました（1日1回まで）。'},
+  {id:15,d:'2026-11-02',t:'対戦中に右上の「ルール」ボタンで、対戦を止めずにルールとこの対戦のカードを確認できるようになりました。'},
+  {id:14,d:'2026-11-02',t:'占い師・占星術師：相手の心臓の候補が選ぶ数以下しか残っていないときは、選ばずに自動で判定するようになりました。'},
+  {id:13,d:'2026-11-02',t:'シングルカードの枠が虹色になりました。カードの顔の大きさと位置をそろえ直しました。'},
+  {id:12,d:'2026-11-02',t:'襲撃でライフが減ったときも、的中と同じく心臓を選び直して手札5枚から再開するようになりました（襲撃した側のターンは終了）。'},
+  {id:11,d:'2026-11-02',t:'CPU戦の先攻・後攻がランダムになりました（先攻は5枚、後攻は6枚から心臓を選びます）。'},
+  {id:10,d:'2026-11-02',t:'預言者の効果を「相手の心臓がコモンかレア以上かを知る」に変更しました。'},
+  {id:9,d:'2026-11-02',t:'レアカードを、シミュレーションで勝率の高かった15種に変更しました。パックのシングルカードは7パックで最低1枚、ときどき2〜3枚出ます。'},
+  {id:8,d:'2026-11-02',t:'ランクマッチ（自動マッチング）と、ブロンズ〜マスターのランクを追加しました。Googleでログインすると記録されます。'},
+  {id:7,d:'2026-11-02',t:'【伏せ専用】のカードは、伏せないと使えないようになりました。'},
+  {id:6,d:'2026-11-02',t:'カードの裏面が、赤い月と狼のドット絵になりました。'},
+  {id:5,d:'2026-11-02',t:'手札のカードをタップすると、効果が見られるようになりました。'},
+  {id:4,d:'2026-11-01',t:'ホーム・パック開封・友達対戦・結果の画面に一枚絵を追加しました。'},
+  {id:3,d:'2026-11-01',t:'心臓3つのタコが登場。心臓が止まるたびにタコの心臓がはじけます。'},
+  {id:2,d:'2026-11-01',t:'友達とのオンライン対戦を追加しました。部屋を作ってリンクを送るだけで遊べます。'},
+];
+const updDate=d=>{const [,m,dd]=d.split('-');return`${+m}/${+dd}`};
+function updListHTML(list,seen){
+  return`<ul class="updList">${list.map(u=>`<li><span class="updD">${updDate(u.d)}</span>${u.id>seen?'<span class="updNew">NEW</span>':''}<span class="updT">${esc(u.t)}</span></li>`).join('')}</ul>`;
+}
+// NEW は、この画面を開いたときに前回から増えていた分（開いている間はずっと付ける）
+let UPD_PREV=null;const updPrev=()=>UPD_PREV??(UPD_PREV=SV.updSeen||0);
+function updatesHTML(){
+  if(!UPDATES.length)return'';
+  const seen=updPrev();
+  return`<section class="updBox" aria-label="アップデート情報"><div class="updHead"><span class="label">アップデート情報</span><button type="button" class="b small" id="updAll">すべて見る</button></div>${updListHTML(UPDATES.slice(0,3),seen)}</section>`;
+}
+function showUpdates(){
+  modal(`<div class="info"><div class="infoText" style="width:100%"><h2>アップデート情報</h2>${updListHTML(UPDATES,updPrev())}<div class="btns"><button type="button" class="b" id="uClose">閉じる</button></div></div></div>`,(m,done)=>{
+    m.querySelector('#uClose').onclick=()=>{m.onclick=null;done()};m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
+  });
 }
 /* ランクマッチ：待機列に入って、先に待っている人がいればその部屋に入る。いなければ自分が部屋を作って待つ */
 const MM={fails:0,on:false,timer:0,t0:0,waiting:0,joining:false,clock:0};
