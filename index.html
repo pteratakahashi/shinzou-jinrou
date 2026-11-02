@@ -467,6 +467,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .updD{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;min-width:2.6em}
 .updNew{flex:none;font-size:10px;font-weight:700;color:#1b1408;background:var(--candle);border-radius:99px;padding:0 6px}
 .updT{min-width:0}
+.gsiBox{min-height:44px}
+.gsiErr{color:#ef8a94}
 .menuName{margin:4px 0 6px;font-size:15px;color:var(--muted)}.menuName b{color:var(--ink);font-size:17px}
 .nmEd{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;vertical-align:middle}
 .nmEd .pen{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border-radius:6px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
@@ -1887,7 +1889,7 @@ function rankCardHTML(){
   const st=LADDER.state;
   if(st==='loading')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">読み込み中…</p></div>`;
   if(st==='err')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">${esc(LADDER.err)}</p><div class="btns"><button type="button" class="b small" id="rkRetry">もう一度</button></div></div>`;
-  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、友達との対戦がレート戦になり、戦績とランクが記録されます（おたがいログインしているときだけ）。</p><div class="btns"><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div></div>`;
+  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、友達との対戦がレート戦になり、戦績とランクが記録されます（おたがいログインしているときだけ）。</p><div class="btns" data-gsi><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div>${GSI.err?`<p class="note gsiErr">${esc(GSI.err)}</p>`:''}</div>`;
   const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0,rk=rankOf(p.rp);
   const ladder=TIERS.map((t,i)=>`<i class="${i<rk.i?'done':i===rk.i?'cur':''}" style="--tc:${t[1]}" title="${t[0]}"></i>`).join('');
   return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
@@ -1900,9 +1902,52 @@ function rankCardHTML(){
 function bindRankCard(){
   const a=$('#rkLogin');if(a)a.onclick=()=>LADDER.login();
   const b=$('#rkLogout');if(b)b.onclick=()=>LADDER.logout();
+  gsiRender();
   const c=$('#rkRetry');if(c)c.onclick=()=>{LADDER.state='loading';LADDER.redraw();LADDER.sb?LADDER.refresh():LADDER.init()};
   const d=$('#rkBoard');if(d)d.onclick=showBoard;
   const mt=$('#rkMatch');if(mt)mt.onclick=()=>{NET.err='';mmStart()};
+}
+
+
+/* Googleログインは、ページの上に Google の小窓を出す方式（Google Identity Services の ID トークン）。
+   小窓にはこのページの住所が出て、Supabase の住所は見せない。受け取ったトークンを Supabase に渡してログインする。
+   読み込めない・失敗したときは、従来の Google のページへ移動する方式のボタンに戻す */
+const GSI={client:'888128120669-nmsmsk6er3al46jmhlc8ipsq95hdfrk9.apps.googleusercontent.com',state:'idle',raw:'',err:''};
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function gsiInit(){
+  // 毎回新しい合言葉（nonce）。Google にはハッシュを、Supabase には元の値を渡す
+  GSI.raw=hex(crypto.getRandomValues(new Uint8Array(16)));
+  const hashed=hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(GSI.raw)));
+  google.accounts.id.initialize({client_id:GSI.client,callback:gsiDone,nonce:hashed,auto_select:false,itp_support:true,use_fedcm_for_button:true,cancel_on_tap_outside:true});
+}
+async function gsiLoad(){
+  if(GSI.state!=='idle')return;
+  GSI.state='loading';
+  try{
+    await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=res;sc.onerror=()=>rej(new Error('gsi'));document.head.appendChild(sc)});
+    await gsiInit();GSI.state='ready';gsiRender();
+  }catch(e){console.error(e);GSI.state='fail'}
+}
+function gsiRender(){
+  if(!LADDER.on()||LADDER.uid())return;
+  if(GSI.state==='idle')return gsiLoad();
+  if(GSI.state!=='ready')return;
+  document.querySelectorAll('[data-gsi]').forEach(el=>{
+    if(el.dataset.gsiDone)return;el.dataset.gsiDone='1';
+    el.innerHTML='';el.classList.add('gsiBox');
+    try{google.accounts.id.renderButton(el,{type:'standard',theme:'filled_black',size:'large',text:'signin_with',shape:'pill',locale:'ja',width:240})}catch(e){console.error(e)}
+  });
+}
+async function gsiDone(r){
+  if(!LADDER.sb||!r||!r.credential)return;
+  GSI.err='';
+  const {error}=await LADDER.sb.auth.signInWithIdToken({provider:'google',token:r.credential,nonce:GSI.raw});
+  try{await gsiInit()}catch(e){}
+  if(error){
+    console.error(error);
+    GSI.state='fail';GSI.err='ログインできませんでした。もう一度「Googleでログイン」を押してください（Googleのページに移動してログインします）。';
+    LADDER.redraw();
+  }
 }
 
 /* 名前の変更は1日1回。ログイン中はサーバーで数える（set_name）、ログインしていなければこの端末で数える。
@@ -1951,6 +1996,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:18,d:'2026-11-02',t:'Googleログインが、このページの上に小窓が出る方式になりました（ログイン中にほかの住所へ移動しません）。'},
   {id:17,d:'2026-11-02',t:'試合の観戦ができるようになりました。メニューの「試合を観戦する」から、いま対戦中の誰かの試合をランダムに見られます（どちらの手札と心臓も見えません）。'},
   {id:16,d:'2026-11-02',t:'メニューの名前の右のペンから、名前を変えられるようになりました（1日1回まで）。'},
   {id:15,d:'2026-11-02',t:'対戦中に右上の「ルール」ボタンで、対戦を止めずにルールとこの対戦のカードを確認できるようになりました。'},
@@ -2349,7 +2395,7 @@ function renderOnline(){
   }else{
     body=`<div class="onCard"><span class="label">あなたの名前（相手に表示されます）</span><div class="nameRow">${nameEdHTML('oName')}</div></div>
       <div class="menu">
-        ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns">${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div></div>`:''}
+        ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns" ${LADDER.uid()?'':'data-gsi'}>${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div></div>`:''}
         <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
         <div class="mi"><b>部屋に参加する</b><span>友達から届いた5文字のコードを入れます。</span><div class="btns"><input id="oCode" class="codeIn" maxlength="5" autocapitalize="characters" autocomplete="off" value="${esc(NET.code||'')}" placeholder="ABCDE"><button type="button" class="b primary" id="oJoin">参加する</button></div></div>
       </div>`;
@@ -2363,6 +2409,7 @@ function renderOnline(){
   const h=$('#oHost');if(h)h.onclick=()=>netHost();
   const om=$('#oMatch');if(om)om.onclick=()=>{NET.err='';mmStart()};
   const ol=$('#oLogin');if(ol)ol.onclick=()=>LADDER.login();
+  gsiRender();
   const mc=$('#mmCancel');if(mc)mc.onclick=()=>{mmStop();netReset();NET.err='';renderOnline()};
   const j=$('#oJoin');if(j){const ci=$('#oCode');j.onclick=()=>netJoin(ci.value);ci.onkeydown=e=>{if(e.key==='Enter')netJoin(ci.value)}}
   const cp=$('#oCopy');if(cp)cp.onclick=async()=>{const li=$('#oLink');try{await navigator.clipboard.writeText(li.value);cp.textContent='コピーしました'}catch(e){li.select();try{document.execCommand('copy');cp.textContent='コピーしました'}catch(_){cp.textContent='上の文字を長押ししてコピー'}}};
