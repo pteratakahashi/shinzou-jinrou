@@ -1,0 +1,11 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SQLコピー</title>
+<style>body{margin:0;padding:16px;font-family:system-ui,sans-serif;background:#11152a;color:#efe8d4}h1{font-size:20px}button{width:100%;padding:18px;font-size:20px;font-weight:700;border:0;border-radius:12px;background:#e9a64c;color:#1b1408}a.b{display:block;margin-top:12px;padding:16px;text-align:center;border-radius:12px;background:#283058;color:#efe8d4;text-decoration:none;font-size:17px}p{color:#a0a8ca}pre{white-space:pre-wrap;font-size:11px;background:#1d2346;padding:10px;border-radius:8px;max-height:40vh;overflow:auto}</style></head>
+<body><h1>心臓人狼 SQLコピー</h1>
+<button id="c">SQLをコピー</button>
+<a class="b" href="https://supabase.com/dashboard/project/evxljdiiyzynvhcznpou/sql/new" target="_blank">SQL Editorを開く</a>
+<p>コピーしたら、SQL Editorに貼り付けて「Run」を押してください（前の文字は消してから）。</p>
+<pre id="s">読み込み中…</pre>
+<script>
+let sql='';fetch('setup.sql?'+Date.now()).then(r=>r.text()).then(t=>{sql=t;document.getElementById('s').textContent=t});
+document.getElementById('c').onclick=async()=>{const b=document.getElementById('c');try{await navigator.clipboard.writeText(sql);b.textContent='コピーしました！'}catch(e){const ta=document.createElement('textarea');ta.value=sql;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();b.textContent='コピーしました！'}};
+</script></body></html>
