@@ -804,7 +804,7 @@ const RAW=[
  ['nekomata','猫又','猫','grd','R','1枚引く。相手のカードの効果で捨てられたとき、相手の心臓を含む4種類の候補を知る。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['bodyguard','用心棒','盾','grd','R','【伏せ専用】心臓を当てられたとき発動。ライフが減らない（心臓の選び直しは行う）。そのかわり、次の自分のターンは宣言できず、選び直した後の手札は2枚になる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。'],
+ ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['cryboy','狼少年','嘘','sup','R','このターン、宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
@@ -812,7 +812,7 @@ const RAW=[
  ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。'],
+ ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['bastion','籠城','籠','grd','C','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、相手の手札を1枚捨てさせる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['sentinel','番兵','兵','grd','C','1枚引き、相手の心臓ではない種類を1つ知る。自分が伏せカードを置いていれば、さらに1枚引く。共鳴：もう1つ知る。'],
  ['peddler','行商人','商','sup','C','手札を1枚選んで山札の一番下に戻し、2枚引く（戻したカードは公開されない）。共鳴：相手の心臓ではない種類を1つ知る。'],
@@ -1835,7 +1835,7 @@ async function playCard0(p,c,copy=false){
       log(`審問：${tys.map(t=>'〈'+N(t)+'〉').join('')} → ${hits.length}枚`,w);
       hits.forEach(x=>forcedDiscard(o,x,p));
       if(R&&hits.length){draw(p,hits.length);log(`審問の共鳴：${hits.length}枚引いた。`,w)}
-      break;}
+      await raid(p,o);break;}
     case 'hunter':if(R&&o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`狩人の共鳴：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w)}o.f.noGuess=true;log(`${o.name}は次のターン宣言できない。`);learnNot(p,1);break;
     case 'wolf':{const had=o.hand.length;const n=1+(had<=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
     case 'vampire':{const had=o.hand.length;if(had)forcedDiscard(o,rand(o.hand),p);draw(p,1);await raid(p,o,had);break}
@@ -1899,7 +1899,7 @@ async function playCard0(p,c,copy=false){
       else{draw(p,1);log('相手は伏せていないので、1枚引いた。',w)}
       if(R)learnNot(p,2);break;}
     case 'pack':{const had=o.hand.length;const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
-    case 'poisoner':{o.f.noDraw=true;log(`${o.name}は次のターン、カードを引けない。`,w);break}
+    case 'poisoner':{o.f.noDraw=true;log(`${o.name}は次のターン、カードを引けない。`,w);await raid(p,o);break}
     case 'sentinel':draw(p,p.setCard?2:1);learnNot(p,R?2:1);break;
     case 'peddler':{
       if(p.hand.length){const x=p.isCpu?worst(p):(render(),await pickCard(p.hand,'行商人：山札の下に戻すカード','戻したカードは相手には公開されません。'));rm(p.hand,x);p.deck.unshift(x)}
