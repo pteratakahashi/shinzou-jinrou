@@ -454,6 +454,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .linkBox input,.onField input,.codeIn{font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);min-width:0}
 .linkBox input{width:100%;box-sizing:border-box;font-size:13px}
 .onField{display:flex;flex-direction:column;gap:6px}
+.nameRow{display:flex;align-items:center;gap:10px;margin-top:6px}.nameRow b{font-size:18px}
+.statline .nameEd{padding:2px 8px;font-size:12px;margin-left:4px}
 .codeIn{width:7.5em;text-transform:uppercase;letter-spacing:.18em;font-family:var(--display)}
 .mi .btns{margin-top:6px;flex-wrap:wrap}
 .octo{display:block;overflow:visible;--bd:.25s}
@@ -1821,7 +1823,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
   async refresh(){
     if(!LADDER.sb||!LADDER.user)return;
     const {data,error}=await LADDER.sb.rpc('my_profile',{p_name:netName()});
-    if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in'}
+    if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in';if(data&&data.name&&data.name!==SV.nick){SV.nick=data.name;save()}}
     LADDER.redraw();
   },
   redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline()},
@@ -1854,7 +1856,7 @@ function rankCardHTML(){
     <div class="rkMain"><b class="rkTier" style="--tc:${rk.col}">${rk.name}${rk.div?`<small> ${rk.div}</small>`:''}</b>${rk.master?`<span class="rkSub">マスターレート <b class="rkRate">${p.rating}</b></span>`:''}</div>
     ${rk.master?'':`<div class="rkBar" style="--tc:${rk.col}"><i style="width:${rk.w}%"></i></div><span class="rkSub">あと${100-rk.w}ptで${rk.next}${rk.i===4?'（マスターになるとレートが公開されます）':''}</span>`}
     <div class="rkLadder">${ladder}</div>
-    <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span><span>名前 <b>${esc(p.name)}</b></span></div>
+    <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span><span>名前 <b>${esc(p.name)}</b> <button type="button" class="b small nameEd" id="rkName">変える</button></span></div>
     <div class="btns"><button type="button" class="b primary small" id="rkMatch">ランクマッチ</button><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
 }
 function bindRankCard(){
@@ -1862,7 +1864,38 @@ function bindRankCard(){
   const b=$('#rkLogout');if(b)b.onclick=()=>LADDER.logout();
   const c=$('#rkRetry');if(c)c.onclick=()=>{LADDER.state='loading';LADDER.redraw();LADDER.sb?LADDER.refresh():LADDER.init()};
   const d=$('#rkBoard');if(d)d.onclick=showBoard;
+  const rn=$('#rkName');if(rn)rn.onclick=()=>editName(()=>LADDER.redraw());
   const mt=$('#rkMatch');if(mt)mt.onclick=()=>{NET.err='';mmStart()};
+}
+
+/* 名前の変更は1日1回。ログイン中はサーバーで数える（set_name）、ログインしていなければこの端末で数える。
+   最初に名前を付けるときは回数に入れない */
+const NAME_GAP=864e5;
+function nameNext(){
+  const t=LADDER.uid()&&LADDER.prof?(LADDER.prof.name_at?Date.parse(LADDER.prof.name_at):0):(SV.nickAt||0);
+  return t&&t+NAME_GAP>Date.now()?t+NAME_GAP:0;
+}
+const fmtWhen=ms=>{const d=new Date(ms);return`${d.getMonth()+1}月${d.getDate()}日 ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`};
+const msgBox=(t,h='名前を変える')=>modal(`<div class="info"><div class="infoText"><h2>${h}</h2><p>${t}</p><div class="btns"><button type="button" class="b" id="nClose">閉じる</button></div></div></div>`,(m,done)=>{m.querySelector('#nClose').onclick=()=>done()});
+async function editName(after){
+  const nx=nameNext();
+  if(nx){await msgBox(`名前は1日に1回だけ変えられます。次に変えられるのは <b>${fmtWhen(nx)}</b> からです。`);return after&&after()}
+  const first=!SV.nick&&!LADDER.uid();
+  const v=await modal(`<div class="info"><div class="infoText"><h2>名前を変える</h2><p>対戦相手${LADDER.on()?'やランキング':''}に表示されます（10文字まで）。${first?'':'<b>変えると、次に変えられるのは24時間後です。</b>'}</p>
+    <label class="onField"><input id="nIn" maxlength="10" value="${esc(String(SV.nick||''))}" placeholder="プレイヤー"></label><p class="note" id="nErr"></p>
+    <div class="btns"><button type="button" class="b primary" id="nOk">この名前にする</button><button type="button" class="b" id="nCancel">やめる</button></div></div></div>`,(m,done)=>{
+    const inp=m.querySelector('#nIn'),ok=()=>{const t=inp.value.replace(/[<>&"]/g,'').trim().slice(0,10);if(!t){m.querySelector('#nErr').textContent='名前を入れてください。';return}done(t)};
+    m.querySelector('#nOk').onclick=ok;inp.onkeydown=e=>{if(e.key==='Enter')ok()};m.querySelector('#nCancel').onclick=()=>done(null);
+    setTimeout(()=>{try{inp.focus();inp.select()}catch(e){}},50);
+  });
+  if(!v||v===netName()&&SV.nick)return after&&after();
+  if(LADDER.uid()&&LADDER.sb){
+    const {data,error}=await LADDER.sb.rpc('set_name',{p_name:v});
+    if(error){console.error(error);await msgBox(/PGRST202|set_name/.test(error.code+error.message)?'名前の変更の準備がサーバーにまだできていません（管理者がSQLを更新する必要があります）。':'サーバーにつながらず、名前を変えられませんでした。少し待ってからもう一度試してください。')}
+    else if(!data||!data.ok){if(data&&data.next)LADDER.prof.name_at=new Date(Date.parse(data.next)-NAME_GAP).toISOString();await msgBox(`名前は1日に1回だけ変えられます。${data&&data.next?`次に変えられるのは <b>${fmtWhen(Date.parse(data.next))}</b> からです。`:''}`)}
+    else{LADDER.prof.name=data.name;LADDER.prof.name_at=data.at;SV.nick=data.name;save()}
+  }else{if(SV.nick)SV.nickAt=Date.now();SV.nick=v;save()}
+  after&&after();
 }
 /* ランクマッチ：待機列に入って、先に待っている人がいればその部屋に入る。いなければ自分が部屋を作って待つ */
 const MM={fails:0,on:false,timer:0,t0:0,waiting:0,joining:false,clock:0};
@@ -2227,7 +2260,7 @@ function renderOnline(){
       <div class="btns"><button type="button" class="b primary" id="oCopy">リンクをコピー</button>${navigator.share?'<button type="button" class="b" id="oShare">送る</button>':''}</div>
       <p class="note">この画面を開いたまま待ってください（閉じると部屋が消えます）。</p></div>`;
   }else{
-    body=`<div class="onCard"><label class="onField"><span class="label">あなたの名前（相手に表示されます）</span><input id="oName" maxlength="10" value="${esc(String(SV.nick||''))}" placeholder="プレイヤー"></label></div>
+    body=`<div class="onCard"><span class="label">あなたの名前（相手に表示されます）</span><div class="nameRow"><b>${esc(netName())}</b><button type="button" class="b small" id="oName">変える</button></div></div>
       <div class="menu">
         ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns">${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div></div>`:''}
         <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
@@ -2239,7 +2272,7 @@ function renderOnline(){
     ${body}
     <p class="note">通信はブラウザどうしで直接つなぎます（PeerJS）。学校や会社のネットワークでは、つながらないことがあります。</p>`;
   const bk=$('#oBack');bk.onclick=()=>{if(on||NET.peer){NET.err='';netLeave()}else{NET.err='';go('menu')}};
-  const nmIn=$('#oName');if(nmIn)nmIn.oninput=()=>{SV.nick=nmIn.value.slice(0,10);save()};
+  const nmIn=$('#oName');if(nmIn)nmIn.onclick=()=>editName(renderOnline);
   const h=$('#oHost');if(h)h.onclick=()=>netHost();
   const om=$('#oMatch');if(om)om.onclick=()=>{NET.err='';mmStart()};
   const ol=$('#oLogin');if(ol)ol.onclick=()=>LADDER.login();

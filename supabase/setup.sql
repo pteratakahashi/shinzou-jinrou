@@ -48,6 +48,8 @@ create table if not exists public.queue (
 alter table public.queue enable row level security;
 revoke all on public.queue from anon, authenticated;
 
+alter table public.players add column if not exists name_at timestamptz;  -- 最後に名前を変えた時刻
+
 create index if not exists matches_p1 on public.matches(p1, created_at desc);
 create index if not exists matches_p2 on public.matches(p2, created_at desc);
 create index if not exists players_rating on public.players(rating desc);
@@ -96,7 +98,7 @@ begin
   end loop;
 end $$;
 
--- ログイン直後に呼ぶ。自分の行がなければ作り、名前を合わせて、自分の成績を返す。
+-- ログイン直後に呼ぶ。自分の行がなければ作り（名前は p_name）、自分の成績を返す。名前の変更は set_name で。
 create or replace function public.my_profile(p_name text default null)
 returns json language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); r json;
@@ -105,12 +107,8 @@ begin
   perform _settle_stale();
   insert into players(id, name) values (me, coalesce(nullif(left(trim(p_name), 10), ''), 'プレイヤー'))
     on conflict (id) do nothing;
-  if p_name is not null and length(trim(p_name)) > 0 then
-    update players set name = left(regexp_replace(trim(p_name), '[<>&"]', '', 'g'), 10), updated_at = now()
-      where id = me and name is distinct from left(regexp_replace(trim(p_name), '[<>&"]', '', 'g'), 10);
-  end if;
   select json_build_object(
-    'id', p.id, 'name', p.name, 'rating', p.rating, 'rp', p.rp, 'wins', p.wins, 'losses', p.losses,
+    'id', p.id, 'name', p.name, 'name_at', p.name_at, 'rating', p.rating, 'rp', p.rp, 'wins', p.wins, 'losses', p.losses,
     'pos', (select count(*) + 1 from players q where q.wins + q.losses > 0
              and (q.rp >= 500, case when q.rp >= 500 then q.rating else q.rp end) > (p.rp >= 500, case when p.rp >= 500 then p.rating else p.rp end)),
     'total', (select count(*) from players q where q.wins + q.losses > 0),
@@ -270,3 +268,21 @@ $$;
 grant execute on function public.live_beat(text, text, text) to anon, authenticated;
 grant execute on function public.live_end(text, text) to anon, authenticated;
 grant execute on function public.live_pick(text) to anon, authenticated;
+
+-- 名前の変更。1日（24時間）に1回まで。
+create or replace function public.set_name(p_name text)
+returns json language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); n text; t timestamptz;
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  n := left(trim(regexp_replace(coalesce(p_name, ''), '[<>&"]', '', 'g')), 10);
+  if n = '' then raise exception 'empty name'; end if;
+  insert into players(id, name) values (me, n) on conflict (id) do nothing;
+  select name_at into t from players where id = me for update;
+  if t is not null and t > now() - interval '1 day' then
+    return json_build_object('ok', false, 'next', t + interval '1 day');
+  end if;
+  update players set name = n, name_at = now(), updated_at = now() where id = me;
+  return json_build_object('ok', true, 'name', n, 'at', now());
+end $$;
+grant execute on function public.set_name(text) to authenticated;
