@@ -231,3 +231,42 @@ grant execute on function public.report_result(text, uuid, uuid, text) to authen
 grant execute on function public.leaderboard(integer) to anon, authenticated;
 grant execute on function public.mm_poll(text) to authenticated;
 grant execute on function public.mm_leave() to authenticated;
+
+-- 観戦：いま対戦中の部屋の一覧。部屋を作った人のブラウザが対戦中に20秒ごとに live_beat を呼ぶ。
+-- tok は部屋を作った人だけが知っている合言葉で、他人が一覧を書き換えたり消したりできないようにする。
+create table if not exists public.live (
+  code text primary key,
+  names text not null default '',
+  tok text not null,
+  started_at timestamptz not null default now(),
+  seen_at timestamptz not null default now()
+);
+alter table public.live enable row level security;
+revoke all on public.live from anon, authenticated;
+
+create or replace function public.live_beat(p_code text, p_names text, p_tok text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if p_code !~ '^[A-Z0-9]{5}$' or length(coalesce(p_tok, '')) not between 16 and 64 then raise exception 'bad args'; end if;
+  delete from live where seen_at < now() - interval '60 seconds';
+  if not exists (select 1 from live where code = p_code) and (select count(*) from live) >= 500 then return; end if;
+  insert into live(code, names, tok) values (p_code, left(coalesce(p_names, ''), 40), p_tok)
+    on conflict (code) do update set names = excluded.names, seen_at = now()
+    where live.tok = excluded.tok;
+end $$;
+
+create or replace function public.live_end(p_code text, p_tok text)
+returns void language sql security definer set search_path = public as $$
+  delete from live where code = p_code and tok = p_tok;
+$$;
+
+-- 観戦する試合をランダムに1つ選ぶ。p_not（さっき見ていた試合）はほかに試合がないときだけ選ぶ
+create or replace function public.live_pick(p_not text default '')
+returns text language sql security definer set search_path = public as $$
+  select code from live where seen_at > now() - interval '45 seconds'
+  order by (code = coalesce(p_not, '')), random() limit 1;
+$$;
+
+grant execute on function public.live_beat(text, text, text) to anon, authenticated;
+grant execute on function public.live_end(text, text) to anon, authenticated;
+grant execute on function public.live_pick(text) to anon, authenticated;

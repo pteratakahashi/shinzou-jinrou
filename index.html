@@ -359,6 +359,7 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .hud .hx b.big{font-size:14px;color:var(--candle)}
 .hud .hm{text-align:center;font-size:11px;color:var(--muted);line-height:1.2}
 .hud .hm b{display:block;font-family:var(--display);font-size:15px;color:var(--ink)}
+.hud .hm .watchN{display:block;margin-top:2px;color:var(--ink);white-space:nowrap}
 .hud .hs.on .hn::before{content:"▶";color:var(--candle);font-size:10px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--table)}
 /* ---- hand fits on phones ---- */
@@ -741,14 +742,14 @@ const ROUNDW=['zero','one','two','three','four','five','six','seven','eight','ni
 async function fxRound(){
   const n=S.round||1,fin=S.me.life===1||S.cpu.life===1;
   VOICE.say(fin&&n>1?'Final round!':`Round ${ROUNDW[n]||n}!`);
-  await fxShow(`<div class="roundWrap"><div class="roundT ${fin&&n>1?'final':''}">${fin&&n>1?'FINAL ROUND':'ROUND '+n}</div><div class="roundS rOcto"><span>あなた ${octoSVG(S.me.life)}</span><span>${OPN()} ${octoSVG(S.cpu.life)}</span></div></div>`,1300);fxClear();
+  await fxShow(`<div class="roundWrap"><div class="roundT ${fin&&n>1?'final':''}">${fin&&n>1?'FINAL ROUND':'ROUND '+n}</div><div class="roundS rOcto"><span>${MYN()} ${octoSVG(S.me.life)}</span><span>${OPN()} ${octoSVG(S.cpu.life)}</span></div></div>`,1300);fxClear();
 }
 async function fxHeartBreak(victim,from){
   const p=victim==='me'?S.me:S.cpu,life=p.life,fr=from==null?life+1:from;
   VOICE.say('Heart break!',{pitch:.45});quake();
   // タコの心臓がはじける瞬間（約0.85秒後）に合わせて光と破片を出す
   setTimeout(()=>{hitstop(140);screenFlash('white');setTimeout(()=>screenFlash('red'),140);quake();FXC.burst('#ef5a68',110,11);FXC.ring('#ef5a68');FXC.ring('#ffffff')},850);
-  await fxShow(`<div class="hbWrap"><div class="hbOcto">${octoSVG(life,fr,'',Date.now()-(.25-.35)*1000)}</div><div class="hbText">HEART BREAK</div><div class="hbSub">${victim==='me'?'あなた':OPN()}の心臓 残り${life}つ</div></div>`,1900);fxClear();
+  await fxShow(`<div class="hbWrap"><div class="hbOcto">${octoSVG(life,fr,'',Date.now()-(.25-.35)*1000)}</div><div class="hbText">HEART BREAK</div><div class="hbSub">${victim==='me'?MYN():OPN()}の心臓 残り${life}つ</div></div>`,1900);fxClear();
 }
 function catSummary(types){return ['info','atk','grd','sup'].map(ct=>`${CAT[ct]}${types.filter(k=>C[k].cat===ct).length}`).join('・')}
 
@@ -799,6 +800,7 @@ function draw_(){
   else if(VIEW==='deck')renderDeck();
   else if(VIEW==='rules')renderRules();
   else if(VIEW==='battle')render();
+  else if(VIEW==='watch')renderWatch();
   else if(VIEW==='draft')renderDraft();
   else if(VIEW==='online')renderOnline();
 }
@@ -821,6 +823,7 @@ function renderMenu(){
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
     <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
     <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
+    ${LADDER.on()&&!NET.conn?`<button type="button" class="mi" id="mWatch"><img class="miArt" src="art/spy.png" alt=""><b>試合を観戦する</b><span>いま対戦中の誰かの試合をランダムに見ます</span></button>`:''}
     <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>ルールとカード一覧</b><span>全${CARDS.length}種の効果</span></button>
   </div>
   <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
@@ -829,6 +832,7 @@ function renderMenu(){
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
   $('#mRules').onclick=()=>go('rules');
   $('#mOnline').onclick=()=>go('online');
+  const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
   let armed=false;
   $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();save();renderMenu()};
@@ -1048,7 +1052,9 @@ let LOGQ=0;
 function log(t,who='sys',to){const e={t,who,turn:S.turnNo,actor:S.cur?whoOf(S.cur):'sys',hdr:t.startsWith('― '),q:++LOGQ};if(to)e.to=to;S.log.push(e);if(S.log.length>400)S.log.shift();if(!to||to==='me')S.last=e}
 const OPNraw=()=>S&&S.online?(S.names&&S.names.cpu||'相手'):'CPU';
 const OPN=()=>esc(OPNraw());
-const nm=t=>String(t).replace(/@me/g,'あなた').replace(/@cpu/g,OPNraw());
+const MYraw=()=>S&&S.spec?(S.names&&S.names.me||'プレイヤー'):'あなた';
+const MYN=()=>esc(MYraw());
+const nm=t=>String(t).replace(/@me/g,MYraw()).replace(/@cpu/g,OPNraw());
 function by(p,fn){const pv=S.decider;S.decider=p;try{return fn()}finally{S.decider=pv}}
 
 function mkPool(p){p.pool=[];for(const k of typesOf(p))for(let i=0;i<copies(p,k);i++){const c={id:++uid,type:k,owner:p};p.pool.push(c);S.byId[c.id]=c}}
@@ -1129,25 +1135,25 @@ async function fxShow(html,ms,skip){const fx=$('#fx');fx.innerHTML=html;fx.hidde
   // ★読ませたい演出（相手のカードなど）は長めに出し、タップで先へ進める。動きを減らす設定でも読む時間は削らない
   fx.classList.add('skip');await new Promise(r=>{const t=setTimeout(r,ms);fxKick=fx.onclick=()=>{clearTimeout(t);r()}});fxKick=null;fx.onclick=null;fx.classList.remove('skip')}
 function fxClear(){const fx=$('#fx');fx.hidden=true;fx.innerHTML=''}
-async function fxSet(who){await fxShow(`<div class="fxcard">${backHTML('l','伏せ')}<div class="by">${who==='me'?'あなた':OPN()}がカードを伏せた</div></div>`,who==='me'?800:1300);fxClear()}
+async function fxSet(who){await fxShow(`<div class="fxcard">${backHTML('l','伏せ')}<div class="by">${who==='me'?MYN():OPN()}がカードを伏せた</div></div>`,who==='me'?800:1300);fxClear()}
 async function fxTrap(k){VOICE.say('Trap card!');await fxStamp('発動','guard',k)}
 async function fxRaid(){VOICE.say('Raid!');await fxStamp('襲撃','hit')}
 async function fxRes(){VOICE.say('Resonance!',{pitch:.7});screenFlash('gold');FXC.embers('#f0c060');await fxShow(`<div class="banner res">共鳴</div>`,700);fxClear()}
-async function fxVs(){SFX.pack();await fxShow(`<div class="vs"><div class="vsSide l">${cardHTML(S.me.single,'m')}<b>あなた</b><span>${catSummary(S.me.types)}</span></div><div class="vsMid">VS</div><div class="vsSide r">${cardHTML(S.cpu.single,'m')}<b>${OPN()}</b><span>${catSummary(S.cpu.types)}</span></div></div>`,1900);fxClear()}
+async function fxVs(){SFX.pack();await fxShow(`<div class="vs"><div class="vsSide l">${cardHTML(S.me.single,'m')}<b>${MYN()}</b><span>${catSummary(S.me.types)}</span></div><div class="vsMid">VS</div><div class="vsSide r">${cardHTML(S.cpu.single,'m')}<b>${OPN()}</b><span>${catSummary(S.cpu.types)}</span></div></div>`,1900);fxClear()}
 async function fxFight(){VOICE.say('Round one... Fight!');await fxShow('<div class="roundWrap"><div class="roundT">ROUND 1</div><div class="roundS">FIGHT!</div></div>',1500);fxClear()}
 async function fxCutin(k,who){
   const c=C[k];SFX.legend();setTimeout(()=>{screenFlash('gold');quake()},500);
-  await fxShow(`<div class="cutin" style="--gc:${CATCOL[c.cat]}"><div class="bar t"></div><div class="bar b"></div><div class="band"><div class="speed"></div><div class="ciArt"><img src="art/${k}.png" alt=""></div></div><div class="ciText"><span class="ciL">LEGEND</span><span class="ciN">${c.n}</span><span class="ciW">${who==='me'?'あなた':OPN()}のシングルカード</span></div></div>`,1300);fxClear();
+  await fxShow(`<div class="cutin" style="--gc:${CATCOL[c.cat]}"><div class="bar t"></div><div class="bar b"></div><div class="band"><div class="speed"></div><div class="ciArt"><img src="art/${k}.png" alt=""></div></div><div class="ciText"><span class="ciL">LEGEND</span><span class="ciN">${c.n}</span><span class="ciW">${who==='me'?MYN():OPN()}のシングルカード</span></div></div>`,1300);fxClear();
 }
 async function fxPlay(k,who){
   const c=C[k],col=CATCOL[c.cat],r=c.r==='S'?'C':c.r;
   if(r==='L')await fxCutin(k,who);
   SFX.play(c.cat,r);
   setTimeout(()=>{FXC.ring(col);FXC.ring('#ffffff');FXC.burst(col,r==='L'?110:r==='R'?70:45,c.cat==='atk'?10:7);if(c.cat==='atk')quake();if(r!=='C')screenFlash(r==='L'?'gold':'silver')},380);
-  await fxShow(`<div class="dim"></div><div class="fxcard sum r${r}" style="--gc:${col}"><div class="rays"></div><div class="glowring"></div><div class="cardWrap">${cardHTML(k,'l')}<div class="glare"></div></div><div class="nameplate"><span class="np-cat">${CAT[c.cat]}</span><b>${c.n}</b></div><div class="by">${who==='me'?'あなた':OPN()}が使用${who==='cpu'?'<span class="tapHint">タップで次へ</span>':''}</div></div>`,who==='cpu'?2800:(r==='C'?1300:1500),who==='cpu');
+  await fxShow(`<div class="dim"></div><div class="fxcard sum r${r}" style="--gc:${col}"><div class="rays"></div><div class="glowring"></div><div class="cardWrap">${cardHTML(k,'l')}<div class="glare"></div></div><div class="nameplate"><span class="np-cat">${CAT[c.cat]}</span><b>${c.n}</b></div><div class="by">${who==='me'?MYN():OPN()}が使用${who==='cpu'?'<span class="tapHint">タップで次へ</span>':''}</div></div>`,who==='cpu'?2800:(r==='C'?1300:1500),who==='cpu');
   const el=$('#fx .fxcard');if(el)el.classList.add('out-'+who);await sleep(330);fxClear();
 }
-async function fxBanner(who){const t=who==='me'?'あなたのターン':`${OPN()}のターン`;SFX.turn(who);await fxShow(`<div class="turnBand ${who}"><div class="tbEn">${who==='me'?'YOUR TURN':'ENEMY TURN'}</div><div class="tbJp">${t}</div><div class="tbShine"></div></div>`,1100);fxClear()}
+async function fxBanner(who){const sp=S&&S.spec,t=who==='me'?(sp?`${MYN()}のターン`:'あなたのターン'):`${OPN()}のターン`;SFX.turn(who);await fxShow(`<div class="turnBand ${who}"><div class="tbEn">${sp?'TURN':who==='me'?'YOUR TURN':'ENEMY TURN'}</div><div class="tbJp">${t}</div><div class="tbShine"></div></div>`,1100);fxClear()}
 async function fxCall(t){SFX.call();await fxShow(`<div class="dim"></div><div class="guessCall">「${esc(t)}」</div>`,1100);fxClear()}
 async function fxStamp(t,cls,k){
   if(cls==='hit'){setTimeout(()=>{SFX.hit();hitstop(120);screenFlash('white');setTimeout(()=>screenFlash('red'),120);quake();FXC.burst('#ef5a68',100,12);FXC.burst('#ffffff',40,9);FXC.ring('#ef5a68');FXC.ring('#ffffff')},250)}
@@ -1549,7 +1555,7 @@ async function gameOver(w){
   if(S.over)return;
   S.over=true;S.phase='none';render();
   const win=w===S.me,on=!!S.online;
-  if(on&&!S.guest)NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});
+  if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
   const rated=on&&LADDER.rated()&&NET.mid,rp=rated?LADDER.report(NET.mid,win,'ko'):null;
   if(!on)lsDel(GAME_KEY);
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);quake();FXC.burst('#ffffff',120,12);
@@ -1591,8 +1597,9 @@ async function startBattle(){
 
 /* ---- battle render ---- */
 function hudHTML(){
-  const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?'あなた':OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b>${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
-  return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}</div>${side(S.me,true)}</div>`;
+  const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?MYN():OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b>${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
+  const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
+  return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}${wn?`<span class="watchN">観戦 ${wn}人</span>`:''}</div>${side(S.me,true)}</div>`;
 }
 function handFit(n){
   const avail=Math.min(760,innerWidth)-32-26;const W=innerWidth<560?72:86;const gap=8;
@@ -1659,7 +1666,7 @@ function logHTML(){
   const groups=[];
   for(const l of items){let g=groups[groups.length-1];if(!g||g.turn!==l.turn){g={turn:l.turn,actor:l.actor,rows:[]};groups.push(g)}g.rows.push(l)}
   if(!groups.length)return'<div class="note">まだ記録がありません。</div>';
-  return groups.reverse().map(g=>`<div class="lg"><div class="lgh ${g.actor}">${g.turn?g.turn+'ターン目':'開始前'}<span>${g.actor==='me'?'あなたのターン':g.actor==='cpu'?`${OPN()}のターン`:''}</span></div>${g.rows.map(l=>{const k=logKind(l.t);return`<div class="lr ${l.who}">${k?`<span class="lk ${k}">${KIND_L[k]}</span>`:''}<span class="lt">${fmtLog(l.t)}</span></div>`}).join('')}</div>`).join('');
+  return groups.reverse().map(g=>`<div class="lg"><div class="lgh ${g.actor}">${g.turn?g.turn+'ターン目':'開始前'}<span>${g.actor==='me'?MYN()+'のターン':g.actor==='cpu'?`${OPN()}のターン`:''}</span></div>${g.rows.map(l=>{const k=logKind(l.t);return`<div class="lr ${l.who}">${k?`<span class="lk ${k}">${KIND_L[k]}</span>`:''}<span class="lt">${fmtLog(l.t)}</span></div>`}).join('')}</div>`).join('');
 }
 function histRow(who,label){
   const items=S.hist.filter(h=>h.who===who).slice(-20).reverse();
@@ -1669,7 +1676,7 @@ function showCardInfo(k){
   const c=C[k];const r=c.r==='S'?'C':c.r;
   const rn={C:'コモン',R:'レア',L:'シングル'}[r];
   let usage='';
-  if(S&&VIEW==='battle'){const a=S.hist.filter(h=>h.k===k&&h.who==='cpu').length,b=S.hist.filter(h=>h.k===k&&h.who==='me').length;usage=`<p>この対戦で使われた回数：${OPN()} ${a}回／あなた ${b}回</p>`}
+  if(S&&VIEW==='battle'){const a=S.hist.filter(h=>h.k===k&&h.who==='cpu').length,b=S.hist.filter(h=>h.k===k&&h.who==='me').length;usage=`<p>この対戦で使われた回数：${OPN()} ${a}回／${MYN()} ${b}回</p>`}
   modal(`<div class="info">${cardHTML(k,'l')}<div class="infoText"><h2>${c.n}</h2><p>${CAT[c.cat]}系統・${rn}</p><div class="eff">${c.e}</div>${usage}<div class="btns"><button type="button" class="b" id="iClose">閉じる</button></div></div></div>`,(m,done)=>{
     m.querySelector('#iClose').onclick=()=>{m.onclick=null;done()};
     m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
@@ -1680,22 +1687,23 @@ function render(){
   if(S&&S.online&&!S.guest)NET.sync();
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
-  const me=S.me,cpu=S.cpu,ready=!!me.heart;
+  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec;
   const logScroll=$('#log')?.scrollTop||0;
   const kn=S.know.me;
   const notes=[];if(kn.stale)notes.push('※妖狐より前の判定を含む');if(kn.allowed)notes.push(`候補：${[...kn.allowed].map(N).join('・')}`);if(kn.excluded.size)notes.push(`除外：${[...kn.excluded].map(N).join('・')}`);
   let phase='';
-  if(S.over)phase='対戦終了';
+  if(SP)phase=S.over?'対戦終了':S.cur?`${S.cur===me?MYN():OPN()}のターン`:'心臓を選んでいます…';
+  else if(S.over)phase='対戦終了';
   else if(ph==='cpu')phase=S.cur?`${OPN()}が考えています…`:`${OPN()}が心臓を選んでいます…`;
   else if(ph==='play')phase=me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。ターンを終了してください。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。';
   const resOk=c=>!C[c.type].single&&!C[c.type].set&&(me.lastCat===C[c.type].cat||me.f.forceRes);
-  const myHand=me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
-  {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim)SFX.draw(nf)}
+  const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
+  {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
   $('#app').innerHTML=`
-  <div class="top"><h1>心臓人狼</h1><div class="btns"><button type="button" class="b small" id="snd">音 ${sndOn()?'ON':'OFF'}</button><button type="button" class="b small" id="quit">降参</button></div></div>
+  <div class="top"><h1>心臓人狼</h1><div class="btns"><button type="button" class="b small" id="snd">音 ${sndOn()?'ON':'OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div></div>
   ${hudHTML()}
   <section class="zone side ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}</div>${stats(cpu)}${badges(cpu)}
@@ -1704,28 +1712,28 @@ function render(){
   <section class="zone tracker">
     <div class="sh"><span class="label">推理の状況（●＝公開済み、消えたマスは候補外）</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率を表示</label></div>
     ${ready?`<div class="duo">
-      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>あなたの推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
-      <div class="col"><div class="colh"><b>あなたの心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em></span></div>${trackGrid(me,cpu,me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
+      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
+      <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種${SP?'':`・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em>`}</span></div>${trackGrid(me,cpu,SP?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
   </section>
   <div class="lastLog ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
   <section class="zone side ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
-    <div class="sh"><span class="who">あなた</span>${lives(me)}</div>${stats(me)}${badges(me)}
-    <div class="tableRow"><div class="slot">${ready?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}</div>
-    ${(()=>{const hf=handFit(me.hand.length);return`<div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div>`})()}
+    <div class="sh"><span class="who">${MYN()}</span>${lives(me)}</div>${stats(me)}${badges(me)}
+    <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
+    ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div>`})()}
     <div class="actions"><div class="phase">${phase}</div>
       ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${C[S.sel.type].e}${C[S.sel.type].set?'':'（伏せるとブラフになります）'}</div>${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<div class="detail resnote">今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</div>`:''}`:''}
-      <div class="btns">
+      ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns">
         <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用のカードです':'このカードを使う'}</button>
         <button type="button" class="b" id="bSet" ${ph==='play'&&S.sel&&!S.busy?'':'disabled'}>${me.setCard?'伏せ直す（今の伏せは捨て札へ）':'伏せる'}</button>
         ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'カードを使わずに進む':'宣言に進む'}</button>`:''}
         <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
         <button type="button" class="b" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
-      </div></div>
+      </div>`}</div>
   </section>
   <section class="zone">
     <div class="label">使われたカード（新しい順）。カードや推理表をタップすると効果を確認できます</div>
-    ${histRow('cpu',OPN())}${histRow('me','あなた')}
+    ${histRow('cpu',OPN())}${histRow('me',MYN())}
   </section>
   <section class="zone">
     <div class="sh"><span class="label">ログ（新しいターンが上）</span><div class="filters"><button type="button" class="chip ${LF==='all'?'on':''}" data-lf="all">すべて</button><button type="button" class="chip ${LF==='key'?'on':''}" data-lf="key">推理に関わるものだけ</button></div></div>
@@ -1745,10 +1753,10 @@ function render(){
     b.onclick=e=>{if(lpFired){lpFired=false;return}if(e.target.closest('.hinfo')||ph!=='play'||S.busy)return showCardInfo(card().type);const c=card();S.sel=S.sel===c?null:c;render()};
     b.ondblclick=()=>{if(ph!=='play'||S.busy)return;S.sel=card();C[S.sel.type].set?onSet():onPlay()};
   });
-  $('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd;
+  if(!SP){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
-  $('#quit').onclick=e=>{if(S.over)return S.online?netLeave():go('menu');if(!armed){armed=true;e.target.textContent='本当に降参する';return}if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+  $('#quit').onclick=e=>{if(SP)return watchLeave();if(S.over)return S.online?netLeave():go('menu');if(!armed){armed=true;e.target.textContent='本当に降参する';return}if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
 }
 
 /* ---- online（友達と対戦） ----
@@ -1757,15 +1765,24 @@ function render(){
    ホストから見た me / cpu を、ゲスト側では入れ替えて「自分＝me」として描く。 */
 const ROOM_PREFIX='shinzoujinrou-v1-',CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const NET={peer:null,conn:null,host:false,state:'idle',code:'',err:'',opp:null,ready:{me:null,cpu:null},lastDeck:null,asks:{},askN:0,sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,joinTimer:0,
+  specs:[],spec:false,wconn:null,specQ:0,lastSpec:'',watchNames:null,
   send(o){try{if(NET.conn&&NET.conn.open)NET.conn.send(o)}catch(e){}},
+  // 観戦している人全員に送る
+  cast(o){for(const c of NET.specs)try{if(c.open)c.send(o)}catch(e){}},
   lib(){return window.Peer?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc)})},
   ask(q){NET.sync(true);return new Promise(res=>{const id=++NET.askN;NET.asks[id]=res;NET.send({t:'ask',id,...q})})},
   sync(force){
     if(!NET.conn||!S||!S.online||S.guest)return;
     const sn=netSnap(),j=JSON.stringify(sn);
-    if(!force&&j===NET.lastSnap)return;
-    NET.lastSnap=j;if(sn.logs.length)NET.sentQ=sn.logs[sn.logs.length-1].q;else NET.sentQ=Math.max(NET.sentQ,LOGQ);
-    NET.send({t:'snap',s:sn});
+    if(force||j!==NET.lastSnap){
+      NET.lastSnap=j;if(sn.logs.length)NET.sentQ=sn.logs[sn.logs.length-1].q;else NET.sentQ=Math.max(NET.sentQ,LOGQ);
+      NET.send({t:'snap',s:sn});
+    }
+    if(!NET.specs.length)return;
+    const ss=netSnap(true),js=JSON.stringify(ss);
+    if(!force&&js===NET.lastSpec)return;
+    NET.lastSpec=js;if(ss.logs.length)NET.specQ=ss.logs[ss.logs.length-1].q;else NET.specQ=Math.max(NET.specQ,LOGQ);
+    NET.cast({t:'snap',s:ss});
   }
 };
 const netName=()=>String(SV.nick||'').replace(/[<>&"]/g,'').trim().slice(0,10)||'プレイヤー';
@@ -1887,9 +1904,11 @@ const deckOk=d=>d&&Array.isArray(d.types)&&d.types.length===13&&new Set(d.types)
 
 function netReset(){
   clearTimeout(NET.joinTimer);
+  liveEnd();
   const p=NET.peer;NET.peer=null;NET.conn=null;
+  NET.specs.forEach(c=>{try{c.close()}catch(e){}});
   try{if(p)p.destroy()}catch(e){}
-  Object.assign(NET,{state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRp:null,mid:null,ranked:false});
+  Object.assign(NET,{specs:[],spec:false,wconn:null,specQ:0,lastSpec:'',watchNames:null,state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRp:null,mid:null,ranked:false});
 }
 function netFail(msg){if(MM.on&&++MM.fails>3)mmStop();if(MM.on){netReset();MM.joining=false;setTimeout(()=>{if(MM.on)mmStart()},800);return}netReset();NET.err=msg;VIEW='online';window.scrollTo(0,0);renderOnline()}
 function netErr(e){
@@ -1906,7 +1925,7 @@ async function netHost(){
   NET.code=code;
   const peer=NET.peer=new Peer(ROOM_PREFIX+code);
   peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';if(VIEW==='online')renderOnline();if(MM.on)mmTick()});
-  peer.on('connection',c=>{if(NET.peer!==peer)return;if(NET.conn){c.on('open',()=>{try{c.send({t:'full'})}catch(e){}setTimeout(()=>c.close(),800)});return}netBind(c)});
+  peer.on('connection',c=>{if(NET.peer!==peer)return;if(c.metadata&&c.metadata.watch)return specBind(c);if(NET.conn){c.on('open',()=>{try{c.send({t:'full'})}catch(e){}setTimeout(()=>c.close(),800)});return}netBind(c)});
   peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(NET.peer!==peer)return;if(e.type==='unavailable-id')return netHost();if(NET.conn&&e.type!=='peer-unavailable')return;netFail(netErr(e))});
 }
@@ -1972,7 +1991,7 @@ async function startOnline(a,b){
   NET.sentQ=LOGQ;NET.lastSnap='';
   VIEW='battle';window.scrollTo(0,0);
   NET.mid=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,'');
-  NET.send({t:'start',mid:NET.mid});LADDER.startMatch(NET.mid);
+  NET.send({t:'start',mid:NET.mid});NET.cast({t:'start'});LADDER.startMatch(NET.mid);liveStart();
   S={me:newPlayer('@me',false,[...a.types],a.single),cpu:newPlayer('@cpu',false,[...b.types],b.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:Date.now(),names:{me:netName(),cpu:NET.opp||'相手'}};
   S.cpu.remote=true;const g=S;
   mkPool(S.me);mkPool(S.cpu);render();
@@ -1989,16 +2008,18 @@ async function startOnline(a,b){
   S.round=1;render();await fxFight();if(g!==S)return;
   runTurn(first);
 }
-function netSnap(){
+// spec＝観戦者用：どちらのプレイヤーのカードも、相手に知られていないものは種類を送らない。本人だけのログも送らない
+function netSnap(spec,full){
   const ids=a=>a.map(c=>c.id);
   const P=pl=>({types:pl.types,single:pl.single,life:pl.life,f:pl.f,lastCat:pl.lastCat||null,chain:pl.chain||0,heart:pl.heart?pl.heart.id:null,setCard:pl.setCard?pl.setCard.id:null,hand:ids(pl.hand),deck:ids(pl.deck),discard:ids(pl.discard),pool:ids(pl.pool)});
   const Ks=k=>({known:[...k.known],excluded:[...k.excluded],allowed:k.allowed?[...k.allowed]:null,stale:!!k.stale});
   // ゲストがまだ知らないホストのカード（心臓・手札・山札・伏せ）は種類を送らない
-  const gk=S.know.cpu.known,hide=new Set();
-  [...S.me.hand,...S.me.deck,S.me.heart,S.me.setCard].forEach(c=>{if(c&&!gk.has(c.id))hide.add(c.id)});
-  const logs=S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
+  const gk=S.know.cpu.known,hide=new Set(),secret=p=>[...p.hand,...p.deck,p.heart,p.setCard];
+  secret(S.me).forEach(c=>{if(c&&!gk.has(c.id))hide.add(c.id)});
+  if(spec)secret(S.cpu).forEach(c=>{if(c&&!S.know.me.known.has(c.id))hide.add(c.id)});
+  const logs=spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
   return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,me:P(S.me),cpu:P(S.cpu),
-    cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,logs};
+    cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,logs,watchers:NET.specs.length};
 }
 function hostCmd(m){
   if(!S||!S.online||S.guest||S.over)return;
@@ -2015,7 +2036,7 @@ function hostCmd(m){
 let MXin=0;
 ['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight'].forEach(n=>{
   const f=window[n];
-  window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest)NET.send({t:'fx',n,a});MXin++;try{return await f(...a)}finally{MXin--}};
+  window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a})}MXin++;try{return await f(...a)}finally{MXin--}};
 });
 const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight']);
 
@@ -2032,7 +2053,7 @@ function guestApply(sn){
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),last:old?old.last:null,
     turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,
-    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,names:{me:netName(),cpu:NET.opp||'相手'}};
+    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});
   S=n;
@@ -2053,6 +2074,123 @@ async function guestAsk(m){
   else if(m.k==='opt')v=await pickOption(m.title,m.sub,m.opts);
   else if(m.k==='cards'){const cs=m.cards.map(([id,type])=>({id,type}));v=(await pickCards(cs,m.title,m.sub,m.min,m.max)).map(c=>c.id)}
   NET.send({t:'ans',id:m.id,v});
+}
+
+/* ---- 観戦 ----
+   部屋を作った人（ホスト）が、対戦中は20秒ごとにサーバーの一覧（live）に部屋コードを知らせる。
+   観戦する人は一覧からランダムに1つ選び、ホストに「観戦」としてつなぐ。ホストは観戦者用の盤面
+   （両者の手札・心臓は、相手に知られたもの以外伏せる）と演出を送る。観戦者は操作できない。
+   ゲストと同じく、ホストを上・ゲストを下に描く。 */
+const LIVE={timer:0,code:'',tok:''};
+function liveBeat(){
+  if(!LADDER.sb||!NET.host||!NET.conn||!S||!S.online||S.guest||S.over)return liveEnd();
+  LADDER.sb.rpc('live_beat',{p_code:LIVE.code,p_names:`${netName()} vs ${NET.opp||'相手'}`,p_tok:LIVE.tok}).then(({error})=>{if(error)console.error(error)});
+}
+function liveStart(){
+  liveEnd();if(!LADDER.sb||!NET.code)return;
+  LIVE.code=NET.code;LIVE.tok=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'');
+  liveBeat();LIVE.timer=setInterval(liveBeat,20000);
+}
+function liveEnd(){
+  clearInterval(LIVE.timer);LIVE.timer=0;
+  if(!LIVE.code||!LADDER.sb)return;
+  const p={p_code:LIVE.code,p_tok:LIVE.tok};LIVE.code='';
+  LADDER.sb.rpc('live_end',p).then(({error})=>{if(error)console.error(error)});
+}
+// ホスト側：観戦者のつなぎ込み（8人まで）
+function specBind(c){
+  c.on('open',()=>{
+    if(NET.specs.length>=8||!NET.conn){try{c.send({t:'nowatch'})}catch(e){}setTimeout(()=>{try{c.close()}catch(e){}},800);return}
+    // 先にいる観戦者へ送り切ってから加え、新しい人には最近のログ込みの盤面をまとめて送る（以後は差分だけ）
+    NET.sync(true);NET.specs.push(c);
+    try{c.send({t:'hello',host:netName(),guest:NET.opp||'相手'});if(S&&S.online&&!S.guest)c.send({t:'snap',s:netSnap(true,true)})}catch(e){}
+    NET.specQ=Math.max(NET.specQ,LOGQ);NET.lastSpec='';NET.sync(true);
+  });
+  const drop=()=>{const i=NET.specs.indexOf(c);if(i<0)return;NET.specs.splice(i,1);NET.sync(true);if(VIEW==='battle'&&S&&!S.guest)render()};
+  c.on('close',drop);c.on('error',drop);
+}
+// 観戦者側
+const WATCH={state:'idle',err:'',last:'',tries:0};
+const closeModal=()=>{const md=$('#modal');if(md&&!md.hidden){md.hidden=true;md.innerHTML=''}};
+const cleanName=v=>String(v||'').replace(/[<>&"]/g,'').slice(0,10)||'プレイヤー';
+async function watchStart(again){
+  if(NET.conn&&!NET.spec)return go('online');
+  mmStop();netReset();S=null;closeModal();
+  if(!again)WATCH.tries=0;
+  WATCH.state='finding';WATCH.err='';VIEW='watch';window.scrollTo(0,0);renderWatch();
+  if(!LADDER.sb)return watchFail('観戦のサーバーにつながりませんでした。少し待ってからもう一度試してください。');
+  const {data,error}=await LADDER.sb.rpc('live_pick',{p_not:WATCH.last||''});
+  if(VIEW!=='watch'||WATCH.state!=='finding')return;
+  if(error){console.error(error);return watchFail(/PGRST202|live_pick/.test(error.code+error.message)?'観戦の準備がサーバーにまだできていません（管理者がSQLを更新する必要があります）。':'観戦のサーバーにつながりませんでした。少し待ってからもう一度試してください。')}
+  if(!data||!/^[A-Z0-9]{5}$/.test(data)){WATCH.state='none';return renderWatch()}
+  WATCH.last=data;netWatch(data);
+}
+async function netWatch(code){
+  netReset();NET.spec=true;NET.code=code;WATCH.state='joining';VIEW='watch';renderWatch();
+  try{await NET.lib()}catch(e){return watchFail('通信の部品を読み込めませんでした。ネットにつながっているか確かめてください。')}
+  const peer=NET.peer=new Peer();
+  peer.on('open',()=>{
+    if(NET.peer!==peer)return;
+    const c=NET.wconn=peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json',metadata:{watch:1}});
+    c.on('open',()=>clearTimeout(NET.joinTimer));
+    c.on('data',m=>{try{if(NET.wconn===c)watchRecv(m)}catch(e){console.error(e)}});
+    c.on('close',()=>{if(NET.wconn===c)watchLost()});c.on('error',()=>{if(NET.wconn===c)watchLost()});
+  });
+  // 一覧に残っていた部屋がもう閉じていたら、別の試合を探し直す
+  peer.on('error',e=>{if(NET.peer!==peer)return;if(NET.wconn&&NET.wconn.open)return;if(e.type==='peer-unavailable'&&++WATCH.tries<3)return watchStart(true);watchFail(e.type==='peer-unavailable'?'その試合はもう終わっていました。':netErr(e))});
+  NET.joinTimer=setTimeout(()=>{if(NET.peer===peer&&WATCH.state==='joining')watchFail('試合につながりませんでした。別の試合を探してみてください。')},20000);
+}
+function watchRecv(m){
+  if(!m||typeof m!=='object')return;
+  switch(m.t){
+    case'hello':NET.watchNames={me:cleanName(m.guest),cpu:cleanName(m.host)};WATCH.state='wait';WATCH.tries=0;if(VIEW==='watch')renderWatch();break;
+    case'nowatch':watchFail('この試合は観戦できませんでした（観戦の人数がいっぱいか、もう終わっています）。');break;
+    case'start':S=null;NET.fxq=Promise.resolve();WATCH.state='wait';if(VIEW==='battle'){closeModal();VIEW='watch'}renderWatch();break;
+    case'snap':guestApply(m.s);if(VIEW==='watch'&&S){VIEW='battle';window.scrollTo(0,0);render()}break;
+    case'fx':if(VIEW==='battle')guestFx(m.n,m.a);break;
+    case'over':NET.fxq=NET.fxq.then(()=>watchOver(m)).catch(e=>console.error(e));break;
+  }
+}
+async function watchOver(m){
+  if(!S||!S.spec||VIEW!=='battle')return;
+  S.over=true;S.phase='none';render();
+  const hostWon=m.w==='me',win=hostWon?S.names.cpu:S.names.me;
+  VOICE.say('K.O.!',{rate:.8,pitch:.4});screenFlash('white');quake();
+  await fxShow('<div class="koT">K.O.</div>',1300);fxClear();SFX.win();
+  const hh=typeof m.hh==='string'&&C[m.hh]?m.hh:null,gh=typeof m.gh==='string'&&C[m.gh]?m.gh:null;
+  const hearts=[hh&&`${esc(S.names.cpu)}さんは〈${N(hh)}〉`,gh&&`${esc(S.names.me)}さんは〈${N(gh)}〉`].filter(Boolean).join('、');
+  const v=await modal(`<div class="result"><img class="resArt" src="scenes/win.png" alt=""><span class="big win">${esc(win)}さんの勝ち</span>${hearts?`<p>最後の心臓：${hearts}でした。</p>`:''}<div class="btns"><button type="button" class="b primary" id="wNext">別の試合を観戦する</button><button type="button" class="b" id="wStay">この2人の次の試合を待つ</button><button type="button" class="b" id="wMenu">メニューへ</button></div></div>`,(md,done)=>{
+    md.querySelector('#wNext').onclick=()=>done('next');md.querySelector('#wStay').onclick=()=>done('stay');md.querySelector('#wMenu').onclick=()=>done('menu');
+  });
+  if(v==='next')return watchStart();
+  if(v==='menu')return watchLeave();
+  if(!NET.spec){WATCH.state='ended';return go('watch')}
+  if(S&&S.over){S=null;WATCH.state='wait';go('watch')}
+}
+function watchLost(){
+  if(!NET.spec)return;
+  netReset();
+  const md=$('#modal');if(VIEW==='battle'&&S&&S.over&&md&&!md.hidden)return;   // 結果を見ている間はそのまま
+  S=null;WATCH.state='ended';VIEW='watch';window.scrollTo(0,0);renderWatch();
+}
+function watchFail(msg){netReset();S=null;closeModal();WATCH.state='err';WATCH.err=msg;VIEW='watch';window.scrollTo(0,0);renderWatch()}
+function watchLeave(){netReset();S=null;closeModal();WATCH.state='idle';go('menu')}
+function renderWatch(){
+  if(VIEW!=='watch')return;
+  setBg(null);
+  const st=WATCH.state,nm2=NET.watchNames;
+  const spin=(t,s)=>`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${t}</p>${s?`<p class="note">${s}</p>`:''}</div>`;
+  const body=st==='finding'?spin('対戦中の試合を探しています…'):st==='joining'?spin('試合につないでいます…'):st==='wait'?spin(nm2?`${esc(nm2.cpu)} さん vs ${esc(nm2.me)} さん`:'試合につながりました','次の試合が始まるのを待っています…')
+    :st==='none'?`<div class="onCard"><p class="onBig">いま対戦中の試合はありません</p><p class="note">少し時間をおいてから、もう一度探してみてください。</p></div>`
+    :st==='ended'?`<div class="onCard"><p class="onBig">試合が終わりました</p><p class="note">対戦していた人が部屋を閉じました。</p></div>`
+    :st==='err'?`<div class="onErr">${esc(WATCH.err)}</div>`:'';
+  const busy=st==='finding'||st==='joining';
+  $('#app').innerHTML=`<div class="sceneBanner"><img src="scenes/home_b.png" alt=""><div class="sbText"><b>試合を観戦</b><span>いま対戦中の誰かの試合をのぞく</span></div></div><div class="top"><span></span><button type="button" class="b small" id="wBack">メニューへ</button></div>
+    ${body}
+    ${busy?'':`<div class="btns"><button type="button" class="b primary" id="wAgain">${st==='wait'?'別の試合を探す':'もう一度探す'}</button></div>`}
+    <p class="note">観戦中は、どちらの手札と心臓も見えません。見えるのは、使われたカードと、相手に知られたカードだけです。</p>`;
+  $('#wBack').onclick=watchLeave;
+  const a=$('#wAgain');if(a)a.onclick=()=>watchStart();
 }
 
 /* 部屋の画面 */
