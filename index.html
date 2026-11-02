@@ -467,7 +467,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .updD{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;min-width:2.6em}
 .updNew{flex:none;font-size:10px;font-weight:700;color:#1b1408;background:var(--candle);border-radius:99px;padding:0 6px}
 .updT{min-width:0}
-.gsiBox{min-height:44px}
+/* ページが color-scheme:dark だと、Google のボタンの iframe の背景が白く塗られるので、枠の中だけ light にして丸く切り抜く */
+.gsiBox{min-height:44px;color-scheme:light}
+.gsiBox iframe{color-scheme:light;border-radius:999px}
+.gsiBox>div{border-radius:999px;overflow:hidden}
 .gsiErr{color:#ef8a94}
 .menuName{margin:4px 0 6px;font-size:15px;color:var(--muted)}.menuName b{color:var(--ink);font-size:17px}
 .nmEd{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;vertical-align:middle}
