@@ -945,20 +945,33 @@ const BGM=(()=>{
         const arp=[0,1,2,3,2,1,2,3];if(i%2===0){const n=ns[arp[(i/2)%8]]+12;voice(t,n,sp*3,{type:'sine',v:.07,att:.004,rel:sp*5,wet:.55});voice(t,n+12,sp*2,{type:'triangle',v:.012,att:.004,rel:sp*3,wet:.6})}
         if(i===14&&Math.random()<.5)voice(t,ns[3]+24,sp*2,{type:'sine',v:.03,att:.004,rel:sp*6,wet:.8});
       }},
+    crisis:null,
     battle:{bpm:112,steps:16,chords:[[45,[57,60,64]],[45,[57,60,64]],[41,[53,57,60]],[43,[55,59,62]],[45,[57,60,64]],[45,[57,60,64]],[48,[60,64,67]],[40,[52,56,59]]],
       play(i,t,sp,ch,hot){const [root,ns]=ch;
         if(i%2===0)voice(t,root-12+(i%4===2?12:0),sp*1.6,{type:'sawtooth',v:.07,att:.003,rel:sp*1.4,wet:.05,lp:700});
         if(i===0)ns.forEach((n,k)=>voice(t,n,sp*16,{type:'sawtooth',v:.012,att:.6,rel:sp*15,wet:.5,lp:1400,det:k%2?8:-8}));
         const pl=[0,null,2,null,1,null,2,1,0,null,2,null,1,2,null,0];if(pl[i]!=null)voice(t,ns[pl[i]]+12,sp,{type:'square',v:.022,att:.002,rel:sp*.9,wet:.25,lp:2600});
-        if(i===0||i===8||(hot&&(i===6||i===14)))kick(t,.42);
-        if(i===4||i===12)noise(t,.12,.09,1800);
-        if(hot?i%2===1:i%4===2)noise(t,.03,.035,7000);
-        if(i===0&&(step/16|0)%4===3)voice(t,ns[2]+24,sp*6,{type:'triangle',v:.03,att:.05,rel:sp*8,wet:.6});
+        if(!hot){
+          if(i===0||i===8)kick(t,.42);
+          if(i===4||i===12)noise(t,.12,.09,1800);
+          if(i%4===2)noise(t,.03,.035,7000);
+          if(i===0&&(step/16|0)%4===3)voice(t,ns[2]+24,sp*6,{type:'triangle',v:.03,att:.05,rel:sp*8,wet:.6});
+        }else{
+          // 残りライフ1：心臓の鼓動（ドクン、ドクン）・低音の連打・不協和な高音の震え
+          if(i===0||i===8){kick(t,.55);voice(t,root-24,sp*2,{type:'sine',v:.18,att:.004,rel:sp*2.5,wet:.1})}
+          if(i===2||i===10){kick(t,.38);voice(t,root-24,sp*1.5,{type:'sine',v:.12,att:.004,rel:sp*2,wet:.1})}
+          if(i%2===1)voice(t,root-12,sp*.8,{type:'sawtooth',v:.035,att:.002,rel:sp*.7,wet:0,lp:500});
+          if(i===4||i===12)noise(t,.14,.1,1500);
+          noise(t,.02,.025,8000);
+          if(i===0){const hi=ns[0]+24;voice(t,hi,sp*16,{type:'triangle',v:.018,att:.3,rel:sp*16,wet:.7,det:10});voice(t,hi+1,sp*16,{type:'triangle',v:.014,att:.3,rel:sp*16,wet:.7,det:-10})}
+          if(i===12&&(step/16|0)%2===1)voice(t,ns[1]+24,sp*4,{type:'square',v:.016,att:.01,rel:sp*4,wet:.5,lp:3000});
+        }
       }},
   };
+  SONGS.crisis={bpm:112,steps:16,chords:[[45,[57,60,63]],[46,[58,61,64]],[45,[57,60,63]],[44,[56,59,62]],[45,[57,60,64]],[46,[58,62,65]],[44,[56,59,62]],[40,[52,56,59]]],play:(i,t,sp,ch)=>SONGS.battle.play(i,t,sp,ch,true)};
   function tick(){
     if(!ac||!song)return;
-    const s=SONGS[song],bpm=s.bpm*(song==='battle'&&hot?1.08:1),sp=60/bpm/4;
+    const s=(song==='battle'&&hot)?SONGS.crisis:SONGS[song],bpm=s.bpm*(song==='battle'&&hot?1.12:1),sp=60/bpm/4;
     while(next<ac.currentTime+.18){
       const bar=Math.floor(step/s.steps)%s.chords.length,i=step%s.steps;
       try{s.play(i,next,sp,s.chords[bar],hot)}catch(e){}
@@ -977,7 +990,7 @@ const BGM=(()=>{
   return{
     set(name){want=name;if(!bgmOn()||!ac)return;name?start(name):stop()},
     unlock(){if(bgmOn()&&want&&(!ac||!song))start(want)},
-    hot(v){hot=!!v},
+    hot(v){v=!!v;if(v&&!hot&&ac&&song==='battle'){const t=ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(880,t+1.4);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+1.2);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=1800;o.connect(g).connect(f).connect(out);o.start(t);o.stop(t+1.6)}hot=v},
     toggle(){SV.bgm=!bgmOn();save();if(bgmOn()){if(want)start(want)}else stop(.3)},
     volume(v){SV.bgmVol=v;save();if(song)fadeTo(vol(),.15)},
     duck(on){if(song)fadeTo(on?0:vol(),.25)},
