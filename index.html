@@ -1271,7 +1271,7 @@ function renderDeck(){
 }
 /* ---- 構築済みデッキ（全カードから自由に組む） ---- */
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
-const FREE_PRESETS=[{"name":"聖女の補給線","wr":54,"types":["chief","villager","executioner","bard","silencer","bodyguard","sentinel","decoy","mason","nekomata","priest","twins","trapper"],"single":"saint"},{"name":"聖女の鉄壁","wr":53,"types":["nekomata","chief","villager","bard","decoy","bodyguard","priest","twins","silencer","mason","gatekeeper","executioner","sentinel"],"single":"saint"},{"name":"聖女の結界","wr":53,"types":["chief","villager","executioner","bard","silencer","bodyguard","decoy","mason","nekomata","priest","twins","trapper","warder"],"single":"saint"}];
+const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":57,"types":["bodyguard","gatekeeper","medium","prophet","chief","seer","watchdog","detective","silencer","decoy","villager","twins","nekomata"],"single":"mirror"},{"name":"聖女の守り","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","decoy","detective","silencer","seer","chief","watchdog","villager","bard","warder"],"single":"saint"},{"name":"鏡の巫女の千里眼・改","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","chief","decoy","villager","detective","watchdog","seer","silencer","priest","warder"],"single":"mirror"}];
 let FF='all';
 const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
