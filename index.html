@@ -1834,7 +1834,8 @@ async function mmTick(){
   const code=NET.code;
   const {data,error}=await LADDER.sb.rpc('mm_poll',{p_code:code});
   if(!MM.on||NET.code!==code||NET.conn)return;
-  if(error){console.error(error);return}
+  if(error){console.error(error);MM.errs=(MM.errs||0)+1;if(MM.errs>=2){mmStop();netReset();NET.err=/PGRST202|mm_poll/.test(error.code+error.message)?'ランクマッチの準備がサーバーにまだできていません（管理者がSQLを更新する必要があります）。':'ランクマッチのサーバーにつながりませんでした。少し待ってからもう一度試してください。';renderOnline()}return}
+  MM.errs=0;
   if(data.state==='join'){MM.joining=true;netJoin(data.code)}
   else if(data.state==='wait'){MM.waiting=data.waiting||0;const el=$('#mmCount');if(el)el.textContent=MM.waiting}
 }
