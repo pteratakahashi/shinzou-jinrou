@@ -593,6 +593,12 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
   .bt .duo{grid-template-columns:minmax(0,1fr)}
   .bt .duo.t-opp .col:nth-child(2),.bt .duo.t-me .col:nth-child(1){display:none}
   .bt .duo .colh b{display:none}
+  .bt .tracker .grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+  .bt .tt{padding:2px 4px;gap:0;border-radius:5px}
+  .bt .tt .tn{font-size:10.5px;line-height:1.25}
+  .bt .tt .tn small{font-size:8px;margin-left:1px}
+  .bt .tt .dots{font-size:7px;letter-spacing:0;line-height:1.1}
+  .bt .tt .pp{font-size:8.5px;line-height:1.1}
   .btMid>.sh .label{font-size:10px}
 }
 @media (max-width:420px){.btTop .b.small{padding:5px 7px;font-size:11px}.bt .mini{font-size:10px}}
@@ -978,6 +984,7 @@ function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
+  if(VIEW!=='menu')guardHist();
   if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto')setBg(null);
   if(VIEW==='menu')renderMenu();
   else if(VIEW==='packs')renderPacks();
@@ -1961,6 +1968,7 @@ function showCardInfo(k){
   });
 }
 function render(){
+  if(VIEW==='battle'&&S&&!S.over)guardHist();
   if(VIEW==='battle')setBg('home_a','dark');
   if(S&&S.online&&!S.guest)NET.sync();
   if(VIEW!=='battle'||!S)return;
@@ -2842,7 +2850,24 @@ $('#app').addEventListener('click',e=>{
   showCardInfo(el.dataset.card||el.dataset.ty);
 });
 {let r=new URLSearchParams(location.search).get('room');if(!r){try{r=sessionStorage.getItem('sj_room');sessionStorage.removeItem('sj_room')}catch(e){}}if(r){NET.code=r.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);VIEW='online'}}
+/* Androidの「戻る」で対戦が終わらないように：履歴に1段だけ見張りを積み、戻るを横取りする */
+function guardHist(){try{if(!(history.state&&history.state.sj))history.pushState({sj:1},'')}catch(e){}}
+function quitAsk(){
+  if(document.getElementById('quitAsk'))return;
+  const online=!!(S&&S.online);
+  modal(`<div id="quitAsk"><h2>対戦をやめますか？</h2><p>${online?'やめると降参になり、負けとして記録されます。':'やめると降参になります（この対戦は負けになります）。'}</p><div class="btns"><button type="button" class="b" id="qaStay">続ける</button><button type="button" class="b danger" id="qaQuit">降参してやめる</button></div></div>`,(m,done)=>{
+    m.querySelector('#qaStay').onclick=()=>done();
+    m.querySelector('#qaQuit').onclick=()=>{done();if(!S||S.over)return;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+  });
+}
+addEventListener('popstate',()=>{
+  const live=VIEW==='battle'&&S&&!S.over&&!(typeof SP!=='undefined'&&SP);
+  if(live){guardHist();quitAsk();return}
+  if(VIEW!=='menu'){guardHist();const m=$('#modal');if(m&&!m.hidden){m.hidden=true;m.innerHTML=''}if(VIEW==='online'&&(NET.conn||NET.peer))netLeave();else go('menu');return}
+});
+addEventListener('beforeunload',e=>{if(VIEW==='battle'&&S&&!S.over){e.preventDefault();e.returnValue=''}});
 draw_();
+guardHist();
 LADDER.init();
 </script>
 
