@@ -266,6 +266,26 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .cardPick{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .cardPick button{background:none;border:0;padding:0;cursor:pointer;border-radius:10px}
 .cardPick button.on .tcg{outline:3px solid var(--candle)}
+.cardPick .pcRow{display:none}
+@media (max-width:700px){
+  .cardPick{grid-template-columns:minmax(0,1fr);gap:6px}
+  .cardPick .pcBig{display:none}
+  .cardPick .pcRow{display:flex;align-items:center;gap:10px;text-align:left;padding:6px 8px;border-radius:10px;background:var(--panel2);border:1.5px solid var(--line);border-left:4px solid var(--cc)}
+  .cardPick button.on .pcRow{border-color:var(--candle);border-left-color:var(--candle);background:color-mix(in srgb,var(--candle) 16%,var(--panel2));box-shadow:0 0 0 1px var(--candle) inset}
+  .cardPick button.on .tcg{outline:none}
+  .pcThumb .tcg.s{width:52px;font-size:7.5px}
+  .pcInfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .pcName{font-family:var(--display);font-size:16px;line-height:1.2;color:var(--ink)}
+  .pcName small{font-family:var(--body);font-size:10px;color:var(--muted);margin-left:6px}
+  .pcEff{font-size:11.5px;line-height:1.4;color:var(--ink)}
+  .pcEff .el+.el{margin-top:1px}
+  .pcChk{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line)}
+  .cardPick button.on .pcChk{border-color:var(--candle);background:var(--candle);box-shadow:inset 0 0 0 4px var(--panel2)}
+  .sheet:has(.cardPick) .pickBtns{position:sticky;bottom:-16px;margin:0 -16px -16px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--panel) 30%)}
+  .sheet:has(.cardPick) .pickBtns .b{flex:1;min-height:46px;font-size:16px}
+  .sheet:has(.cardPick)>h2{font-size:19px;margin:0}
+  .sheet:has(.cardPick)>p{font-size:12.5px;margin:0;line-height:1.5}
+}
 .result{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .result .big{font-family:var(--display);font-size:44px}
 .result .big.win{color:var(--candle)}.result .big.lose{color:var(--blood)}
@@ -1610,7 +1630,7 @@ function pickOption(title,sub,opts){
 }
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
-  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>`<button type="button" data-i="${i}">${cardHTML(c.type,'p')}</button>`).join('')}</div><div class="btns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
+  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>{const d=C[c.type],rr=d.r==='S'?'C':d.r;return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]+'・'+{C:'コモン',R:'レア'}[rr]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
   return modal(html,(m,done)=>{
     const sel=[];const ok=m.querySelector('#mOk');
     m.querySelectorAll('.cardPick button').forEach(b=>b.onclick=()=>{
