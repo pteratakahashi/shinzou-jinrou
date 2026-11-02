@@ -890,7 +890,7 @@ function renderRules(){
    <li>カードを使う代わりに、1枚を裏向きで「伏せる」ことができます（伏せられるのは1枚まで）。【伏せ専用】と書かれたカードは、条件を満たすと自動で発動します。伏せずに使うことはできません。普通のカードも伏せられるので、ブラフに使えます。伏せたカードが効くのは次の相手ターンだけで、発動しなければ次の自分のターンの始めに公開されて捨て札になります。伏せ直しても、前の伏せカードは公開されて捨て札になります。</li>
    <li>カードを出したあと、相手の心臓の種類を1回まで宣言できます。外すと手札をランダムに2枚捨てます。手札が0枚のときは宣言できません。</li>
    <li>当たると相手のライフ-1。相手は全カードを集めて心臓を選び直し、手札5枚から再開します。当てた側のターンは終了します。</li>
-   <li>先攻はあなたです。先攻は最初に5枚だけ引いてその中から心臓を選ぶので、手札が1枚少ない4枚で始まります。</li>
+   <li>先攻・後攻はランダムで決まります。先攻は最初に5枚だけ引いてその中から心臓を選ぶので、手札が1枚少ない4枚で始まります（後攻は6枚から選んで5枚）。</li>
    <li>相手のライフ（3）を先に0にした方の勝ち。山札が尽きたら捨て札を混ぜて山札にします。</li>
   </ul></div>
   <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${CARDS.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>`;
@@ -1554,12 +1554,15 @@ async function startBattle(){
   S={me:newPlayer('@me',false,[...D.deck.types],D.deck.single),cpu:newPlayer('@cpu',true,cb.types,cb.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null};
   mkPool(S.me);mkPool(S.cpu);render();
   await fxVs();
-  const h=await dealHeart(S.me,'心臓に隠すカードを選ぶ',`先攻なので、最初に引いた5枚から1枚を心臓にします。残りの4枚が手札になります。この種類を当てられるとライフが1減ります。CPUのシングルは〈${N(S.cpu.single)}〉です。`,5);
-  await dealHeart(S.cpu);
+  // 先攻・後攻はランダム。先攻は5枚、後攻は6枚から心臓を選ぶ
+  const meFirst=Math.random()<.5;
+  const h=await dealHeart(S.me,'心臓に隠すカードを選ぶ',`${meFirst?'先攻なので、最初に引いた5枚から1枚を心臓にします。残りの4枚が手札になります。':'後攻なので、最初に引いた6枚から1枚を心臓にします。残りの5枚が手札になります。'}この種類を当てられるとライフが1減ります。CPUのシングルは〈${N(S.cpu.single)}〉です。`,meFirst?5:6);
+  await dealHeart(S.cpu,'','',meFirst?6:5);
   S.me.hand.forEach(c=>S.seen.add(c.id));
+  log(`${meFirst?'あなた':'CPU'}が先攻。`);
   log(`対戦開始。${S.me.name}の心臓は〈${N(h.type)}〉。`,'sys','me');
   S.round=1;render();await fxFight();
-  runTurn(S.me);
+  runTurn(meFirst?S.me:S.cpu);
 }
 
 /* ---- battle render ---- */
