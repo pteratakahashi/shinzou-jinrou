@@ -674,6 +674,34 @@ body:has(.tabBar){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 @property --rb{syntax:'<angle>';inherits:false;initial-value:0deg}
 @keyframes rbSpin{to{--rb:360deg}}
 @media (prefers-reduced-motion:reduce){.tcg{animation:none!important}}
+
+/* ===== 遊び方 ===== */
+.howto{display:flex;flex-direction:column;gap:10px}
+.hw{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.hwNo{flex:none;min-width:38px;height:38px;padding:0 6px;border-radius:99px;display:grid;place-items:center;font-family:var(--display);font-size:17px;color:#1b1408;background:var(--candle)}
+.hw.goal .hwNo,.hw.terms .hwNo{font-size:12px;font-family:var(--body);font-weight:700}
+.hw.goal{border-color:var(--blood);background:linear-gradient(135deg,rgba(220,82,92,.14),var(--panel) 60%)}.hw.goal .hwNo{background:var(--blood);color:#fff}
+.hwBody{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.hwBody h3{margin:0;font-size:16px;font-family:var(--display);font-weight:400}
+.hwBody p{margin:0;font-size:13.5px;line-height:1.7}
+.hwBody b{color:var(--ink)}
+.hwTip{color:var(--muted);font-size:12.5px!important;border-left:3px solid var(--candle);padding-left:8px}
+.hwOcto{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--muted)}.hwOcto svg{height:34px;width:auto}.hwOcto b{color:var(--blood)}
+.hwFlow{margin:0;padding:0;list-style:none;counter-reset:f;display:flex;flex-direction:column;gap:6px}
+.hwFlow li{counter-increment:f;display:grid;grid-template-columns:28px 1fr;column-gap:8px;font-size:13.5px;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 10px}
+.hwFlow li::before{content:counter(f);grid-row:span 2;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--candle);color:var(--candle);font-weight:700;font-size:12px}
+.hwFlow li span{color:var(--muted);font-size:12.5px;line-height:1.6}
+.hwRes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hwRes>div{border-radius:10px;padding:8px 10px;background:rgba(0,0,0,.2)}
+.hwRes .hit{border:1px solid var(--good)}.hwRes .hit b{color:var(--good)}.hwRes .miss{border:1px solid var(--blood)}.hwRes .miss b{color:var(--blood)}
+.hwRes p{font-size:12.5px!important;line-height:1.6!important}
+@media (max-width:480px){.hwRes{grid-template-columns:1fr}.hw{padding:10px;gap:10px}}
+.hwList{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.65}
+.hwTerms{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:13px;line-height:1.65}
+.hwTerms dt{font-weight:700;color:var(--candle);white-space:nowrap}.hwTerms dd{margin:0}
+@media (max-width:480px){.hwTerms{grid-template-columns:1fr;gap:2px}.hwTerms dd{margin-bottom:8px}}
+.rcat{display:inline-block;font-size:11px;padding:0 7px;margin:0 2px;border-radius:99px;border:1px solid var(--cc);color:var(--cc);white-space:nowrap}
+.cardFilters{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
 </style>
 
 <div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -950,7 +978,7 @@ function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
-  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs'||VIEW==='shop')setBg(null);
+  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto')setBg(null);
   if(VIEW==='menu')renderMenu();
   else if(VIEW==='packs')renderPacks();
   else if(VIEW==='deck')renderDeck();
@@ -958,6 +986,8 @@ function draw_(){
   else if(VIEW==='battle')render();
   else if(VIEW==='watch')renderWatch();
   else if(VIEW==='shop')renderShop();
+  else if(VIEW==='cards')renderCards();
+  else if(VIEW==='howto')renderHowto();
   else if(VIEW==='draft')renderDraft();
   else if(VIEW==='online')renderOnline();
 }
@@ -980,7 +1010,7 @@ function renderMenu(){
     <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
     <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
     ${LADDER.on()&&!NET.conn?`<button type="button" class="mi" id="mWatch"><img class="miArt" src="art/spy.png" alt=""><b>試合を観戦する</b><span>いま対戦中の誰かの試合をランダムに見ます</span></button>`:''}
-    <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>ルールとカード一覧</b><span>全${CARDS.length}種の効果</span></button>
+    <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>はじめての人はここから。勝ち方とターンの流れ</span></button>
   </div>
   ${missionsHTML()}
   ${updatesHTML()}
@@ -990,7 +1020,7 @@ function renderMenu(){
   $('#mBattle').onclick=()=>startDraft();
   const mr=$('#mResume');if(mr)mr.onclick=resumeGame;
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
-  $('#mRules').onclick=()=>go('rules');
+  $('#mRules').onclick=()=>go('howto');
   $('#mOnline').onclick=()=>go('online');
   const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
@@ -1065,27 +1095,86 @@ function renderDeck(){
 }
 function flash(t){const n=document.querySelector('.note');if(n){n.textContent=t;n.style.color='var(--blood)'}}
 
-function rulesListHTML(){return`<div class="zone rules"><ul>
-   <li>対戦のたびに7パック（1パック6枚。シングルカードは7パックのどこかに最低1枚、ときどき2〜3枚）を開け、出たカードだけでデッキを組みます。通常カードは1枚出ると3枚デッキに入れられます。CPUも同じように7パックから組みます。</li>
-   <li>デッキは40枚。通常カード13種×3枚と、シングルカード1枚。対戦相手のデッキの中身は公開されます。</li>
-   <li>開始時（と心臓を当てられて選び直すとき）、全カードを混ぜて6枚引き、その中から1枚を心臓に伏せます。残りの5枚が手札です。その種類はデッキに2枚（シングルなら0枚）しか残りません。</li>
-   <li>毎ターン1枚引き、手札からカードを1枚使えます（使わずに宣言へ進んでもかまいません）。村人や村長などの効果で、追加でカードを使えることがあります（追加分は使わなくてもOK）。使ったカードは捨て札として公開されます。</li>
-   <li>強い効果のカードには「代償」があり、自分の情報を相手に渡したり、手札を失ったりします。</li>
-   <li>共鳴：直前に自分が使ったカード（前のターンも含む）と同じ系統のカードを使うと、「共鳴」の効果が上乗せされます。伏せカードは、直前に使ったカードが防御系なら発動時に1枚引けます。シングルカードは共鳴しません。同じ系統で固めると共鳴しやすくなりますが、心臓の系統も読まれやすくなります。</li>
-   <li>伏せカードを置いているあいだは、相手の効果で手札を捨てさせられるとき、1回の効果につき2枚まで少なくて済みます（ブラフの伏せでも有効）。</li>
-   <li>襲撃：攻撃系カードの効果で相手の手札が0枚になったら、相手のライフが1減ります。的中と同じく、相手は心臓を選び直して手札5枚から再開し、襲撃した側のターンは終わります。</li>
-   <li>カードを使う代わりに、1枚を裏向きで「伏せる」ことができます（伏せられるのは1枚まで）。【伏せ専用】と書かれたカードは、条件を満たすと自動で発動します。伏せずに使うことはできません。普通のカードも伏せられるので、ブラフに使えます。伏せたカードが効くのは次の相手ターンだけで、発動しなければ次の自分のターンの始めに公開されて捨て札になります。伏せ直しても、前の伏せカードは公開されて捨て札になります。</li>
-   <li>カードを出したあと、相手の心臓の種類を1回まで宣言できます。外すと手札をランダムに2枚捨てます。手札が0枚のときは宣言できません。</li>
-   <li>当たると相手のライフ-1。相手は全カードを集めて心臓を選び直し、手札5枚から再開します。当てた側のターンは終了します。</li>
-   <li>先攻・後攻はランダムで決まります。先攻は最初に5枚だけ引いてその中から心臓を選ぶので、手札が1枚少ない4枚で始まります（後攻は6枚から選んで5枚）。</li>
-   <li>相手のライフ（3）を先に0にした方の勝ち。山札が尽きたら捨て札を混ぜて山札にします。</li>
-  </ul></div>`}
-function renderRules(){
-  $('#app').innerHTML=`<div class="top"><h1>ルールとカード一覧</h1><button type="button" class="b small" id="back">戻る</button></div>
+// 遊び方（ホームの「遊び方」・対戦中の「ルール」で使う）。ゲームの処理と食い違わないように、ルールを変えたらここも直す
+function rulesListHTML(){
+  const chip=(k,t)=>`<span class="rcat" style="--cc:${CATCOL[k]}">${t}</span>`;
+  return`<div class="howto">
+  <section class="hw goal"><div class="hwNo">目的</div><div class="hwBody">
+    <h3>相手の「心臓」を3回当てたら勝ち</h3>
+    <p>おたがい、自分のデッキの中から1枚を<b>心臓</b>として隠します。相手の心臓が<b>何のカードか</b>を当てると、相手のタコの心臓が1つ止まります。3つ全部止めた方の勝ちです。</p>
+    <div class="hwOcto">${octoSVG(3)}<span>→</span>${octoSVG(2)}<span>→</span>${octoSVG(1)}<span>→</span>${octoSVG(0)}<b>勝ち！</b></div>
+  </div></section>
+
+  <section class="hw"><div class="hwNo">1</div><div class="hwBody">
+    <h3>デッキを作る</h3>
+    <p>対戦のたびに<b>7パック</b>を開けて、出たカードから<b>13種類</b>を選びます。1種類につき3枚ずつ入り、そこに<b>シングルカード</b>（各デッキに1枚だけの特別なカード）を1枚足して、<b>40枚</b>のデッキになります。</p>
+    <p class="hwTip">相手のデッキに入っている13種類は、最初から公開されています。この中のどれかが相手の心臓です。</p>
+  </div></section>
+
+  <section class="hw"><div class="hwNo">2</div><div class="hwBody">
+    <h3>心臓を選ぶ</h3>
+    <p>最初に引いたカードから<b>1枚を心臓</b>にして伏せ、残りが手札になります。先攻・後攻はランダムで、先攻は5枚から（手札4枚）、後攻は6枚から（手札5枚）選びます。</p>
+    <p class="hwTip">心臓にした種類は、デッキに残り2枚しかありません。使われたカードを数えると、心臓の手がかりになります。</p>
+  </div></section>
+
+  <section class="hw"><div class="hwNo">3</div><div class="hwBody">
+    <h3>自分のターンにすること</h3>
+    <ol class="hwFlow">
+      <li><b>1枚引く</b><span>自動で引きます</span></li>
+      <li><b>カードを1枚使う</b><span>使うと効果が出て、そのカードは捨て札として公開されます。裏向きに<b>伏せる</b>ことも、使わずに進むこともできます</span></li>
+      <li><b>心臓を宣言する</b><span>相手の心臓だと思う種類を1回まで言えます。言わずにターンを終えてもOK</span></li>
+    </ol>
+  </div></section>
+
+  <section class="hw"><div class="hwNo">4</div><div class="hwBody">
+    <h3>宣言の結果</h3>
+    <div class="hwRes">
+      <div class="hit"><b>当たり</b><p>相手の心臓が1つ止まります。相手は心臓を選び直して、手札5枚からやり直し。あなたのターンはそこで終わります。</p></div>
+      <div class="miss"><b>外れ</b><p>あなたの手札がランダムに<b>2枚</b>捨てられます。手札が0枚のときは宣言できません。</p></div>
+    </div>
+  </div></section>
+
+  <section class="hw"><div class="hwNo">5</div><div class="hwBody">
+    <h3>推理のしかた</h3>
+    <ul class="hwList">
+      <li>使われたカードは公開されます。同じ種類が<b>3枚</b>見えたら、その種類は心臓ではありません。</li>
+      <li>${chip('info','情報')}系のカードは「心臓はこの中にある／ない」などを調べられます。</li>
+      <li>画面の<b>推理表</b>では、●が公開済みの枚数、薄く消えたマスが「もう心臓ではない」種類です。「確率」をオンにすると、心臓らしさの目安が出ます。</li>
+      <li>相手も同じように、あなたの心臓を推理しています。</li>
+    </ul>
+  </div></section>
+
+  <section class="hw terms"><div class="hwNo">用語</div><div class="hwBody">
+    <dl class="hwTerms">
+      <dt>系統</dt><dd>カードは5つに分かれます：${chip('info','情報')}${chip('atk','攻撃')}${chip('grd','防御')}${chip('sup','補助')}${chip('one','シングル')}</dd>
+      <dt>共鳴</dt><dd>直前に自分が使ったカード（前のターンの分も含む）と<b>同じ系統</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。シングルカードは共鳴しません。同じ系統ばかり使うと、心臓の系統も読まれやすくなります。</dd>
+      <dt>代償</dt><dd>強いカードについているデメリットです。自分の情報を相手に知られたり、手札を失ったりします。</dd>
+      <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
+      <dt>襲撃</dt><dd>攻撃系カードの効果で相手の手札を0枚にすると、心臓を当てたのと同じく相手の心臓が1つ止まります。</dd>
+      <dt>山札が切れたら</dt><dd>捨て札を混ぜて、新しい山札にします。</dd>
+    </dl>
+  </div></section>
+  </div>`;
+}
+function renderRules(){renderCards()}
+// 遊び方だけの画面（ホームの「遊び方」）
+function renderHowto(){
+  $('#app').innerHTML=`<div class="top"><h1>遊び方</h1><button type="button" class="b small" id="back">ホームへ</button></div>
   ${rulesListHTML()}
-  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${CARDS.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>
-  ${tabBarHTML('rules')}`;
-  $('#back').onclick=()=>go('menu');bindTabBar();
+  <div class="btns" style="justify-content:center;margin:8px 0 4px"><button type="button" class="b primary" id="hwPlay">CPUと対戦してみる</button><button type="button" class="b" id="hwCards">カード一覧を見る</button></div>
+  ${tabBarHTML('')}`;
+  $('#back').onclick=()=>go('menu');$('#hwPlay').onclick=()=>startDraft();$('#hwCards').onclick=()=>go('cards');bindTabBar();
+}
+// カード一覧（下のタブの「カード」）
+let CF='all';
+function renderCards(){
+  const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['one','シングル']];
+  const list=CARDS.filter(c=>CF==='all'||c.cat===CF);
+  $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">全${CARDS.length}種</span></div>
+  <div class="filters cardFilters">${cats.map(([k,t])=>`<button type="button" class="chip ${CF===k?'on':''}" data-cf="${k}">${t}</button>`).join('')}</div>
+  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>
+  ${tabBarHTML('cards')}`;
+  document.querySelectorAll('[data-cf]').forEach(b=>b.onclick=()=>{CF=b.dataset.cf;renderCards()});bindTabBar();
 }
 
 // 対戦中に開くルール。#modal（カード選択など）とぶつからないよう専用の重ね画面にする。閉じれば対戦はそのまま
@@ -1093,7 +1182,7 @@ function showRulesOverlay(){
   if($('#rulesOv'))return;
   const ov=document.createElement('div');ov.id='rulesOv';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label','ルール');
   const types=S?[...new Set([...typesOf(S.me),...typesOf(S.cpu)])]:[];
-  ov.innerHTML=`<div class="rOvIn"><div class="top"><h2>ルール</h2><button type="button" class="b small" id="rOvClose">閉じる</button></div>${rulesListHTML()}
+  ov.innerHTML=`<div class="rOvIn"><div class="top"><h2>遊び方</h2><button type="button" class="b small" id="rOvClose">閉じる</button></div>${rulesListHTML()}
     ${types.length?`<h2>この対戦のカード（タップで効果）</h2><div class="rOvCards">${types.map(k=>`<button type="button" class="cardBtn" data-card="${k}">${cardHTML(k,'s')}<span>${N(k)}</span></button>`).join('')}</div>`:''}</div>`;
   document.body.appendChild(ov);
   const close=()=>{ov.remove();document.removeEventListener('keydown',esc_)};
@@ -2099,7 +2188,7 @@ function pickAvatar(){
   }).then(()=>{if(VIEW==='menu')renderMenu()});
 }
 function tabBarHTML(cur){
-  const T=[['menu','ホーム','home'],['rules','カード','cards'],['shop','ショップ','shop'],['rank','ランキング','rank']];
+  const T=[['menu','ホーム','home'],['cards','カード','cards'],['shop','ショップ','shop'],['rank','ランキング','rank']];
   const ic={home:'<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',cards:'<rect x="4" y="3" width="11" height="15" rx="2"/><rect x="9" y="6" width="11" height="15" rx="2"/>',shop:'<path d="M4 8h16l-1.5 12h-13zM8 8V6a4 4 0 0 1 8 0v2"/>',rank:'<path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/>'};
   return`<nav class="tabBar" aria-label="メニュー">${T.map(([v,l,i])=>`<button type="button" class="${v===cur?'on':''}" data-tab="${v}" ${v===cur?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic[i]}</svg><span>${l}</span></button>`).join('')}</nav>`;
 }
@@ -2316,6 +2405,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:24,d:'2026-11-03',t:'「遊び方」を新しくしました。勝ち方・ターンの流れ・宣言の結果・用語を、順番に図つきで説明しています。カード一覧は下のタブの「カード」から、系統ごとに絞って見られます。'},
   {id:23,d:'2026-11-03',t:'ショップができました。銀貨で「カードの縁」（金・月光・血の月・虹）と「称号」に交換できます（見た目だけで強さは変わりません）。'},
   {id:22,d:'2026-11-03',t:'毎日のログインボーナスと、デイリーミッション（毎日3つ）で銀貨がもらえるようになりました。'},
   {id:21,d:'2026-11-03',t:'ホーム画面を新しくしました。アイコン（タップで好きなカードの絵に変更）・名前・称号・銀貨が上に出て、画面の下のタブからホーム／カード／ショップ／ランキングに移れます。'},
