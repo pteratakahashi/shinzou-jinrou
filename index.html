@@ -2232,7 +2232,23 @@ function showCardInfo(k){
     m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
   });
 }
-function render(){
+// 自分のターンでやれることが何も残っていなければ、少し待って自動でターン終了
+let autoEndT=0;
+function nothingLeft(){
+  if(!S||S.over||S.spec||S.busy||PH()!=='guess'||S.cur!==S.me)return false;
+  const f=S.me.f;
+  if(f.mustGuess&&f.guesses>0&&S.me.hand.length)return false;
+  if(f.guesses>0&&S.me.hand.length)return false;
+  if(RULES.freeSet&&f.setFree>0&&S.me.hand.length)return false;
+  return true;
+}
+function autoEndCheck(){
+  clearTimeout(autoEndT);
+  if(!nothingLeft())return;
+  autoEndT=setTimeout(()=>{if(nothingLeft()&&$('#modal').hidden)onEnd()},1500);
+}
+function render(){setTimeout(autoEndCheck,0);return render0()}
+function render0(){
   if(VIEW==='battle'&&S){BGM.set(S.over?null:'battle');BGM.hot(!S.over&&(S.me.life===1||S.cpu.life===1))}
   if(VIEW==='battle'&&S&&!S.over)guardHist();
   if(VIEW==='battle')setBg('home_a','dark');
@@ -2249,7 +2265,7 @@ function render(){
   else if(ph==='cpu')phase=S.cur?`${OPN()}が考えています…`:`${OPN()}が心臓を選んでいます…`;
   const fsN=RULES.freeSet&&me.f.setFree>0&&!SP?'（伏せは別枠であと1回）':'';
   if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
-  else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。ターンを終了してください。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。';
+  else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
   const resOk=c=>!C[c.type].single&&!C[c.type].set&&(me.lastCat===C[c.type].cat||me.f.forceRes);
   const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
