@@ -2111,12 +2111,12 @@ async function gameOver(w){
   const msn=missionsAfterGame(win);
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
-    :S.free?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを組み直す</button>`
+    :S.free?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを組み直す</button><button type="button" class="b" id="rMenu">メニューへ</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
   await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
       el.innerHTML=st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
-    m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
+    [['#rNew','new'],['#rSame','same'],['#rMenu','menu']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
     if(S.free){if(v==='new')go('free');else if(v==='same')startFree();else go('menu');return}
