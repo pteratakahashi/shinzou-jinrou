@@ -151,6 +151,10 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 .res.new{color:var(--candle)}.res.dup{color:var(--muted)}
 
 /* ---- deck builder ---- */
+.fpWrap{display:flex;gap:8px;align-items:center;margin:6px 0}.fpList{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.chip.fp{white-space:nowrap;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}.chip.fp small{font-size:10px;opacity:.75}
+.fBar{position:sticky;bottom:0;z-index:6;background:var(--table);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fCpu{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fcCat{font-size:12px}
 .dkHead{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--table);padding:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
 .count{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
 .count.ok{color:var(--good)}
@@ -1143,10 +1147,11 @@ function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)re
 function draw_(){
   if(VIEW!=='battle')BGM.set('menu');
   if(VIEW!=='menu')guardHist();
-  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto')setBg(null);
+  if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='free'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto')setBg(null);
   if(VIEW==='menu')renderMenu();
   else if(VIEW==='packs')renderPacks();
   else if(VIEW==='deck')renderDeck();
+  else if(VIEW==='free')renderFree();
   else if(VIEW==='rules')renderRules();
   else if(VIEW==='battle')render();
   else if(VIEW==='watch')renderWatch();
@@ -1173,6 +1178,7 @@ function renderMenu(){
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
     <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
+    <button type="button" class="mi" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>構築済みデッキで対戦</b><span>全カードから自由にデッキを組んで、CPUの強豪デッキに挑みます</span></button>
     <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
     ${LADDER.on()&&!NET.conn?`<button type="button" class="mi" id="mWatch"><img class="miArt" src="art/spy.png" alt=""><b>試合を観戦する</b><span>いま対戦中の誰かの試合をランダムに見ます</span></button>`:''}
     <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>はじめての人はここから。勝ち方とターンの流れ</span></button>
@@ -1187,6 +1193,7 @@ function renderMenu(){
   const mr=$('#mResume');if(mr)mr.onclick=resumeGame;
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
   $('#mRules').onclick=()=>go('howto');
+  $('#mFree').onclick=()=>go('free');
   $('#mOnline').onclick=()=>go('online');
   const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
@@ -1261,6 +1268,58 @@ function renderDeck(){
     else{if(own(k)<3)return;if(d.types.includes(k))rm(d.types,k);else{if(d.types.length>=13)return flash('13種まで。先に1種外してください');d.types.push(k)}}
     save();const y=window.scrollY;renderDeck();window.scrollTo(0,y);
   });
+}
+/* ---- 構築済みデッキ（全カードから自由に組む） ---- */
+// CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
+const FREE_PRESETS=[{"name":"聖女の補給線","wr":54,"types":["chief","villager","executioner","bard","silencer","bodyguard","sentinel","decoy","mason","nekomata","priest","twins","trapper"],"single":"saint"},{"name":"聖女の鉄壁","wr":53,"types":["nekomata","chief","villager","bard","decoy","bodyguard","priest","twins","silencer","mason","gatekeeper","executioner","sentinel"],"single":"saint"},{"name":"聖女の結界","wr":53,"types":["chief","villager","executioner","bard","silencer","bodyguard","decoy","mason","nekomata","priest","twins","trapper","warder"],"single":"saint"}];
+let FF='all';
+const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
+const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
+const freeCpu=()=>SV.freeCpu||'strong';
+function renderFree(){
+  const d=freeDeck(),n=d.types.length,ok=freeOk(d);
+  const list=NORMAL.filter(c=>FF==='all'||(FF==='in'?d.types.includes(c.k):c.cat===FF));
+  const cnt=['info','atk','grd','sup'].map(k=>[k,d.types.filter(t=>C[t].cat===k).length]).filter(e=>e[1]);
+  $('#app').innerHTML=`<div class="top"><h1>構築済みデッキ</h1><button type="button" class="b small" id="back">戻る</button></div>
+  <p class="note" style="margin-top:0">全カードから自由に選べます。通常カード13種（各3枚）＋シングル1枚＝40枚。</p>
+  ${FREE_PRESETS.length?`<div class="fpWrap"><span class="label">おすすめ</span><div class="fpList">${FREE_PRESETS.map((x,i)=>`<button type="button" class="chip fp" data-p="${i}">${esc(x.name)}<small>勝率${x.wr}%</small></button>`).join('')}</div></div>`:''}
+  <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span>${cnt.length?`<span class="muted fcCat"> ${cnt.map(([k,v])=>`${CAT[k]}${v}`).join('・')}</span>`:''}</div>
+   <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].map(([k,l])=>`<button type="button" class="chip ${FF===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+   <div class="btns"><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
+  <div class="note" id="fNote">${ok?'このデッキで対戦できます。':n!==13?`通常カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください'}</div>
+  <h3 style="font-size:16px">通常カード</h3>
+  <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
+  <h3 style="font-size:16px">シングルカード（1枚）</h3>
+  <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k;return`<button type="button" class="dk sg ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
+  <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['strong','強豪デッキ'],['mirror','同じデッキ'],['pack','パックから']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
+   <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキで対戦</button></div>`;
+  const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
+  $('#back').onclick=()=>go('menu');
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=keep(()=>{FF=b.dataset.f}));
+  document.querySelectorAll('[data-cpu]').forEach(b=>b.onclick=keep(()=>{SV.freeCpu=b.dataset.cpu}));
+  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=keep(()=>{const x=FREE_PRESETS[+b.dataset.p];SV.freeDeck={types:[...x.types],single:x.single}}));
+  $('#fAuto').onclick=keep(()=>{const x=FREE_PRESETS.length?rand(FREE_PRESETS):null;SV.freeDeck=x?{types:[...x.types],single:x.single}:autoBuild(NORMAL.map(c=>c.k),SINGLE.map(c=>c.k),6)});
+  $('#fClear').onclick=keep(()=>{SV.freeDeck={types:[],single:null}});
+  document.querySelectorAll('.dk').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    if(C[k].single)d.single=d.single===k?null:k;
+    else if(d.types.includes(k))rm(d.types,k);
+    else{if(d.types.length>=13){const f=$('#fNote');f.textContent='13種まで。先に1種外してください';f.style.color='var(--blood)';return}d.types.push(k)}
+    keep(()=>{})();
+  });
+  $('#fGo').onclick=()=>startFree();
+}
+function startFree(){
+  const d=freeDeck();if(!freeOk(d))return go('free');
+  lsDel(GAME_KEY);lsDel(DRAFT_KEY);
+  D={...newDraft(),deck:{types:[...d.types],single:d.single},stage:'build',free:true};
+  startBattle();
+}
+function freeCpuDeck(){
+  const m=freeCpu(),d=freeDeck();
+  if(m==='mirror')return{types:[...d.types],single:d.single};
+  if(m==='strong'&&FREE_PRESETS.length){const x=rand(FREE_PRESETS);return{types:[...x.types],single:x.single,name:x.name}}
+  const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);return autoBuild(cd.pool,cd.singles,8);
 }
 function flash(t){const n=document.querySelector('.note');if(n){n.textContent=t;n.style.color='var(--blood)'}}
 
@@ -2029,6 +2088,7 @@ async function gameOver(w){
   const msn=missionsAfterGame(win);
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
+    :S.free?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを組み直す</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
   await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
@@ -2036,6 +2096,7 @@ async function gameOver(w){
     m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
+    if(S.free){if(v==='new')go('free');else if(v==='same')startFree();else go('menu');return}
     if(v==='new')startDraft();else if(v==='same')startBattle();else go('menu')});
 }
 async function startBattle(){
@@ -2043,10 +2104,11 @@ async function startBattle(){
   if(NET.conn)return netDeck({types:[...D.deck.types],single:D.deck.single});
   lsDel(DRAFT_KEY);
   VIEW='battle';window.scrollTo(0,0);
-  const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);const cb=autoBuild(cd.pool,cd.singles,8);
-  S={me:newPlayer('@me',false,[...D.deck.types],D.deck.single),cpu:newPlayer('@cpu',true,cb.types,cb.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null};
+  let cb;if(D.free)cb=freeCpuDeck();else{const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);cb=autoBuild(cd.pool,cd.singles,8)}
+  S={me:newPlayer('@me',false,[...D.deck.types],D.deck.single),cpu:newPlayer('@cpu',true,cb.types,cb.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,free:!!D.free};
   mkPool(S.me);mkPool(S.cpu);render();
   await fxVs();
+  if(D.free&&cb.name)log(`CPUのデッキは強豪デッキ「${cb.name}」。`,'sys');
   // 先攻・後攻はランダム。先攻は5枚、後攻は6枚から心臓を選ぶ
   const meFirst=Math.random()<.5;
   const h=await dealHeart(S.me,'心臓に隠すカードを選ぶ',`${meFirst?'先攻なので、最初に引いた5枚から1枚を心臓にします。残りの4枚が手札になります。':'後攻なので、最初に引いた6枚から1枚を心臓にします。残りの5枚が手札になります。'}この種類を当てられるとライフが1減ります。CPUのシングルは〈${N(S.cpu.single)}〉です。`,meFirst?5:6);
@@ -2985,6 +3047,7 @@ function renderOnline(){
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
           <button type="button" class="mi main" id="oDraft"><b>7パック開けてデッキを作る</b><span>いつもの対戦と同じく、出たカードでデッキを組みます</span></button>
           <button type="button" class="mi" id="oQuick"><b>おまかせデッキですぐ対戦</b><span>パックを自動で開けて、デッキも自動で組みます</span></button>
+          ${!LADDER.rated()&&freeOk(freeDeck())?`<button type="button" class="mi" id="oFree"><b>構築済みデッキで対戦</b><span>${catSummary(freeDeck().types)}・シングル〈${N(freeDeck().single)}〉（メニューの「構築済みデッキで対戦」で編集）</span></button>`:''}
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
   }else if(st==='opening'||st==='joining'){
     body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div></div>`
@@ -3021,6 +3084,7 @@ function renderOnline(){
   const sh=$('#oShare');if(sh)sh.onclick=()=>{navigator.share({title:'心臓人狼',text:'心臓人狼で対戦しよう！',url:roomLink()}).catch(()=>{})};
   const od=$('#oDraft');if(od)od.onclick=()=>{NET.err='';startDraft()};
   const oq=$('#oQuick');if(oq)oq.onclick=()=>{NET.err='';const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);netDeck(autoBuild(cd.pool,cd.singles,3))};
+  const of=$('#oFree');if(of)of.onclick=()=>{NET.err='';const d=freeDeck();netDeck({types:[...d.types],single:d.single})};
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
 }
 
