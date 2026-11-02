@@ -556,7 +556,16 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
 .bt>.zone{padding:7px 10px;gap:5px;border-radius:10px}
 .btOpp{grid-area:opp}.btMid{grid-area:mid;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .btLast{grid-area:last;padding:5px 10px;min-height:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.btMe{grid-area:me}.btField{grid-area:field;display:none}.btHand{grid-area:hand;min-width:0}.btAct{grid-area:act}
+.btMe{grid-area:me}
+.myRecent{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;align-self:stretch;justify-content:flex-end;padding-left:6px;border-left:1px dashed var(--line);margin-left:2px}
+.mrL{font-size:9px;color:var(--muted);letter-spacing:.05em}
+.mrRow{display:flex;gap:4px;align-items:flex-end;overflow:hidden}
+.mrRow .cardBtn{position:relative;flex:none}
+.mrRow .cardBtn:first-child .tcg{outline:1.5px solid var(--candle);outline-offset:1px}
+.mrT{position:absolute;left:50%;bottom:-1px;translate:-50% 0;font-size:8px;line-height:1;padding:1px 3px;border-radius:3px;background:rgba(8,10,24,.85);color:var(--ink)}
+.mrE{font-size:10px;color:var(--muted);padding:6px 0}
+.bt .myRecent .tcg.s{width:40px;font-size:6.5px}
+@media (max-width:700px){.bt .myRecent .tcg.s{width:31px;font-size:5px}}.btField{grid-area:field;display:none}.btHand{grid-area:hand;min-width:0}.btAct{grid-area:act}
 .bt .sh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .bt .sh .who{font-size:15px}
 .bt .mini{font-size:11px;color:var(--muted);margin-left:auto}.bt .mini b{color:var(--ink);font-weight:700;margin:0 4px 0 1px}
@@ -2031,7 +2040,7 @@ function render(){
   <div class="lastLog btLast ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
   <section class="zone side btMe ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
     <div class="sh"><span class="who">${MYN()}</span>${lives(me)}${mini(me)}</div>${badges(me)}
-    <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
+    <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
   </section>
   ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   <div class="actions btAct"><div class="phase">${phase}</div>
