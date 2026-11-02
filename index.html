@@ -1309,10 +1309,10 @@ function renderFree(){
   });
   $('#fGo').onclick=()=>startFree();
 }
-function startFree(){
+function startFree(quick){
   const d=freeDeck();if(!freeOk(d))return go('free');
   lsDel(GAME_KEY);lsDel(DRAFT_KEY);
-  D={...newDraft(),deck:{types:[...d.types],single:d.single},stage:'build',free:true};
+  D={...newDraft(),deck:{types:[...d.types],single:d.single},stage:'build',free:true,quick:!!quick};
   startBattle();
 }
 function freeCpuDeck(){
@@ -2119,8 +2119,8 @@ async function gameOver(w){
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
-    if(S.free){if(v==='new')go('free');else if(v==='same')startFree();else go('menu');return}
-    if(v==='new')startDraft();else if(v==='same')startBattle();else go('menu')});
+    if(S.free){if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu');return}
+    if(v==='new')startDraft();else if(v==='same'){if(D)D.quick=true;startBattle()}else go('menu')});
 }
 async function startBattle(){
   if(!D||D.deck.types.length!==13||!D.deck.single)return startDraft();
@@ -2130,7 +2130,7 @@ async function startBattle(){
   let cb;if(D.free)cb=freeCpuDeck();else{const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);cb=autoBuild(cd.pool,cd.singles,8)}
   S={me:newPlayer('@me',false,[...D.deck.types],D.deck.single),cpu:newPlayer('@cpu',true,cb.types,cb.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,free:!!D.free};
   mkPool(S.me);mkPool(S.cpu);render();
-  await fxVs();
+  if(D.quick)D.quick=false;else await fxVs();
   if(D.free&&cb.name)log(`CPUのデッキは強豪デッキ「${cb.name}」。`,'sys');
   // 先攻・後攻はランダム。先攻は5枚、後攻は6枚から心臓を選ぶ
   const meFirst=Math.random()<.5;
