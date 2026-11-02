@@ -886,7 +886,7 @@ function renderRules(){
    <li>強い効果のカードには「代償」があり、自分の情報を相手に渡したり、手札を失ったりします。</li>
    <li>共鳴：直前に自分が使ったカード（前のターンも含む）と同じ系統のカードを使うと、「共鳴」の効果が上乗せされます。伏せカードは、直前に使ったカードが防御系なら発動時に1枚引けます。シングルカードは共鳴しません。同じ系統で固めると共鳴しやすくなりますが、心臓の系統も読まれやすくなります。</li>
    <li>伏せカードを置いているあいだは、相手の効果で手札を捨てさせられるとき、1回の効果につき2枚まで少なくて済みます（ブラフの伏せでも有効）。</li>
-   <li>襲撃：攻撃系カードの効果で相手の手札が0枚になったら、相手のライフが1減ります（心臓は選び直しません）。</li>
+   <li>襲撃：攻撃系カードの効果で相手の手札が0枚になったら、相手のライフが1減ります。的中と同じく、相手は心臓を選び直して手札5枚から再開し、襲撃した側のターンは終わります。</li>
    <li>カードを使う代わりに、1枚を裏向きで「伏せる」ことができます（伏せられるのは1枚まで）。【伏せ専用】と書かれたカードは、条件を満たすと自動で発動します。伏せずに使うことはできません。普通のカードも伏せられるので、ブラフに使えます。伏せたカードが効くのは次の相手ターンだけで、発動しなければ次の自分のターンの始めに公開されて捨て札になります。伏せ直しても、前の伏せカードは公開されて捨て札になります。</li>
    <li>カードを出したあと、相手の心臓の種類を1回まで宣言できます。外すと手札をランダムに2枚捨てます。手札が0枚のときは宣言できません。</li>
    <li>当たると相手のライフ-1。相手は全カードを集めて心臓を選び直し、手札5枚から再開します。当てた側のターンは終了します。</li>
@@ -1196,7 +1196,11 @@ function nekoCurse(owner){const cand=cands(owner,4);log(`猫又の祟り！${opp
 async function raid(p,o,had){
   if(had>0&&o.hand.length===0&&!S.over){
     o.life=Math.max(0,o.life-1);S.shake=whoOf(o);log(`襲撃！${o.name}の手札が尽きた。ライフ-1（残り${o.life}）`,whoOf(p));render();
-    await fxRaid();await fxHeartBreak(whoOf(o),o.life+1);S.round=(S.round||1)+1;if(o.life<=0)await gameOver(p);else if(!S.sim)await fxRound();
+    await fxRaid();await fxHeartBreak(whoOf(o),o.life+1);S.round=(S.round||1)+1;if(o.life<=0)return gameOver(p);
+    // 的中と同じく、襲撃された側は心臓を選び直し、襲撃した側のターンはここで終わる（宣言もできない）
+    await rebuild(o,'襲撃された');
+    p.f.req=0;p.f.opt=0;p.f.guesses=0;p.f.mustGuess=false;log(`${p.name}のターンはここで終わり。`,whoOf(p));
+    render();if(!S.sim)await fxRound();
   }
 }
 function learnNot(p,n){
@@ -1397,8 +1401,8 @@ async function doGuess(p,ty){
   }
   render();return'miss';
 }
-async function rebuild(o){
-  const h=await dealHeart(o,'心臓を当てられた','全カードを集めて混ぜ直し、6枚引きました。この中から新しい心臓を1枚選んでください。残りの5枚が手札になります。');
+async function rebuild(o,title='心臓を当てられた'){
+  const h=await dealHeart(o,title,'全カードを集めて混ぜ直し、6枚引きました。この中から新しい心臓を1枚選んでください。残りの5枚が手札になります。');
   log(`${o.name}は心臓を〈${N(h.type)}〉にした。`,whoOf(o),whoOf(o));log(`${o.name}は全カードを集め、心臓を選び直した。`,whoOf(o),whoOf(opp(o)));
   S.know[o===S.me?'cpu':'me']=freshK();
 }
