@@ -1207,7 +1207,12 @@ const pickCard=async(cards,t,s)=>(await pickCards(cards,t,s,1,1))[0];
 
 /* ---- choices that differ for CPU / player ---- */
 async function chooseTypes(p,n,title,sub){
-  if(!p.isCpu)return by(p,()=>pickTypes(opp(p),n,title,sub,false,p));
+  if(!p.isCpu){
+    // 候補がもう選ぶ数以下なら、選ばせても意味がないので候補を全部入れて自動で判定する
+    const live=ranked(p).filter(e=>e[1]>0).map(e=>e[0]);
+    if(live.length&&live.length<=n){log(`候補が残り${live.length}種なので、選ばずにそのまま判定する。`,whoOf(p),whoOf(p));return live.concat(shuffle(typesOf(opp(p)).filter(t=>!live.includes(t)))).slice(0,n)}
+    return by(p,()=>pickTypes(opp(p),n,title,sub,false,p));
+  }
   let r=ranked(p).filter(e=>e[1]>0).map(e=>e[0]).slice(0,n);
   if(r.length<n)r=r.concat(shuffle(typesOf(opp(p)).filter(t=>!r.includes(t))).slice(0,n-r.length));
   return r;
