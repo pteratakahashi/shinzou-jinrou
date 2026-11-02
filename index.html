@@ -94,6 +94,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .mmCard{align-items:center;text-align:center}
 .mmSpin{width:46px;height:46px;border-radius:50%;border:4px solid rgba(255,255,255,.12);border-top-color:var(--candle);animation:mmSpin 1s linear infinite}
 @keyframes mmSpin{to{transform:rotate(360deg)}}
+.sndSet{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sndSet input[type=range]{flex:1;min-width:90px;max-width:220px;accent-color:var(--candle)}
 .rankCard{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);margin:4px 0 12px}
 .rankCard .btns{margin:0}
 .rkTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -902,6 +904,89 @@ const SFX=(()=>{
     pack(){whoosh(.7,200,5000,.14,0,.9,.4);shimmer(1568,6,.35,.035);boom(.35,.6,120,.5)}
   };
 })();
+/* ---- BGM ----
+   音源ファイルを使わず、ブラウザの中で合成して鳴らすオリジナル曲。
+   menu：夜の村（オルゴールのアルペジオ＋やわらかいパッド）／battle：緊張感のある刻み（低音の8分＋はじく音＋軽い打楽器）
+   どちらかのライフが1になると battle は打楽器が増えて少し速くなる。 */
+const bgmOn=()=>SV.bgm!==false;
+const BGM=(()=>{
+  let ac=null,out=null,rev=null,timer=0,song=null,step=0,next=0,want=null,hot=false,fadeT=0;
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  function ctx(){
+    if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();
+      out=ac.createGain();out.gain.value=0;
+      const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=5200;
+      const len=Math.floor(ac.sampleRate*2.6),ir=ac.createBuffer(2,len,ac.sampleRate);
+      for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+      rev=ac.createConvolver();rev.buffer=ir;const wet=ac.createGain();wet.gain.value=.35;
+      out.connect(lp).connect(ac.destination);rev.connect(wet).connect(lp);
+    }catch(e){return null}}
+    if(ac.state==='suspended')ac.resume();return ac;
+  }
+  const vol=()=>(SV.bgmVol==null?.55:SV.bgmVol)*.5;
+  function voice(t,m,d,{type='triangle',v=.1,att=.005,rel=null,wet=.3,lp=0,det=0}={}){
+    const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(mtof(m),t);if(det)o.detune.value=det;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+(rel||d));
+    let n=o.connect(g);if(lp){const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;n=g.connect(f)}
+    n.connect(out);if(wet){const s=ac.createGain();s.gain.value=wet;n.connect(s).connect(rev)}
+    o.start(t);o.stop(t+(rel||d)+.05);
+  }
+  let nb=null;function noise(t,d,v,hp){if(!nb){nb=ac.createBuffer(1,ac.sampleRate*.5,ac.sampleRate);const c=nb.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1}
+    const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=nb;f.type='highpass';f.frequency.value=hp;
+    g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f).connect(g).connect(out);s.start(t);s.stop(t+d+.02)}
+  function kick(t,v=.5){const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(42,t+.18);
+    g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.3);o.connect(g).connect(out);o.start(t);o.stop(t+.32)}
+
+  // 曲データ：和音（ルートと構成音）を小節ごとに
+  const SONGS={
+    menu:{bpm:76,steps:16,chords:[[50,[62,65,69,72]],[46,[58,62,65,69]],[48,[60,64,67,72]],[45,[57,61,64,69]],[50,[62,65,69,74]],[43,[55,58,62,67]],[45,[57,60,64,69]],[45,[57,61,64,67]]],
+      play(i,t,sp,ch){const [root,ns]=ch;
+        if(i===0){voice(t,root-12,sp*16,{type:'sine',v:.16,att:.4,rel:sp*16,wet:.2});ns.forEach((n,k)=>voice(t,n-12,sp*16,{type:'triangle',v:.025,att:1.2,rel:sp*16,wet:.6,det:k%2?6:-6}))}
+        const arp=[0,1,2,3,2,1,2,3];if(i%2===0){const n=ns[arp[(i/2)%8]]+12;voice(t,n,sp*3,{type:'sine',v:.07,att:.004,rel:sp*5,wet:.55});voice(t,n+12,sp*2,{type:'triangle',v:.012,att:.004,rel:sp*3,wet:.6})}
+        if(i===14&&Math.random()<.5)voice(t,ns[3]+24,sp*2,{type:'sine',v:.03,att:.004,rel:sp*6,wet:.8});
+      }},
+    battle:{bpm:112,steps:16,chords:[[45,[57,60,64]],[45,[57,60,64]],[41,[53,57,60]],[43,[55,59,62]],[45,[57,60,64]],[45,[57,60,64]],[48,[60,64,67]],[40,[52,56,59]]],
+      play(i,t,sp,ch,hot){const [root,ns]=ch;
+        if(i%2===0)voice(t,root-12+(i%4===2?12:0),sp*1.6,{type:'sawtooth',v:.07,att:.003,rel:sp*1.4,wet:.05,lp:700});
+        if(i===0)ns.forEach((n,k)=>voice(t,n,sp*16,{type:'sawtooth',v:.012,att:.6,rel:sp*15,wet:.5,lp:1400,det:k%2?8:-8}));
+        const pl=[0,null,2,null,1,null,2,1,0,null,2,null,1,2,null,0];if(pl[i]!=null)voice(t,ns[pl[i]]+12,sp,{type:'square',v:.022,att:.002,rel:sp*.9,wet:.25,lp:2600});
+        if(i===0||i===8||(hot&&(i===6||i===14)))kick(t,.42);
+        if(i===4||i===12)noise(t,.12,.09,1800);
+        if(hot?i%2===1:i%4===2)noise(t,.03,.035,7000);
+        if(i===0&&(step/16|0)%4===3)voice(t,ns[2]+24,sp*6,{type:'triangle',v:.03,att:.05,rel:sp*8,wet:.6});
+      }},
+  };
+  function tick(){
+    if(!ac||!song)return;
+    const s=SONGS[song],bpm=s.bpm*(song==='battle'&&hot?1.08:1),sp=60/bpm/4;
+    while(next<ac.currentTime+.18){
+      const bar=Math.floor(step/s.steps)%s.chords.length,i=step%s.steps;
+      try{s.play(i,next,sp,s.chords[bar],hot)}catch(e){}
+      next+=sp;step++;
+    }
+  }
+  function fadeTo(v,sec){if(!ac)return;const g=out.gain,t=ac.currentTime;g.cancelScheduledValues(t);g.setValueAtTime(Math.max(.0001,g.value),t);g.linearRampToValueAtTime(Math.max(.0001,v),t+sec)}
+  function start(name){
+    if(!bgmOn()||!ctx())return;
+    if(song===name){fadeTo(vol(),.6);return}
+    clearTimeout(fadeT);
+    const go=()=>{song=name;step=0;next=ac.currentTime+.08;clearInterval(timer);timer=setInterval(tick,25);fadeTo(vol(),1.2)};
+    if(song){fadeTo(0,.5);fadeT=setTimeout(go,520)}else go();
+  }
+  function stop(sec=.6){if(!ac)return;fadeTo(0,sec);clearTimeout(fadeT);fadeT=setTimeout(()=>{clearInterval(timer);song=null},sec*1000+50)}
+  return{
+    set(name){want=name;if(!bgmOn()||!ac)return;name?start(name):stop()},
+    unlock(){if(bgmOn()&&want&&(!ac||!song))start(want)},
+    hot(v){hot=!!v},
+    toggle(){SV.bgm=!bgmOn();save();if(bgmOn()){if(want)start(want)}else stop(.3)},
+    volume(v){SV.bgmVol=v;save();if(song)fadeTo(vol(),.15)},
+    duck(on){if(song)fadeTo(on?0:vol(),.25)},
+    get name(){return song}
+  };
+})();
+document.addEventListener('pointerdown',()=>BGM.unlock(),{passive:true});
+document.addEventListener('visibilitychange',()=>BGM.duck(document.hidden));
+
 document.addEventListener('pointerdown',()=>SFX.unlock(),{passive:true});
 // 操作音：手札を選ぶ音・ボタンの音
 document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;if(t.closest('.hc'))SFX.select();else if(t.closest('.flip'))return;else if(t.closest('button'))SFX.ui()},true);
@@ -1012,6 +1097,7 @@ function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
+  if(VIEW!=='battle')BGM.set('menu');
   if(VIEW!=='menu')guardHist();
   if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto')setBg(null);
   if(VIEW==='menu')renderMenu();
@@ -1050,6 +1136,7 @@ function renderMenu(){
   ${missionsHTML()}
   ${updatesHTML()}
   ${rankCardHTML()}
+  <div class="sndSet"><span class="label">サウンド</span><button type="button" class="b small" id="mBgm">BGM ${bgmOn()?'ON':'OFF'}</button><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="BGMの音量"><button type="button" class="b small" id="mSfx">効果音 ${sndOn()?'ON':'OFF'}</button></div>
   <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>
   ${tabBarHTML('menu')}`;
   $('#mBattle').onclick=()=>startDraft();
@@ -1059,6 +1146,9 @@ function renderMenu(){
   $('#mOnline').onclick=()=>go('online');
   const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
+  $('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');renderMenu()};
+  $('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
+  $('#mSfx').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.ui();renderMenu()};
   bindNameEd('mName',renderMenu);
   const ua=$('#updAll');if(ua)ua.onclick=showUpdates;
   $('#pAvatar').onclick=pickAvatar;bindMissions();bindTabBar();
@@ -1996,6 +2086,7 @@ function showCardInfo(k){
   });
 }
 function render(){
+  if(VIEW==='battle'&&S){BGM.set(S.over?null:'battle');BGM.hot(!S.over&&(S.me.life===1||S.cpu.life===1))}
   if(VIEW==='battle'&&S&&!S.over)guardHist();
   if(VIEW==='battle')setBg('home_a','dark');
   if(S&&S.online&&!S.guest)NET.sync();
@@ -2022,7 +2113,7 @@ function render(){
   $('#app').innerHTML=`<div class="bt">
   <header class="btTop">
     <div class="btRound"><span>ROUND</span><b>${S.round||1}</b><span>${S.turnNo?S.turnNo+'ターン':''}${wn?`・観戦${wn}人`:''}</span></div>
-    <div class="btns"><button type="button" class="b small" id="bLog">記録</button><button type="button" class="b small" id="bRules">ルール</button><button type="button" class="b small" id="snd" aria-label="音">${sndOn()?'音 ON':'音 OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div>
+    <div class="btns"><button type="button" class="b small" id="bLog">記録</button><button type="button" class="b small" id="bRules">ルール</button><button type="button" class="b small" id="snd" aria-label="効果音">${sndOn()?'音 ON':'音 OFF'}</button><button type="button" class="b small" id="bgmB" aria-label="BGM">${bgmOn()?'曲 ON':'曲 OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div>
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
@@ -2072,6 +2163,7 @@ function render(){
   $('#pToggle').onchange=e=>{SV.showP=e.target.checked;save();render()};
   $('#bRules').onclick=showRulesOverlay;
   $('#snd').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.turn();render()};
+  {const bb=$('#bgmB');if(bb)bb.onclick=()=>{BGM.toggle();render()}}
   document.querySelectorAll('.hc').forEach(b=>{const t=b.querySelector('.tcg');b.onpointermove=e=>{if(e.pointerType!=='mouse'||RM)return;const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(500px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.08)`};b.onpointerleave=()=>{t.style.transform=''}});
   document.querySelectorAll('.hc').forEach(b=>{
     const card=()=>me.hand[+b.dataset.i];let lp=0,lpFired=false;
