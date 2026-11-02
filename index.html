@@ -241,8 +241,9 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .result .big.win{color:var(--candle)}.result .big.lose{color:var(--blood)}
 
 .cardBtn{background:none;border:0;padding:0;cursor:pointer;border-radius:6px}
-.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.duo .col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.duo{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;column-gap:12px;row-gap:6px}
+.duo .col{display:grid;grid-row:span 3;grid-template-rows:subgrid;row-gap:6px;align-content:start;min-width:0}
+.duo .colh{align-self:end}
 .colh{display:flex;flex-direction:column;gap:1px}
 .colh b{font-family:var(--display);font-weight:400;font-size:16px}
 .colh span{font-size:11px;color:var(--muted)}
@@ -878,7 +879,7 @@ function flash(t){const n=document.querySelector('.note');if(n){n.textContent=t;
 function renderRules(){
   $('#app').innerHTML=`<div class="top"><h1>ルールとカード一覧</h1><button type="button" class="b small" id="back">戻る</button></div>
   <div class="zone rules"><ul>
-   <li>対戦のたびに7パック（1パック6枚、最後の1枚は必ずシングルカード）を開け、出たカードだけでデッキを組みます。通常カードは1枚出ると3枚デッキに入れられます。CPUも同じように7パックから組みます。</li>
+   <li>対戦のたびに7パック（1パック6枚。シングルカードは7パックのどこかに最低1枚、ときどき2〜3枚）を開け、出たカードだけでデッキを組みます。通常カードは1枚出ると3枚デッキに入れられます。CPUも同じように7パックから組みます。</li>
    <li>デッキは40枚。通常カード13種×3枚と、シングルカード1枚。対戦相手のデッキの中身は公開されます。</li>
    <li>開始時（と心臓を当てられて選び直すとき）、全カードを混ぜて6枚引き、その中から1枚を心臓に伏せます。残りの5枚が手札です。その種類はデッキに2枚（シングルなら0枚）しか残りません。</li>
    <li>毎ターン1枚引き、手札からカードを1枚使えます（使わずに宣言へ進んでもかまいません）。村人や村長などの効果で、追加でカードを使えることがあります（追加分は使わなくてもOK）。使ったカードは捨て札として公開されます。</li>
@@ -900,12 +901,16 @@ function renderRules(){
 // おまかせ構築とCPU用の優先順（シミュレーションの勝率順）
 const RANK=['seer','prophet','spy','sentinel','apprentice','pack','bastion','peddler','poisoner','nekomata','astrologer','necro','bodyguard','gatekeeper','medium','detective','elder','hunter','priest','villager','silencer','sage','watchdog','mason','alchemist','executioner','decoy','bard','madman','twins','warder','wolf','baker','cryboy','reflect','trapper','assassin','fox','phantom','chief','inquisitor','vampire','cursewolf'];
 const RANK1=['whitewolf','teller','greatdet','mirror','saint','oracle','curser','timewitch','greatwolf'];
+// レア＝勝率上位15種（シングルはレジェンド）
+CARDS.forEach(c=>{if(!c.single)c.r=RANK.indexOf(c.k)<15?'R':(c.r==='S'?'S':'C')});
 let D=null,DF2='all';
-function genDraftPack(){
+function genDraftPack(single){
   const Cp=NORMAL.filter(c=>c.r==='S'||c.r==='C'),Rp=NORMAL.filter(c=>c.r==='R');
-  return[rand(Cp),rand(Cp),rand(Cp),Math.random()<.3?rand(Rp):rand(Cp),rand(Rp),rand(SINGLE)].map(c=>c.k);
+  return[rand(Cp),rand(Cp),rand(Cp),Math.random()<.3?rand(Rp):rand(Cp),rand(Rp),single?C[single]:(Math.random()<.3?rand(Rp):rand(Cp))].map(c=>c.k);
 }
-function newDraft(){return{packs:Array.from({length:7},genDraftPack),i:0,cur:null,pool:[],singles:[],deck:{types:[],single:null},stage:'open',filled:[]}}
+// シングルは7パック全体で1枚保証、ときどき2〜3枚
+function draftSingles(){const x=Math.random(),n=x<.6?1:x<.9?2:3,at=shuffle([0,1,2,3,4,5,6]).slice(0,n),ss=shuffle(SINGLE.map(c=>c.k));return[0,1,2,3,4,5,6].map(i=>{const j=at.indexOf(i);return j<0?null:ss[j]})}
+function newDraft(){const sg=draftSingles();return{packs:sg.map(genDraftPack),i:0,cur:null,pool:[],singles:[],deck:{types:[],single:null},stage:'open',filled:[]}}
 function addPulls(d,ks){ks.forEach(k=>{const arr=C[k].single?d.singles:d.pool;if(!arr.includes(k))arr.push(k)})}
 function fillPool(d){if(d.pool.length<13){const add=shuffle(STARTER.filter(k=>!d.pool.includes(k))).slice(0,13-d.pool.length);d.filled=add;d.pool.push(...add)}}
 function autoBuild(pool,singles,noise=0){
@@ -926,7 +931,7 @@ function renderDraft(){
       body=`<div class="packStage">
         <button type="button" class="pack" id="packBtn" aria-label="パックを開ける"><span class="pk2">BOOSTER ${d.i+1} / 7</span><span class="pkh">心</span><span class="pk1">心臓人狼</span><span class="pk2">6 CARDS</span></button>
         <div class="muted">パックをタップして開封</div>
-        <div class="note">1パック6枚。最後の1枚は必ずシングルカード。通常カードは1枚出ると3枚デッキに入れられます。</div></div>`;
+        <div class="note">1パック6枚。シングルカードは7パックのどこかに最低1枚入っています。通常カードは1枚出ると3枚デッキに入れられます。</div></div>`;
     }else{
       const all=d.cur.every(c=>c.on);
       body=`<div class="reveal reveal6">${d.cur.map((c,i)=>{const r=C[c.k].r==='S'?'C':C[c.k].r;return`<button type="button" class="flip rr-${r} ${c.on?'on':''} ${d.cur.dealt?'still':''}" data-i="${i}" style="animation-delay:${i*80}ms" aria-label="${c.on?N(c.k):'カードをめくる'}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(c.k,'p')}</div></div><div class="res ${c.res.type}">${c.res.txt}</div></button>`}).join('')}</div>
@@ -1673,8 +1678,8 @@ function render(){
   <section class="zone tracker">
     <div class="sh"><span class="label">推理の状況（●＝公開済み、消えたマスは候補外）</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率を表示</label></div>
     ${ready?`<div class="duo">
-      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>あなたの推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div>
-      <div class="col"><div class="colh"><b>あなたの心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em></span></div>${trackGrid(me,cpu,me.heart.type)}${knowNotes(S.know.cpu)}</div>
+      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>あなたの推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
+      <div class="col"><div class="colh"><b>あなたの心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em></span></div>${trackGrid(me,cpu,me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
   </section>
   <div class="lastLog ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
