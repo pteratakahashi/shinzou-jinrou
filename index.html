@@ -1302,7 +1302,7 @@ function renderDeck(){
 }
 /* ---- 構築済みデッキ（全カードから自由に組む） ---- */
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
-const FREE_PRESETS=[{"name":"呪術師の狼群","wr":60,"types":["madman","silencer","medium","prophet","pack","seer","bastion","cursewolf","watchdog","wolf","nekomata","decoy","villager"],"single":"curser"},{"name":"鏡の巫女の罠","wr":53,"types":["madman","silencer","medium","prophet","pack","seer","villager","wolf","poisoner","bastion","nekomata","cursewolf","executioner"],"single":"mirror"},{"name":"大狼の嵐","wr":53,"types":["madman","silencer","medium","prophet","pack","seer","nekomata","bastion","villager","cursewolf","executioner","watchdog","wolf"],"single":"greatwolf"},{"name":"名探偵の推理","wr":53,"types":["madman","silencer","medium","prophet","pack","seer","wolf","executioner","nekomata","bard","bastion","villager","cursewolf"],"single":"greatdet"}];
+const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":65,"types":["clairvoy","stargazer","diviner","seer","gatekeeper","prophet","medium","knight","hunter","detective","tracker","cursewolf","listener"],"single":"mirror"},{"name":"語り部の推理","wr":60,"types":["clairvoy","stargazer","diviner","seer","gatekeeper","prophet","medium","knight","tracker","cursewolf","listener","detective","hunter"],"single":"teller"},{"name":"大狼の牙","wr":56,"types":["chief","nun","madman","pack","witch","berserker","banker","knight","kidnapper","watchdog","cursewolf","howler","baker"],"single":"greatwolf"}];
 let FF='all';
 const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
@@ -1452,8 +1452,8 @@ function showRulesOverlay(){
 
 /* ================= draft（対戦ごとに7パック） ================= */
 // おまかせ構築とCPU用の優先順（シミュレーションの勝率順）
-const RANK=['seer','prophet','spy','sentinel','apprentice','pack','bastion','peddler','poisoner','nekomata','astrologer','necro','bodyguard','gatekeeper','medium','detective','elder','hunter','priest','villager','silencer','sage','watchdog','mason','alchemist','executioner','decoy','bard','madman','twins','warder','wolf','baker','cryboy','reflect','trapper','assassin','fox','phantom','chief','inquisitor','vampire','cursewolf'];
-const RANK1=['whitewolf','teller','greatdet','mirror','saint','oracle','curser','timewitch','greatwolf'];
+const RANK=['cursewolf', 'berserker', 'seer', 'medium', 'alpha', 'pack', 'diviner', 'madman', 'clairvoy', 'wolf', 'prophet', 'stargazer', 'witch', 'vampire', 'ghoul', 'nekomata', 'watchdog', 'kidnapper', 'silencer', 'howler', 'nightmare', 'detective', 'mason', 'villager', 'fortune', 'phantom', 'knight', 'astrologer', 'gatekeeper', 'executioner', 'poisoner', 'twins', 'chief', 'bastion', 'bodyguard', 'necro', 'innkeeper', 'priest', 'inquisitor', 'decoy', 'confessor', 'messenger', 'cleric', 'warder', 'listener', 'bard', 'gravedigger', 'shieldbearer', 'sentinel', 'hunter', 'spy', 'fox', 'tactician', 'reflect', 'sage', 'baker', 'lookout', 'nun', 'wererat', 'apprentice', 'peddler', 'banker', 'drummer', 'exorcist', 'elder', 'alchemist', 'trapper', 'watchman', 'tracker', 'assassin', 'cryboy', 'gambler'];
+const RANK1=['moonqueen', 'greatwolf', 'greatdet', 'mirror', 'oracle', 'curser', 'teller', 'whitewolf', 'timewitch', 'saint'];
 // レア＝勝率上位15種（シングルはレジェンド）
 CARDS.forEach(c=>{if(!c.single){const i=RANK.indexOf(c.k);c.r=i>=0&&i<Math.round(NORMAL.length*.35)?'R':(c.r==='S'?'S':'C')}});
 let D=null,DF2='all';
@@ -2780,6 +2780,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:25,d:'2026-11-03',t:'新しいカードを30種追加しました（情報7・攻撃8・防御7・補助7・シングル1）。あわせて全体のバランスを調整し、パックのCPUのデッキの組み方も新しいバランスに合わせました。'},
   {id:24,d:'2026-11-03',t:'「遊び方」を新しくしました。勝ち方・ターンの流れ・宣言の結果・用語を、順番に図つきで説明しています。カード一覧は下のタブの「カード」から、系統ごとに絞って見られます。'},
   {id:23,d:'2026-11-03',t:'ショップができました。銀貨で「カードの縁」（金・月光・血の月・虹）と「称号」に交換できます（見た目だけで強さは変わりません）。'},
   {id:22,d:'2026-11-03',t:'毎日のログインボーナスと、デイリーミッション（毎日3つ）で銀貨がもらえるようになりました。'},
