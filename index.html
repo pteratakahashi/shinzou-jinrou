@@ -779,8 +779,8 @@ body:has(.tabBar){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 const CAT={info:'情報',atk:'攻撃',grd:'防御',sup:'補助',one:'シングル'};
 // [key, name, glyph, category, rarity(S=starter C, C, R, L), effect, starterSingle]
 const RAW=[
- ['villager','村人','村','sup','S','1枚引く。このターン、カードをもう1枚使える。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
- ['chief','村長','旗','sup','C','次の自分のターン、1枚多く引き、カードを1枚多く使える。共鳴：使える枚数がさらに1枚増える。'],
+ ['villager','村人','村','sup','S','1枚引く。このターン、カードをもう1枚使える（ただし、このターンすでに使える枚数が増えていれば増えない）。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
+ ['chief','村長','旗','sup','C','次の自分のターン、カードを1枚多く使える。共鳴：次の自分のターン、1枚多く引く。'],
  ['seer','占い師','占','info','S','種類を2つ指定。相手の心臓がその中にあるか判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['hunter','狩人','狩','grd','S','次の相手ターン、相手は宣言できない。相手の心臓ではない種類を1つ知る。共鳴：相手の伏せカードを公開して捨て札にする。'],
@@ -1271,7 +1271,7 @@ function renderDeck(){
 }
 /* ---- 構築済みデッキ（全カードから自由に組む） ---- */
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
-const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":57,"types":["bodyguard","gatekeeper","medium","prophet","chief","seer","watchdog","detective","silencer","decoy","villager","twins","nekomata"],"single":"mirror"},{"name":"聖女の守り","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","decoy","detective","silencer","seer","chief","watchdog","villager","bard","warder"],"single":"saint"},{"name":"鏡の巫女の千里眼・改","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","chief","decoy","villager","detective","watchdog","seer","silencer","priest","warder"],"single":"mirror"},{"name":"人狼の群れ","wr":50,"types":["wolf","pack","cursewolf","vampire","madman","seer","medium","prophet","watchdog","detective","silencer","bodyguard","chief"],"single":"whitewolf"}];
+const FREE_PRESETS=[{"name":"呪術師の狼群","wr":60,"types":["madman","silencer","medium","prophet","pack","seer","bastion","cursewolf","watchdog","wolf","nekomata","decoy","villager"],"single":"curser"},{"name":"鏡の巫女の罠","wr":53,"types":["madman","silencer","medium","prophet","pack","seer","villager","wolf","poisoner","bastion","nekomata","cursewolf","executioner"],"single":"mirror"},{"name":"大狼の嵐","wr":53,"types":["madman","silencer","medium","prophet","pack","seer","nekomata","bastion","villager","cursewolf","executioner","watchdog","wolf"],"single":"greatwolf"},{"name":"名探偵の推理","wr":53,"types":["madman","silencer","medium","prophet","pack","seer","wolf","executioner","nekomata","bard","bastion","villager","cursewolf"],"single":"greatdet"}];
 let FF='all';
 const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
@@ -1825,8 +1825,8 @@ async function playCard0(p,c,copy=false){
     case 'detective':{
       o.deck.forEach(x=>K(p).known.add(x.id));log(`${p.name}は${o.name}の山札（${o.deck.length}枚）をすべて見た。`,w);break;}
     case 'watchdog':if(R){draw(p,1);learnNot(p,2)}o.f.watched=true;log(`${o.name}が次のターンに使うカードは、心臓と同じ系統かどうか判定される。`);break;
-    case 'villager':draw(p,R?2:1);if(R)learnNot(p,1);p.f.opt=(p.f.opt||0)+1;log('このターン、もう1枚使える。',w);break;
-    case 'chief':p.f.nextDraw=(p.f.nextDraw||0)+1;p.f.nextOpt=(p.f.nextOpt||0)+(R?2:1);break;
+    case 'villager':draw(p,R?2:1);if(R)learnNot(p,1);if(p.f.boosted)log('このターンはすでに使える枚数が増えているので、増えない。',w);else{p.f.boosted=true;p.f.opt=(p.f.opt||0)+1;log('このターン、もう1枚使える。',w)}break;
+    case 'chief':if(R)p.f.nextDraw=(p.f.nextDraw||0)+1;p.f.nextOpt=1;break;
     case 'inquisitor':{
       let tys;
       if(p.isCpu){const pr=probs(p);tys=shuffle(typesOf(o).filter(t=>t!==o.single).sort((a,b)=>(copies(o,b)-(pr.cnt[b]||0))-(copies(o,a)-(pr.cnt[a]||0))).slice(0,5)).slice(0,2)}
@@ -1973,7 +1973,7 @@ function cpuScore(p,c){
     case 'hunter':s=threat>.2?4.5:1.8;break;case 'fox':{const others=p.hand.filter(h=>h!==c&&!C[h.type].set&&h.type!=='fox').map(h=>cpuScore(p,h));s=others.length?Math.max(...others)*.95:-1;break}case 'trapper':s=2.2;break;
     case 'bodyguard':s=threat>.2?4:1.8;break;case 'decoy':s=threat>.2?4.2:2;break;
     case 'silencer':s=2.6;break;case 'reflect':s=2.2;break;case 'gatekeeper':s=2.4;break;
-    case 'villager':s=p.hand.length>2?2.6:1.8;break;case 'chief':s=2.3;break;
+    case 'villager':s=p.f.boosted?1.4:(p.hand.length>2?2.6:1.8);break;case 'chief':s=2.3;break;
     case 'mason':s=p.deck.some(x=>x.type==='mason')?2.6:1.8;break;case 'mirror':case 'warder':s=2;break;case 'nekomata':s=1;break;case 'baker':s=2.2;break;case 'bard':s=2.1;break;case 'alchemist':s=1.8;break;
     case 'twins':s=p.discard.some(x=>x.type==='twins')?3.2:1.6;break;case 'sage':s=p.deck.length?2:.3;break;case 'priest':s=p.discard.length>1?1.6:.2;break;
     case 'elder':s=maxP>.18?3.5:.8;break;case 'cryboy':s=maxP>.15?3.2:1.2;break;case 'executioner':s=maxP>.12?2.8:1.5;break;
@@ -2079,7 +2079,7 @@ async function runTurn(p){
   g.turnNo++;g.cur=p;p.f.ward=false;p.f.shield=false;p.f.decoy=false;
   if(p.setCard){const c=p.setCard;p.setCard=null;p.discard.push(c);K(opp(p)).known.add(c.id);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}
   p.f.blocked=!!p.f.noGuess;p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
-  p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.nextOpt=0;
+  p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;
   const plays=p.f.req;
   let nd=1+(p.f.extraDraw||0)+(p.f.nextDraw||0);p.f.extraDraw=0;p.f.nextDraw=0;if(p.f.noDraw){p.f.poisoned=true;p.f.noDraw=false;log(`${p.name}は毒師の効果で、このターンはカードを一切引けない。`)}
   g.phase=p.isCpu?'cpu':'none';render();
