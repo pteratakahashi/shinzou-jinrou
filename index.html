@@ -542,7 +542,7 @@ const RAW=[
  ['cryboy','狼少年','嘘','sup','R','このターン、宣言+1回。代償：このターンに宣言を外すと3枚捨てる。共鳴：代償なし。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['prophet','預言者','予','info','C','種類を1つ指定。相手の心臓がその種類かどうか判定する。共鳴：もう1つ指定できる。'],
+ ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。'],
  ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['poisoner','毒師','毒','atk','R','次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。代償：自分の心臓ではない種類を1つ相手に知られる。共鳴：代償なし。'],
@@ -1338,10 +1338,9 @@ async function playCard0(p,c,copy=false){
     case 'saint':{if(p.life!==1){log('ライフが1ではないので、聖女の効果はない。',w);break}p.life=Math.min(3,p.life+1);log(`${p.name}のライフが${p.life}になった。`,w);const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));log(`代償：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。このターンは宣言できない。`,w);p.f.guesses=0;break}
     case 'timewitch':p.f.extraTurn=true;break;
     case 'prophet':{
-      const n=R?2:1;let tys;
-      if(p.isCpu)tys=ranked(p).filter(e=>e[1]>0).slice(0,n).map(e=>e[0]);
-      else tys=await pickTypes(o,n,`預言者：${n}種類を選ぶ`,'選んだ種類が相手の心臓かどうかを、1つずつ判定します。',false,p);
-      tys.forEach(t=>judge(p,[t]));break;}
+      const hi=t=>{const r=C[t].r;return r==='R'||r==='L'};const isHi=hi(o.heart.type);
+      narrow(p,typesOf(o).filter(t=>hi(t)===isHi));
+      log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);break;}
     case 'spy':{
       if(o.setCard){K(p).known.add(o.setCard.id);log(`密偵：${o.name}の伏せカードは〈${N(o.setCard.type)}〉。`,w)}
       else{draw(p,1);log('相手は伏せていないので、1枚引いた。',w)}
@@ -1421,7 +1420,7 @@ function cpuScore(p,c){
     case 'mason':s=p.deck.some(x=>x.type==='mason')?2.6:1.8;break;case 'mirror':case 'warder':s=2;break;case 'nekomata':s=1;break;case 'baker':s=2.2;break;case 'bard':s=2.1;break;case 'alchemist':s=1.8;break;
     case 'twins':s=p.discard.some(x=>x.type==='twins')?3.2:1.6;break;case 'sage':s=p.deck.length?2:.3;break;case 'priest':s=p.discard.length>1?1.6:.2;break;
     case 'elder':s=maxP>.18?3.5:.8;break;case 'cryboy':s=maxP>.15?3.2:1.2;break;case 'executioner':s=maxP>.12?2.8:1.5;break;
-    case 'prophet':s=maxP>.15?3.4:1.4;break;case 'spy':s=o.setCard?3:1.6;break;
+    case 'prophet':s=live>3?3.4:.6;break;case 'spy':s=o.setCard?3:1.6;break;
     case 'pack':s=o.hand.length?2.6:.3;break;case 'poisoner':s=o.hand.length<=3?3.2:2;break;
     case 'bastion':s=2.2;break;case 'sentinel':s=p.setCard?2.8:1.8;break;case 'peddler':s=1.9;break;case 'apprentice':s=2;break;
     case 'whitewolf':s=o.hand.length?4.2:.2;break;case 'teller':s=new Set(p.discard.map(x=>C[x.type].cat)).size>=3?4:1;break;
