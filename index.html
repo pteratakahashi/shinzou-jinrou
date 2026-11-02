@@ -779,52 +779,52 @@ body:has(.tabBar){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 const CAT={info:'情報',atk:'攻撃',grd:'防御',sup:'補助',one:'シングル'};
 // [key, name, glyph, category, rarity(S=starter C, C, R, L), effect, starterSingle]
 const RAW=[
- ['villager','村人','村','sup','S','1枚引く。このターン、カードをもう1枚使える。共鳴：相手の心臓ではない種類を3つ知る。'],
+ ['villager','村人','村','sup','S','1枚引く。このターン、カードをもう1枚使える。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['chief','村長','旗','sup','C','次の自分のターン、1枚多く引き、カードを1枚多く使える。共鳴：使える枚数がさらに1枚増える。'],
- ['seer','占い師','占','info','S','種類を2つ指定。相手の心臓がその中にあるか判定する。共鳴：1枚引く。'],
- ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引く。'],
+ ['seer','占い師','占','info','S','種類を2つ指定。相手の心臓がその中にあるか判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
+ ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['hunter','狩人','狩','grd','S','次の相手ターン、相手は宣言できない。相手の心臓ではない種類を1つ知る。共鳴：相手の伏せカードを公開して捨て札にする。'],
  ['wolf','人狼','狼','atk','S','相手の手札をランダムに1枚捨てさせる。相手の手札が3枚以下なら、さらに1枚。共鳴：さらに1枚。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['fox','妖狐','狐','grd','S','コスト：手札のカードを1枚選び、相手に公開する（伏せ専用は不可）。効果：選んだカードを手札に残したまま、その効果だけを使う。共鳴：公開しなくてよい。'],
- ['mason','共有者','共','sup','S','1枚引く。山札に別の共有者があれば、それも手札に加える。共鳴：相手の心臓ではない種類を3つ知る。'],
+ ['mason','共有者','共','sup','S','1枚引く。山札に別の共有者があれば、それも手札に加える。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['baker','パン屋','麦','sup','S','2枚引き、手札を1枚選んで捨てる。共鳴：捨てなくてよい。'],
- ['detective','探偵','探','info','S','コスト：自分の心臓の系統を相手に知られる。効果：相手の山札をすべて見る。'],
+ ['detective','探偵','探','info','S','コスト：自分の心臓の系統を相手に知られる。効果：相手の山札をすべて見る。共鳴：コストなし。'],
  ['elder','長老','老','sup','S','このターン、宣言を2回まで行える。共鳴：3回まで行える。'],
- ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で2枚捨てる。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。共鳴：相手の心臓ではない種類を3つ知る。'],
+ ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で2枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['madman','狂人','狂','atk','S','1枚引く。次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札を1枚捨てさせる。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
- ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、それが心臓と同じ系統かどうかわかる。共鳴：1枚引く。'],
+ ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、それが心臓と同じ系統かどうかわかる。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['vampire','吸血鬼','血','atk','C','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせ、自分は1枚引く。共鳴：コストなし。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['priest','司祭','祈','sup','C','自分の捨て札からカードを2枚まで選び、手札に戻す。共鳴：3枚まで。'],
  ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にする。共鳴：相手の手札も1枚捨てさせる。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['alchemist','錬金術師','錬','sup','C','手札を2枚まで選んで捨て、3枚引く。共鳴：4枚引く。'],
- ['twins','双子','双','sup','C','1枚引く。自分の捨て札に別の双子があれば、さらに2枚引く。共鳴：相手の心臓ではない種類を3つ知る。'],
+ ['twins','双子','双','sup','C','1枚引く。自分の捨て札に別の双子があれば、さらに2枚引く。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['sage','賢者','賢','sup','C','自分の山札の上3枚を見て、1枚を手札に加える。共鳴：2枚加える。'],
- ['bard','吟遊詩人','詩','sup','C','3枚引く。次の相手ターン、相手も1枚多く引く。共鳴：相手は多く引かず、相手の心臓ではない種類を3つ知る。'],
+ ['bard','吟遊詩人','詩','sup','C','3枚引く。次の相手ターン、相手も1枚多く引く。共鳴：相手は多く引かない。'],
  ['nekomata','猫又','猫','grd','R','1枚引く。相手のカードの効果で捨てられたとき、相手の心臓を含む4種類の候補を知る。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['bodyguard','用心棒','盾','grd','R','【伏せ専用】心臓を当てられたとき発動。ライフが減らない（心臓の選び直しは行う）。そのかわり、次の自分のターンは宣言できず、選び直した後の手札は2枚になる。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['bodyguard','用心棒','盾','grd','R','【伏せ専用】心臓を当てられたとき発動。ライフが減らない（心臓の選び直しは行う）。そのかわり、次の自分のターンは宣言できず、選び直した後の手札は2枚になる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。'],
  ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['cryboy','狼少年','嘘','sup','R','このターン、宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
- ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。'],
- ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
+ ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
  ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。'],
- ['bastion','籠城','籠','grd','C','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、相手の手札を1枚捨てさせる。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['bastion','籠城','籠','grd','C','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、相手の手札を1枚捨てさせる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['sentinel','番兵','兵','grd','C','1枚引き、相手の心臓ではない種類を1つ知る。自分が伏せカードを置いていれば、さらに1枚引く。共鳴：もう1つ知る。'],
  ['peddler','行商人','商','sup','C','手札を1枚選んで山札の一番下に戻し、2枚引く（戻したカードは公開されない）。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['apprentice','見習い','習','sup','C','1枚引く。次に使う通常カードは必ず共鳴する。'],
- ['gatekeeper','門番','門','grd','R','【伏せ専用】相手が情報系カードを使ったとき発動。その効果を無効にし、相手の心臓の系統を知る。発動したら、さらに相手の心臓ではない種類を2つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['gatekeeper','門番','門','grd','R','【伏せ専用】相手が情報系カードを使ったとき発動。その効果を無効にし、相手の心臓の系統を知る。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['warder','結界師','結','grd','R','1枚引く。次の相手ターン、相手の情報系カードの効果を受けない。共鳴：攻撃系カードの効果も受けず、相手の心臓ではない種類を1つ知る。'],
- ['astrologer','占星術師','星','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：種類を3つ指定し、相手の心臓がその中にあるか判定する。'],
+ ['astrologer','占星術師','星','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：種類を3つ指定し、相手の心臓がその中にあるか判定する。共鳴：コストなし。'],
  ['necro','降霊術師','魂','info','R','コスト：自分の心臓ではない種類を3つ相手に知られる。効果：相手の心臓の名前の文字数を知る。共鳴：コストが2つになる。'],
  ['assassin','暗殺者','刃','atk','R','種類を1つ宣言してよい。当たれば心臓的中、外れたら手札を3枚捨てる。狩人の効果中でも使える。共鳴：外れても捨てない。'],
  ['greatdet','名探偵','名','one','L','相手の心臓を含む5種類の候補を知る。',1],
  ['curser','呪術師','蠱','one','L','次の宣言が当たると相手のライフ-2。ただし、外れると自分のライフ-1。',1],
- ['saint','聖女','聖','one','L','条件：自分のライフが1のときだけ使える。コスト：自分の心臓の系統を相手に知られ、このターンは宣言できない。効果：ライフを1回復する。',1],
+ ['saint','聖女','聖','one','L','条件：自分のライフが1のときだけ使える。コスト：自分の心臓の系統を相手に知られ、このターンは宣言できず、手札をすべて捨てる。効果：ライフを1回復する。',1],
  ['oracle','神託','神','one','L','コスト：自分の心臓の候補が3種類に絞られる。効果：相手の心臓の候補を2種類に絞る。'],
  ['greatwolf','大狼','牙','one','L','お互いに手札を全て捨てる。相手は2枚、自分は4枚引く。'],
  ['whitewolf','白狼','白','one','L','相手の手札をすべて見て、1枚選んで捨てさせる。襲撃：この効果で相手の手札が0枚になったら、相手のライフ-1。'],
@@ -1572,7 +1572,7 @@ function triggerNow(owner){
   const c=owner.setCard;owner.setCard=null;owner.discard.push(c);K(opp(owner)).known.add(c.id);
   S.hist.push({who:whoOf(owner),k:c.type,turn:S.turnNo});
   log(`${owner.name}の伏せカード〈${N(c.type)}〉が発動！`,whoOf(owner));
-  learnNot(owner,2);
+  learnNot(owner,1);
   if(owner.lastCat==='grd'){draw(owner,1);log('共鳴！（防御系が続いた）1枚引く。',whoOf(owner));learnNot(owner,1)}
   return c;
 }
@@ -1761,12 +1761,13 @@ function reveal(p,cards){
 async function payCost(p,c,R){
   const o=opp(p),w=whoOf(p);
   switch(c.type){
-    case 'medium':case 'astrologer':giveAway(p,1);break;
+    case 'medium':giveAway(p,1);break;
+    case 'astrologer':if(!R)giveAway(p,1);break;
     case 'vampire':case 'poisoner':if(!R)giveAway(p,1);break;
     case 'necro':giveAway(p,R?2:3);break;
-    case 'detective':{const cat=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===cat));log(`コスト：${p.name}の心臓は「${CAT[cat]}」系統だと知られた。`,w);break}
+    case 'detective':if(R)break;{const cat=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===cat));log(`コスト：${p.name}の心臓は「${CAT[cat]}」系統だと知られた。`,w);break}
     case 'cursewolf':if(!R&&p.hand.length){const x=rand(p.hand);toDiscard(p,x);log(`コスト：${p.name}は〈${N(x.type)}〉を捨てた。`,w)}break;
-    case 'saint':if(p.life===1){const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));p.f.guesses=0;log(`コスト：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。このターンは宣言できない。`,w)}break;
+    case 'saint':if(p.life===1){const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));p.f.guesses=0;const hn=p.hand.length;[...p.hand].forEach(x=>toDiscard(p,x));log(`コスト：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。このターンは宣言できず、手札${hn}枚を捨てた。`,w)}break;
     case 'oracle':{const b=cands(o,3);log(`コスト：${p.name}の心臓は ${b.map(x=>'〈'+N(x)+'〉').join('')} のどれかだと知られた。`,whoOf(o));break}
     case 'fox':{
       p.f.foxPick=null;
@@ -1806,7 +1807,7 @@ async function playCard0(p,c,copy=false){
   if((C[c.type].cat==='info'||(C[c.type].cat==='atk'&&o.f.ward==='all'))&&warded()){render();return}
   if(C[c.type].set){draw(p,1);log('伏せずに使ったので、1枚引いた。',w);render();return}
   switch(c.type){
-    case 'seer':judge(p,await chooseTypes(p,2,'占い師：2種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));if(R)draw(p,1);break;
+    case 'seer':judge(p,await chooseTypes(p,2,'占い師：2種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));if(R){draw(p,1);learnNot(p,2)}break;
     case 'astrologer':judge(p,await chooseTypes(p,3,'占星術師：3種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));break;
     case 'medium':{
       const pw=probs(p).w,cats=[...new Set(typesOf(o).map(t=>C[t].cat))];
@@ -1817,13 +1818,13 @@ async function playCard0(p,c,copy=false){
       const group=typesOf(o).filter(t=>C[t].cat===ct),yes=C[o.heart.type].cat===ct;
       if(yes)narrow(p,group);else group.forEach(t=>K(p).excluded.add(t));
       log(`霊媒：${o.name}の心臓は「${CAT[ct]}」系統${yes?'である':'ではない'}。`,w);
-      if(R)draw(p,1);
+      if(R){draw(p,1);learnNot(p,2)}
       break;}
     case 'necro':{const len=N(o.heart.type).length;narrow(p,typesOf(o).filter(t=>N(t).length===len));log(`降霊：${o.name}の心臓の名前は${len}文字。`,w);break}
     case 'detective':{
       o.deck.forEach(x=>K(p).known.add(x.id));log(`${p.name}は${o.name}の山札（${o.deck.length}枚）をすべて見た。`,w);break;}
-    case 'watchdog':if(R)draw(p,1);o.f.watched=true;log(`${o.name}が次のターンに使うカードは、心臓と同じ系統かどうか判定される。`);break;
-    case 'villager':draw(p,1);if(R)learnNot(p,3);p.f.opt=(p.f.opt||0)+1;log('このターン、もう1枚使える。',w);break;
+    case 'watchdog':if(R){draw(p,1);learnNot(p,2)}o.f.watched=true;log(`${o.name}が次のターンに使うカードは、心臓と同じ系統かどうか判定される。`);break;
+    case 'villager':draw(p,R?2:1);if(R)learnNot(p,1);p.f.opt=(p.f.opt||0)+1;log('このターン、もう1枚使える。',w);break;
     case 'chief':p.f.nextDraw=(p.f.nextDraw||0)+1;p.f.nextOpt=(p.f.nextOpt||0)+(R?2:1);break;
     case 'inquisitor':{
       let tys;
@@ -1844,10 +1845,10 @@ async function playCard0(p,c,copy=false){
       const x=p.f.foxPick;p.f.foxPick=null;
       if(!x||!p.hand.includes(x)){log('化けられるカードがない。',w);break}
       await playCard(p,x,true);break;}
-    case 'mason':{draw(p,1);if(R)learnNot(p,3);const m=p.deck.find(x=>x.type==='mason');if(m){rm(p.deck,m);p.hand.push(m);log('もう1枚の共有者を手札に加えた。',w)}break;}
+    case 'mason':{draw(p,R?2:1);if(R)learnNot(p,1);const m=p.deck.find(x=>x.type==='mason');if(m){rm(p.deck,m);p.hand.push(m);log('もう1枚の共有者を手札に加えた。',w)}break;}
     case 'mirror':case 'nekomata':case 'warder':draw(p,1);if(R&&c.type!=='mirror')learnNot(p,1);if(c.type==='warder')p.f.ward=R?'all':'info';break;
-    case 'bard':draw(p,3);if(!R)o.f.extraDraw=(o.f.extraDraw||0)+1;else learnNot(p,3);break;
-    case 'twins':draw(p,1);if(R)learnNot(p,3);if(p.discard.some(x=>x.type==='twins'&&x!==c)){draw(p,2);log('双子がそろった！さらに2枚引く。',w)}break;
+    case 'bard':draw(p,3);if(!R)o.f.extraDraw=(o.f.extraDraw||0)+1;break;
+    case 'twins':draw(p,R?2:1);if(R)learnNot(p,1);if(p.discard.some(x=>x.type==='twins'&&x!==c)){draw(p,2);log('双子がそろった！さらに2枚引く。',w)}break;
     case 'baker':{
       draw(p,2);if(!p.hand.length||R)break;
       const x=p.isCpu?worst(p):(render(),await pickCard(p.hand,'パン屋：捨てるカードを1枚選ぶ','捨てたカードは公開されます。'));
@@ -1868,7 +1869,7 @@ async function playCard0(p,c,copy=false){
       xs.forEach(x=>{rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)});break;}
     case 'elder':if(p.f.blocked)log('狩人の効果で宣言できないままです。');else p.f.guesses=Math.max(p.f.guesses,0)+(R?2:1);break;
     case 'cryboy':if(!R)p.f.harsh=true;if(!p.f.blocked)p.f.guesses++;break;
-    case 'executioner':p.f.safe=true;if(R)learnNot(p,3);break;
+    case 'executioner':p.f.safe=true;if(R)learnNot(p,1);break;
     case 'madman':draw(p,1);if(R&&o.hand.length){const had=o.hand.length;forcedDiscard(o,rand(o.hand),p);await raid(p,o,had)}if(S.over)break;o.f.forceGuess=true;log(`${o.name}は次のターン、必ず宣言しなければならない。`);break;
     case 'assassin':{
       let ty=null;
@@ -1891,11 +1892,11 @@ async function playCard0(p,c,copy=false){
     case 'prophet':{
       const hi=t=>{const r=C[t].r;return r==='R'||r==='L'};const isHi=hi(o.heart.type);
       narrow(p,typesOf(o).filter(t=>hi(t)===isHi));
-      log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);break;}
+      log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);if(R)learnNot(p,2);break;}
     case 'spy':{
       if(o.setCard){K(p).known.add(o.setCard.id);log(`密偵：${o.name}の伏せカードは〈${N(o.setCard.type)}〉。`,w)}
       else{draw(p,1);log('相手は伏せていないので、1枚引いた。',w)}
-      if(R)learnNot(p,1);break;}
+      if(R)learnNot(p,2);break;}
     case 'pack':{const had=o.hand.length;const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
     case 'poisoner':{o.f.noDraw=true;log(`${o.name}は次のターン、カードを引けない。`,w);break}
     case 'sentinel':draw(p,p.setCard?2:1);learnNot(p,R?2:1);break;
@@ -1954,6 +1955,10 @@ async function rebuild(o,title='心臓を当てられた'){
   S.know[o===S.me?'cpu':'me']=freshK();
 }
 
+/* ---- ルール ---- */
+// freeSet：伏せるのは「使う」回数とは別枠（1ターンに1回、使用とあわせて伏せられる）
+const RULES={freeSet:!!window.FREE_SET};
+
 /* ---- CPU ---- */
 function cpuScore(p,c){
   const o=opp(p);const my=probs(p).w;const live=Object.values(my).filter(v=>v>0).length;const maxP=Math.max(...Object.values(my));
@@ -1989,10 +1994,20 @@ function cpuGuessPick(p){
 async function cpuTurn(p,plays,g){
   await sleep(900);
   const use=()=>{if(p.f.req>0)p.f.req--;else p.f.opt--};
+  const freeSetNow=async()=>{
+    if(!p.f.setFree||g.over)return;
+    const sets=p.hand.filter(h=>C[h.type].set).map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
+    let c=sets.length?sets[0][0]:null;
+    if(p.setCard&&(!c||sets[0][1]<3.2))return;
+    if(!c&&p.hand.length>2&&Math.random()<.5)c=worst(p);
+    if(!c)return;p.f.setFree=0;await doSet(p,c);await sleep(300);
+  };
+  if(p.f.setFree)await freeSetNow();
   while(!g.over&&p.hand.length&&(p.f.req>0||p.f.opt>0)){
     // ブラフ伏せ：伏せ枠が空いていれば、たまに一番いらないカードを伏せる
     if(!p.setCard&&p.f.req>0&&p.hand.length>2&&Math.random()<.15){use();await doSet(p,worst(p));await sleep(300);continue}
-    const opts=p.hand.map(h=>[h,C[h.type].set&&p.setCard?1.5+(p.lastCat==='grd'?0:.3):cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
+    const opts=p.hand.filter(h=>!(p.f.setFree===0&&RULES.freeSet&&C[h.type].set)).map(h=>[h,C[h.type].set&&p.setCard?1.5+(p.lastCat==='grd'?0:.3):cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
+    if(!opts.length)break;
     const [c,sc]=opts[0];
     if(p.f.req<=0&&sc<2)break;
     if(p.f.req>0&&sc<1.2&&p.hand.length<6){log(`${p.name}はカードを使わなかった。`,'cpu');break}
@@ -2000,6 +2015,7 @@ async function cpuTurn(p,plays,g){
     if(C[c.type].set&&!p.setCard)await doSet(p,c);else await playCard(p,c);
     await sleep(800);
   }
+  if(p.f.setFree&&!p.setCard)await freeSetNow();
   while(!g.over&&p.f.guesses>0&&p.hand.length){
     const ty=cpuGuessPick(p);if(!ty)break;
     const r=await doGuess(p,ty);await sleep(800);
@@ -2014,21 +2030,26 @@ function playerTurn(p,plays){
 }
 // 画面に出す手番の状態。オンラインでは S.phase は手番の人のものなので、相手の番は「考えています」にする
 function PH(){if(!S||S.over)return'none';if(S.cur&&S.cur!==S.me&&(S.phase==='play'||S.phase==='guess'))return'cpu';return S.phase}
+const canSetIn=(P,ph)=>RULES.freeSet?P.f.setFree>0&&(ph==='play'||ph==='guess'):ph==='play';
+const canPickIn=(P,ph)=>ph==='play'||(RULES.freeSet&&ph==='guess'&&P.f.setFree>0);
 async function onPlay(){return onUse(false)}
 async function onSet(){return onUse(true)}
 async function onUse(asSet){
-  if(PH()!=='play'||!S.sel||S.busy)return;
+  const ph=PH();if(!S.sel||S.busy)return;
+  if(asSet||C[S.sel.type].set){if(!canSetIn(S.me,ph))return}else if(ph!=='play')return;
   const c=S.sel;S.sel=null;
   if(S.guest){S.busy=true;NET.send({t:'cmd',c:'use',id:c.id,set:!!asSet});render();return}
   return useAs(S.me,c,asSet);
 }
 async function useAs(P,c,asSet){
-  if(S.phase!=='play'||S.cur!==P||S.busy||!P.hand.includes(c))return;
-  const f=P.f;S.busy=true;
-  if(f.req>0)f.req--;else f.opt--;
-  if(asSet||C[c.type].set)await doSet(P,c);else await playCard(P,c);
+  if(S.cur!==P||S.busy||!P.hand.includes(c))return;
+  const isSet=asSet||C[c.type].set,f=P.f;
+  if(isSet?!canSetIn(P,S.phase):S.phase!=='play')return;
+  S.busy=true;
+  if(isSet&&RULES.freeSet)f.setFree--;else if(f.req>0)f.req--;else f.opt--;
+  if(isSet)await doSet(P,c);else await playCard(P,c);
   if(S.over)return;
-  if((f.req<=0&&f.opt<=0)||!P.hand.length)S.phase='guess';
+  if(S.phase==='play'&&((f.req<=0&&f.opt<=0)||!P.hand.length))S.phase='guess';
   S.busy=false;render();
 }
 function onSkip(){if(PH()!=='play'||S.busy)return;S.sel=null;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'skip'});render();return}skipAs(S.me)}
@@ -2056,7 +2077,7 @@ async function runTurn(p){
   g.turnNo++;g.cur=p;p.f.ward=false;p.f.shield=false;p.f.decoy=false;
   if(p.setCard){const c=p.setCard;p.setCard=null;p.discard.push(c);K(opp(p)).known.add(c.id);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}
   p.f.blocked=!!p.f.noGuess;p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
-  p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.opt=p.f.nextOpt||0;p.f.nextOpt=0;
+  p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.nextOpt=0;
   const plays=p.f.req;
   let nd=1+(p.f.extraDraw||0)+(p.f.nextDraw||0);p.f.extraDraw=0;p.f.nextDraw=0;if(p.f.noDraw){p.f.poisoned=true;p.f.noDraw=false;log(`${p.name}は毒師の効果で、このターンはカードを一切引けない。`)}
   g.phase=p.isCpu?'cpu':'none';render();
@@ -2224,8 +2245,10 @@ function render(){
   if(SP)phase=S.over?'対戦終了':S.cur?`${S.cur===me?MYN():OPN()}のターン`:'心臓を選んでいます…';
   else if(S.over)phase='対戦終了';
   else if(ph==='cpu')phase=S.cur?`${OPN()}が考えています…`:`${OPN()}が心臓を選んでいます…`;
-  else if(ph==='play')phase=me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`;
+  const fsN=RULES.freeSet&&me.f.setFree>0&&!SP?'（伏せは別枠であと1回）':'';
+  if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。ターンを終了してください。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。';
+  if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
   const resOk=c=>!C[c.type].single&&!C[c.type].set&&(me.lastCat===C[c.type].cat||me.f.forceRes);
   const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
@@ -2262,7 +2285,7 @@ function render(){
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'（伏せるとブラフになります）'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:''}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':'使う'}</button>
-      <button type="button" class="b" id="bSet" ${ph==='play'&&S.sel&&!S.busy?'':'disabled'}>${me.setCard?'伏せ直す':'伏せる'}</button>
+      <button type="button" class="b" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${me.setCard?'伏せ直す':'伏せる'}</button>
       ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
       <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
       <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
@@ -2295,7 +2318,7 @@ function render(){
     b.onpointerup=b.onpointercancel=()=>clearTimeout(lp);
     b.onpointerleave=(f=>e=>{clearTimeout(lp);f&&f(e)})(b.onpointerleave);
     b.oncontextmenu=e=>e.preventDefault();
-    b.onclick=e=>{if(lpFired){lpFired=false;return}if(e.target.closest('.hinfo')||ph!=='play'||S.busy)return showCardInfo(card().type);const c=card();S.sel=S.sel===c?null:c;render()};
+    b.onclick=e=>{if(lpFired){lpFired=false;return}if(e.target.closest('.hinfo')||!canPickIn(me,ph)||S.busy)return showCardInfo(card().type);const c=card();S.sel=S.sel===c?null:c;render()};
     b.ondblclick=()=>{if(ph!=='play'||S.busy)return;S.sel=card();C[S.sel.type].set?onSet():onPlay()};
   });
   if(!SP){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}
