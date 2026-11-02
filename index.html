@@ -784,7 +784,7 @@ const RAW=[
  ['seer','占い師','占','info','S','種類を2つ指定。相手の心臓がその中にあるか判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['hunter','狩人','狩','grd','S','次の相手ターン、相手は宣言できない。相手の心臓ではない種類を1つ知る。共鳴：相手の伏せカードを公開して捨て札にする。'],
- ['wolf','人狼','狼','atk','S','相手の手札をランダムに1枚捨てさせる。相手の手札が3枚以下なら、さらに1枚。共鳴：さらに1枚。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['wolf','人狼','狼','atk','S','相手の手札をランダムに1枚捨てさせる。相手の手札が3枚以下なら、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['fox','妖狐','狐','grd','S','コスト：手札のカードを1枚選び、相手に公開する（伏せ専用は不可）。効果：選んだカードを手札に残したまま、その効果だけを使う。共鳴：公開しなくてよい。'],
  ['mason','共有者','共','sup','S','1枚引く。山札に別の共有者があれば、それも手札に加える。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['baker','パン屋','麦','sup','S','2枚引き、手札を1枚選んで捨てる。共鳴：捨てなくてよい。'],
@@ -792,11 +792,11 @@ const RAW=[
  ['elder','長老','老','sup','S','このターン、宣言を2回まで行える。共鳴：3回まで行える。'],
  ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で2枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['madman','狂人','狂','atk','S','1枚引く。次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札を1枚捨てさせる。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['madman','狂人','狂','atk','S','1枚引く。次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札を1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、それが心臓と同じ系統かどうかわかる。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
- ['vampire','吸血鬼','血','atk','C','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせ、自分は1枚引く。共鳴：コストなし。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['vampire','吸血鬼','血','atk','C','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせ、自分は1枚引く。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['priest','司祭','祈','sup','C','自分の捨て札からカードを2枚まで選び、手札に戻す。共鳴：3枚まで。'],
- ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にする。共鳴：相手の手札も1枚捨てさせる。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にする。共鳴：相手の手札も1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['alchemist','錬金術師','錬','sup','C','手札を2枚まで選んで捨て、3枚引く。共鳴：4枚引く。'],
  ['twins','双子','双','sup','C','1枚引く。自分の捨て札に別の双子があれば、さらに2枚引く。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['sage','賢者','賢','sup','C','自分の山札の上3枚を見て、1枚を手札に加える。共鳴：2枚加える。'],
@@ -805,13 +805,13 @@ const RAW=[
  ['bodyguard','用心棒','盾','grd','R','【伏せ専用】心臓を当てられたとき発動。ライフが減らない（心臓の選び直しは行う）。そのかわり、次の自分のターンは宣言できず、選び直した後の手札は2枚になる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。'],
- ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['cryboy','狼少年','嘘','sup','R','このターン、宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
- ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。'],
  ['bastion','籠城','籠','grd','C','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、相手の手札を1枚捨てさせる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['sentinel','番兵','兵','grd','C','1枚引き、相手の心臓ではない種類を1つ知る。自分が伏せカードを置いていれば、さらに1枚引く。共鳴：もう1つ知る。'],
@@ -827,7 +827,7 @@ const RAW=[
  ['saint','聖女','聖','one','L','条件：自分のライフが1のときだけ使える。コスト：自分の心臓の系統を相手に知られ、このターンは宣言できず、手札をすべて捨てる。効果：ライフを1回復する。',1],
  ['oracle','神託','神','one','L','コスト：自分の心臓の候補が3種類に絞られる。効果：相手の心臓の候補を2種類に絞る。'],
  ['greatwolf','大狼','牙','one','L','お互いに手札を全て捨てる。相手は2枚、自分は4枚引く。'],
- ['whitewolf','白狼','白','one','L','相手の手札をすべて見て、1枚選んで捨てさせる。襲撃：この効果で相手の手札が1枚以下になったら、相手のライフ-1。'],
+ ['whitewolf','白狼','白','one','L','相手の手札をすべて見て、1枚選んで捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['teller','語り部','語','one','L','自分の捨て札にある系統の数（最大5）だけ、相手の心臓ではない種類を知る。'],
  ['timewitch','時の魔女','時','one','L','このターンの後、もう一度自分のターンを行う。'],
  ['mirror','鏡の巫女','鏡','one','L','1枚引く。心臓にしているとき、当てた相手のライフも1減る（相手のライフが1なら無効）。この効果は1試合に1回だけで、一度起きたら鏡の巫女はもう心臓にできない。'],
@@ -1378,7 +1378,7 @@ function rulesListHTML(){
       <dt>共鳴</dt><dd>直前に自分が使ったカード（前のターンの分も含む）と<b>同じ系統</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。シングルカードは共鳴しません。同じ系統ばかり使うと、心臓の系統も読まれやすくなります。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
-      <dt>襲撃</dt><dd>攻撃系カードの効果で相手の手札を1枚以下にすると、心臓を当てたのと同じく相手の心臓が1つ止まります。</dd>
+      <dt>襲撃</dt><dd>襲撃のある攻撃系カードを使ったあと、相手の手札が1枚以下なら（もともと0枚でも）、心臓を当てたのと同じく相手の心臓が1つ止まります。</dd>
       <dt>山札が切れたら</dt><dd>捨て札を混ぜて、新しい山札にします。</dd>
     </dl>
   </div></section>
@@ -1723,7 +1723,7 @@ function judge(p,set){
 }
 function nekoCurse(owner){const cand=cands(owner,4);log(`猫又の祟り！${opp(owner).name}の心臓は ${cand.map(x=>'〈'+N(x)+'〉').join('')} のどれか。`,whoOf(owner))}
 async function raid(p,o,had){
-  if(had>1&&o.hand.length<=1&&!S.over){
+  if(o.hand.length<=1&&!S.over){
     o.life=Math.max(0,o.life-1);S.shake=whoOf(o);log(`襲撃！${o.name}の手札が残りわずかになった。ライフ-1（残り${o.life}）`,whoOf(p));render();
     await fxRaid();await fxHeartBreak(whoOf(o),o.life+1);S.round=(S.round||1)+1;if(o.life<=0)return gameOver(p);
     // 的中と同じく、襲撃された側は心臓を選び直し、襲撃した側のターンはここで終わる（宣言もできない）
@@ -1839,7 +1839,7 @@ async function playCard0(p,c,copy=false){
     case 'wolf':{const had=o.hand.length;const n=1+(had<=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
     case 'vampire':{const had=o.hand.length;if(had)forcedDiscard(o,rand(o.hand),p);draw(p,1);await raid(p,o,had);break}
     case 'cursewolf':{const had=o.hand.length;for(let i=0;i<2&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
-    case 'phantom':for(let i=0;i<2&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);log(`${o.name}の山札の〈${N(x.type)}〉が捨て札になった。`);if(x.type==='nekomata')nekoCurse(o)}if(R&&o.hand.length){const had=o.hand.length;forcedDiscard(o,rand(o.hand),p);await raid(p,o,had)}break;
+    case 'phantom':for(let i=0;i<2&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);log(`${o.name}の山札の〈${N(x.type)}〉が捨て札になった。`);if(x.type==='nekomata')nekoCurse(o)}if(R&&o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break;
     case 'greatwolf':[...o.hand].forEach(x=>forcedDiscard(o,x,p));[...p.hand].forEach(x=>toDiscard(p,x));draw(o,2);draw(p,4);log('お互いに手札を捨て、相手は2枚、自分は4枚引き直した。');break;
     case 'fox':{
       const x=p.f.foxPick;p.f.foxPick=null;
@@ -1870,7 +1870,7 @@ async function playCard0(p,c,copy=false){
     case 'elder':if(p.f.blocked)log('狩人の効果で宣言できないままです。');else p.f.guesses=Math.max(p.f.guesses,0)+(R?2:1);break;
     case 'cryboy':if(!R)p.f.harsh=true;if(!p.f.blocked)p.f.guesses++;break;
     case 'executioner':p.f.safe=true;if(R)learnNot(p,1);break;
-    case 'madman':draw(p,1);if(R&&o.hand.length){const had=o.hand.length;forcedDiscard(o,rand(o.hand),p);await raid(p,o,had)}if(S.over)break;o.f.forceGuess=true;log(`${o.name}は次のターン、必ず宣言しなければならない。`);break;
+    case 'madman':draw(p,1);if(R&&o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);if(S.over||S.cur!==p)break;o.f.forceGuess=true;log(`${o.name}は次のターン、必ず宣言しなければならない。`);break;
     case 'assassin':{
       let ty=null;
       if(p.isCpu){const r=ranked(p)[0];if(r[1]>=.3)ty=r[0]}
@@ -1905,7 +1905,7 @@ async function playCard0(p,c,copy=false){
       draw(p,2);if(R)learnNot(p,1);break;}
     case 'apprentice':draw(p,1);p.f.forceRes=true;log('次に使う通常カードは必ず共鳴する。',w);break;
     case 'whitewolf':{
-      if(!o.hand.length){log('相手の手札がない。',w);break}
+      if(!o.hand.length){log('相手の手札がない。',w);await raid(p,o);break}
       o.hand.forEach(x=>K(p).known.add(x.id));log(`白狼：${o.name}の手札は ${o.hand.map(x=>'〈'+N(x.type)+'〉').join('')}`,w);
       const had=o.hand.length;
       const x=p.isCpu?o.hand.map(h=>[h,cpuScore(o,h)]).sort((a,b)=>b[1]-a[1])[0][0]:await pickCard(o.hand,'白狼：捨てさせるカード','相手の手札から1枚選んで捨てさせます。');
@@ -1982,6 +1982,7 @@ function cpuScore(p,c){
     case 'whitewolf':s=o.hand.length?4.2:.2;break;case 'teller':s=new Set(p.discard.map(x=>C[x.type].cat)).size>=3?4:1;break;
     case 'greatdet':s=4.2;break;case 'oracle':s=4.6;break;case 'curser':s=maxP>.4?3.8:.4;break;case 'saint':s=p.life===1?(threat>.3?1.5:4.5):-1;break;case 'timewitch':s=p.hand.length>=4?4:1;break;
   }
+  if(C[c.type].e.includes('襲撃：')&&o.hand.length<=(['wolf','pack','madman','phantom'].includes(c.type)?2:3)&&!o.f.ward)s+=3;
   if(!C[c.type].single&&!C[c.type].set&&p.lastCat===C[c.type].cat)s+=1;
   if(c.type===p.heart.type&&Math.random()<.6)s-=1.5;
   return s+Math.random()*1.4;
