@@ -211,7 +211,7 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 .hc.drawn{animation:drawIn .5s ease-out both}
 @keyframes drawIn{from{transform:translate(40px,-40px) rotate(12deg);opacity:0}}
 .hc .twin{position:absolute;top:-8px;left:4px;font-size:9px;background:var(--blood);color:#fff;border-radius:99px;padding:0 6px;z-index:1}
-.hc .hinfo{position:absolute;bottom:-4px;left:-3px;z-index:2;width:22px;height:22px;border-radius:50%;background:var(--panel2,#1d2140);border:1.5px solid var(--candle);color:var(--candle);font:700 13px/19px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.hc .hinfo{display:none!important;position:absolute;bottom:-4px;left:-3px;z-index:2;width:22px;height:22px;border-radius:50%;background:var(--panel2,#1d2140);border:1.5px solid var(--candle);color:var(--candle);font:700 13px/19px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .hc{-webkit-touch-callout:none;user-select:none}
 .hc .twin.res{background:var(--candle);color:#1b1408}
 .hc.glow .tcg{box-shadow:0 0 0 2px var(--candle),0 0 16px 3px rgba(233,166,76,.55);animation:resGlow 1.6s ease-in-out infinite}
@@ -593,12 +593,12 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
   .bt .duo{grid-template-columns:minmax(0,1fr)}
   .bt .duo.t-opp .col:nth-child(2),.bt .duo.t-me .col:nth-child(1){display:none}
   .bt .duo .colh b{display:none}
-  .bt .tracker .grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
-  .bt .tt{padding:2px 4px;gap:0;border-radius:5px}
-  .bt .tt .tn{font-size:10.5px;line-height:1.25}
-  .bt .tt .tn small{font-size:8px;margin-left:1px}
-  .bt .tt .dots{font-size:7px;letter-spacing:0;line-height:1.1}
-  .bt .tt .pp{font-size:8.5px;line-height:1.1}
+  .bt .tracker .grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .bt .tt{padding:6px 6px 5px;gap:2px;border-radius:6px;justify-content:center}
+  .bt .tt .tn{font-size:13px;line-height:1.2}
+  .bt .tt .tn small{font-size:9px;margin-left:2px}
+  .bt .tt .dots{font-size:10px;letter-spacing:1px;line-height:1.1}
+  .bt .tt .pp{font-size:10px;line-height:1.1}
   .btMid>.sh .label{font-size:10px}
 }
 @media (max-width:420px){.btTop .b.small{padding:5px 7px;font-size:11px}.bt .mini{font-size:10px}}
