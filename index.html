@@ -46,7 +46,27 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .tart img{-webkit-mask-image:linear-gradient(to bottom,#000 80%,transparent 99%);mask-image:linear-gradient(to bottom,#000 80%,transparent 99%)}
 .ttext{font-size:.82em;line-height:1.38;background:rgba(0,0,0,.38);border-radius:.3em;padding:.32em .42em;min-height:5em;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .r-R{box-shadow:0 0 0 .08em #c9d6f5 inset,0 .35em .9em rgba(0,0,0,.45)}
-.r-L{border-color:#e9b54c;box-shadow:0 0 1.1em rgba(233,181,76,.45),0 .35em .9em rgba(0,0,0,.45)}
+/* シングル（レジェンダリー）：虹色に回る枠、星の散る黒紫の地、金の名札 */
+@property --la{syntax:'<angle>';inherits:false;initial-value:0deg}
+.r-L{border:.36em solid transparent;outline:.06em solid rgba(255,211,107,.85);outline-offset:-.42em;background:
+  radial-gradient(circle at 20% 15%,rgba(255,230,160,.18) 0 .08em,transparent .1em) 0 0/1.6em 1.6em padding-box,
+  radial-gradient(circle at 70% 60%,rgba(200,170,255,.22) 0 .06em,transparent .08em) 0 0/1.1em 1.1em padding-box,
+  linear-gradient(165deg,#2b1640,#120a24 60%,#1d0f2e) padding-box,
+  conic-gradient(from var(--la),#ffd36b,#ff7ad9,#b48cff,#7af0ff,#9dffb0,#ffd36b) border-box;
+  box-shadow:0 0 1.2em rgba(255,122,217,.35),0 0 2.2em rgba(122,240,255,.18),0 .35em .9em rgba(0,0,0,.5);animation:legRot 4s linear infinite}
+@keyframes legRot{to{--la:360deg}}
+.r-L .tname{background:linear-gradient(90deg,#4a2a00,#8a6418 50%,#4a2a00);color:#fff1c4;text-shadow:0 0 .4em rgba(255,210,110,.8),0 1px 0 #000;box-shadow:0 0 0 .06em #ffd36b inset}
+.r-L .gem{background:conic-gradient(from var(--la),#ffd36b,#ff7ad9,#7af0ff,#ffd36b);color:#2a1400;animation:legRot 4s linear infinite}
+.r-L .tart{background:radial-gradient(circle at 50% 38%,#fff2c6 0%,#e7a8ff 22%,#7b49c8 48%,#1a0c33 82%);box-shadow:0 0 0 .07em rgba(255,211,107,.7) inset}
+.r-L .catl{background:linear-gradient(90deg,#8a6418,#ffd36b);color:#2a1400;font-weight:700}
+.r-L .ttext{background:rgba(20,8,36,.72);box-shadow:0 0 0 .05em rgba(255,211,107,.35) inset}
+.r-L::before{content:"";position:absolute;inset:.12em;pointer-events:none;z-index:2;
+  background:
+   radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 0 0/.6em .6em no-repeat,
+   radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 100% 0/.6em .6em no-repeat,
+   radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 0 100%/.6em .6em no-repeat,
+   radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 100% 100%/.6em .6em no-repeat}
+@media (prefers-reduced-motion:reduce){.r-L,.r-L .gem{animation:none}}
 .r-L::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,240,200,.28) 45%,transparent 60%);background-size:250% 100%;animation:shine 3.2s linear infinite;pointer-events:none}
 @keyframes shine{from{background-position:120% 0}to{background-position:-130% 0}}
 .tcg.s{width:56px;font-size:8.5px}
