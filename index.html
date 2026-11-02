@@ -1271,7 +1271,7 @@ function renderDeck(){
 }
 /* ---- 構築済みデッキ（全カードから自由に組む） ---- */
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
-const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":57,"types":["bodyguard","gatekeeper","medium","prophet","chief","seer","watchdog","detective","silencer","decoy","villager","twins","nekomata"],"single":"mirror"},{"name":"聖女の守り","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","decoy","detective","silencer","seer","chief","watchdog","villager","bard","warder"],"single":"saint"},{"name":"鏡の巫女の千里眼・改","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","chief","decoy","villager","detective","watchdog","seer","silencer","priest","warder"],"single":"mirror"}];
+const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":57,"types":["bodyguard","gatekeeper","medium","prophet","chief","seer","watchdog","detective","silencer","decoy","villager","twins","nekomata"],"single":"mirror"},{"name":"聖女の守り","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","decoy","detective","silencer","seer","chief","watchdog","villager","bard","warder"],"single":"saint"},{"name":"鏡の巫女の千里眼・改","wr":56,"types":["bodyguard","gatekeeper","medium","prophet","chief","decoy","villager","detective","watchdog","seer","silencer","priest","warder"],"single":"mirror"},{"name":"人狼の群れ","wr":50,"types":["wolf","pack","cursewolf","vampire","madman","seer","medium","prophet","watchdog","detective","silencer","bodyguard","chief"],"single":"whitewolf"}];
 let FF='all';
 const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
@@ -1378,8 +1378,8 @@ function rulesListHTML(){
       <dt>共鳴</dt><dd>直前に自分が使ったカード（前のターンの分も含む）と<b>同じ系統</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。シングルカードは共鳴しません。同じ系統ばかり使うと、心臓の系統も読まれやすくなります。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
-      <dt>襲撃</dt><dd>襲撃のある攻撃系カードを使ったあと、相手の手札が1枚以下なら（もともと0枚でも）、心臓を当てたのと同じく相手の心臓が1つ止まります。</dd>
-      <dt>山札が切れたら</dt><dd>捨て札を混ぜて、新しい山札にします。</dd>
+      <dt>襲撃</dt><dd>襲撃のある攻撃系カードを使ったあと、相手の手札が1枚以下なら（もともと0枚でも）、相手の心臓が1つ止まります。相手は心臓はそのままで、手札が5枚になるまで引きます。襲撃した側のターンはそこで終わります。</dd>
+      <dt>山札が切れたら</dt><dd>山札がないのにカードを引かなければならないとき、その人の負けです（捨て札は山札に戻りません）。</dd>
     </dl>
   </div></section>
   </div>`;
@@ -1593,7 +1593,7 @@ function draw(p,n){
   const got=[];
   if(p.f.poisoned){if(n>0&&S.turnNo)log(`毒：${p.name}はカードを引けない。`);return got}
   for(let i=0;i<n;i++){
-    if(!p.deck.length){if(!p.discard.length)break;p.deck=shuffle(p.discard);p.discard=[];log(`${p.name}の山札が尽きたので、捨て札を混ぜて山札にした。`)}
+    if(!p.deck.length){if(!S.over){log(`${p.name}は山札がなくなり、カードを引けなかった。`,'sys');S.deckOut=whoOf(p);gameOver(opp(p))}break}
     const c=p.deck.pop();p.hand.push(c);got.push(c);
   }
   return got;
@@ -1726,8 +1726,9 @@ async function raid(p,o,had){
   if(o.hand.length<=1&&!S.over){
     o.life=Math.max(0,o.life-1);S.shake=whoOf(o);log(`襲撃！${o.name}の手札が残りわずかになった。ライフ-1（残り${o.life}）`,whoOf(p));render();
     await fxRaid();await fxHeartBreak(whoOf(o),o.life+1);S.round=(S.round||1)+1;if(o.life<=0)return gameOver(p);
-    // 的中と同じく、襲撃された側は心臓を選び直し、襲撃した側のターンはここで終わる（宣言もできない）
-    await rebuild(o,'襲撃された');
+    // 襲撃された側は心臓はそのままで、手札が5枚になるまで引く。襲撃した側のターンはここで終わる（宣言もできない）
+    const need=Math.max(0,5-o.hand.length);const wasP=o.f.poisoned;o.f.poisoned=false;draw(o,need);o.f.poisoned=wasP;if(S.over)return;
+    log(`${o.name}は手札が5枚になるまで引いた（心臓はそのまま）。`,whoOf(o));
     p.f.req=0;p.f.opt=0;p.f.guesses=0;p.f.mustGuess=false;log(`${p.name}のターンはここで終わり。`,whoOf(p));
     render();if(!S.sim)await fxRound();
   }
@@ -2112,7 +2113,7 @@ async function gameOver(w){
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :S.free?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを組み直す</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
-  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
       el.innerHTML=st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
     m.querySelector('#rNew').onclick=()=>done('new');m.querySelector('#rSame').onclick=()=>done('same');m.querySelector('#rMenu').onclick=()=>done('menu');
