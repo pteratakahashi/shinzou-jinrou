@@ -248,6 +248,11 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .guessCall{font-family:var(--display);font-size:clamp(22px,6vw,32px);background:rgba(10,12,28,.9);padding:10px 22px;border-radius:10px;border:1px solid var(--line);animation:fxIn .3s both}
 
 /* ---- modal ---- */
+#rulesOv{position:fixed;inset:0;z-index:35;background:rgba(6,8,18,.85);overflow-y:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+#rulesOv .rOvIn{max-width:760px;margin:0 auto;background:var(--panel);border:1px solid var(--candle);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+#rulesOv h2{margin:0;font-size:17px}
+.rOvCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.rOvCards .cardBtn{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted)}
 #modal{position:fixed;inset:0;background:rgba(6,8,18,.8);display:flex;align-items:flex-end;justify-content:center;z-index:40;padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
 .sheet{background:var(--panel);border:1px solid var(--candle);border-radius:14px;padding:16px;width:100%;max-width:620px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;animation:sheetIn .25s ease-out}
 @keyframes sheetIn{from{transform:translateY(30px);opacity:0}}
@@ -455,6 +460,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .linkBox input{width:100%;box-sizing:border-box;font-size:13px}
 .onField{display:flex;flex-direction:column;gap:6px}
 .nameRow{margin-top:6px;font-size:18px}
+.menuName{margin:4px 0 6px;font-size:15px;color:var(--muted)}.menuName b{color:var(--ink);font-size:17px}
 .nmEd{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;vertical-align:middle}
 .nmEd .pen{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border-radius:6px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
 .nmEd .pen:hover{color:var(--ink)}.nmEd .pen svg{width:15px;height:15px}
@@ -821,6 +827,7 @@ function renderMenu(){
     <div class="haTitle"><div class="haSub">― 3つの心臓を守りぬけ ―</div><h1>心臓<span>人狼</span></h1></div></div>
   <div class="hero">
     <p>デッキの40枚のうち1枚が、あなたの心臓。カードを使うほど正体は透けていく。相手の心臓を3回射抜いた方の勝ち。</p>
+    <div class="menuName">名前 ${nameEdHTML('mName')}</div>
     <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span><span>カード <b>${CARDS.length}</b>種</span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div>
   </div>
   ${rankCardHTML()}
@@ -840,6 +847,7 @@ function renderMenu(){
   $('#mOnline').onclick=()=>go('online');
   const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
+  bindNameEd('mName',renderMenu);
   let armed=false;
   $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();save();renderMenu()};
 }
@@ -906,9 +914,7 @@ function renderDeck(){
 }
 function flash(t){const n=document.querySelector('.note');if(n){n.textContent=t;n.style.color='var(--blood)'}}
 
-function renderRules(){
-  $('#app').innerHTML=`<div class="top"><h1>ルールとカード一覧</h1><button type="button" class="b small" id="back">戻る</button></div>
-  <div class="zone rules"><ul>
+function rulesListHTML(){return`<div class="zone rules"><ul>
    <li>対戦のたびに7パック（1パック6枚。シングルカードは7パックのどこかに最低1枚、ときどき2〜3枚）を開け、出たカードだけでデッキを組みます。通常カードは1枚出ると3枚デッキに入れられます。CPUも同じように7パックから組みます。</li>
    <li>デッキは40枚。通常カード13種×3枚と、シングルカード1枚。対戦相手のデッキの中身は公開されます。</li>
    <li>開始時（と心臓を当てられて選び直すとき）、全カードを混ぜて6枚引き、その中から1枚を心臓に伏せます。残りの5枚が手札です。その種類はデッキに2枚（シングルなら0枚）しか残りません。</li>
@@ -922,9 +928,26 @@ function renderRules(){
    <li>当たると相手のライフ-1。相手は全カードを集めて心臓を選び直し、手札5枚から再開します。当てた側のターンは終了します。</li>
    <li>先攻・後攻はランダムで決まります。先攻は最初に5枚だけ引いてその中から心臓を選ぶので、手札が1枚少ない4枚で始まります（後攻は6枚から選んで5枚）。</li>
    <li>相手のライフ（3）を先に0にした方の勝ち。山札が尽きたら捨て札を混ぜて山札にします。</li>
-  </ul></div>
+  </ul></div>`}
+function renderRules(){
+  $('#app').innerHTML=`<div class="top"><h1>ルールとカード一覧</h1><button type="button" class="b small" id="back">戻る</button></div>
+  ${rulesListHTML()}
   <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${CARDS.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>`;
   $('#back').onclick=()=>go('menu');
+}
+
+// 対戦中に開くルール。#modal（カード選択など）とぶつからないよう専用の重ね画面にする。閉じれば対戦はそのまま
+function showRulesOverlay(){
+  if($('#rulesOv'))return;
+  const ov=document.createElement('div');ov.id='rulesOv';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label','ルール');
+  const types=S?[...new Set([...typesOf(S.me),...typesOf(S.cpu)])]:[];
+  ov.innerHTML=`<div class="rOvIn"><div class="top"><h2>ルール</h2><button type="button" class="b small" id="rOvClose">閉じる</button></div>${rulesListHTML()}
+    ${types.length?`<h2>この対戦のカード（タップで効果）</h2><div class="rOvCards">${types.map(k=>`<button type="button" class="cardBtn" data-card="${k}">${cardHTML(k,'s')}<span>${N(k)}</span></button>`).join('')}</div>`:''}</div>`;
+  document.body.appendChild(ov);
+  const close=()=>{ov.remove();document.removeEventListener('keydown',esc_)};
+  const esc_=e=>{if(e.key==='Escape')close()};
+  ov.querySelector('#rOvClose').onclick=close;ov.onclick=e=>{if(e.target===ov)close()};document.addEventListener('keydown',esc_);
+  ov.querySelectorAll('.rOvCards .cardBtn').forEach(b=>b.onclick=()=>showCardInfo(b.dataset.card));
 }
 
 /* ================= draft（対戦ごとに7パック） ================= */
@@ -1714,7 +1737,7 @@ function render(){
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
   $('#app').innerHTML=`
-  <div class="top"><h1>心臓人狼</h1><div class="btns"><button type="button" class="b small" id="snd">音 ${sndOn()?'ON':'OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div></div>
+  <div class="top"><h1>心臓人狼</h1><div class="btns"><button type="button" class="b small" id="bRules">ルール</button><button type="button" class="b small" id="snd">音 ${sndOn()?'ON':'OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div></div>
   ${hudHTML()}
   <section class="zone side ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}</div>${stats(cpu)}${badges(cpu)}
@@ -1753,6 +1776,7 @@ function render(){
   const lg=$('#log');if(lg)lg.scrollTop=logScroll;
   document.querySelectorAll('[data-lf]').forEach(b=>b.onclick=()=>{LF=b.dataset.lf;render()});
   $('#pToggle').onchange=e=>{SV.showP=e.target.checked;save();render()};
+  $('#bRules').onclick=showRulesOverlay;
   $('#snd').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.turn();render()};
   document.querySelectorAll('.hc').forEach(b=>{const t=b.querySelector('.tcg');b.onpointermove=e=>{if(e.pointerType!=='mouse'||RM)return;const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(500px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.08)`};b.onpointerleave=()=>{t.style.transform=''}});
   document.querySelectorAll('.hc').forEach(b=>{
@@ -1860,7 +1884,7 @@ function rankCardHTML(){
     <div class="rkMain"><b class="rkTier" style="--tc:${rk.col}">${rk.name}${rk.div?`<small> ${rk.div}</small>`:''}</b>${rk.master?`<span class="rkSub">マスターレート <b class="rkRate">${p.rating}</b></span>`:''}</div>
     ${rk.master?'':`<div class="rkBar" style="--tc:${rk.col}"><i style="width:${rk.w}%"></i></div><span class="rkSub">あと${100-rk.w}ptで${rk.next}${rk.i===4?'（マスターになるとレートが公開されます）':''}</span>`}
     <div class="rkLadder">${ladder}</div>
-    <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span><span>名前 ${nameEdHTML('rkName')}</span></div>
+    <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span></div>
     <div class="btns"><button type="button" class="b primary small" id="rkMatch">ランクマッチ</button><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
 }
 function bindRankCard(){
@@ -1868,7 +1892,6 @@ function bindRankCard(){
   const b=$('#rkLogout');if(b)b.onclick=()=>LADDER.logout();
   const c=$('#rkRetry');if(c)c.onclick=()=>{LADDER.state='loading';LADDER.redraw();LADDER.sb?LADDER.refresh():LADDER.init()};
   const d=$('#rkBoard');if(d)d.onclick=showBoard;
-  bindNameEd('rkName',()=>LADDER.redraw());
   const mt=$('#rkMatch');if(mt)mt.onclick=()=>{NET.err='';mmStart()};
 }
 
