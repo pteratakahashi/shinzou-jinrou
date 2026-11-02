@@ -542,6 +542,82 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .flip.still{animation:none}.flip.still .inner{transition:none}.flip.still.on .front .tcg{animation:none}
 .flip.still.on.rr-L::before,.flip.still.on.rr-R::before{animation:raysSpin 10s linear infinite}
 @media (prefers-reduced-motion:reduce){.haImg,.haTitle,.haFog,.haTitle h1 span,.resArt{animation:none!important}}
+/* ===== 対戦画面：1画面の盤面（スクロールしない）。上から 相手／推理表／直前のログ／自分／手札／操作 ===== */
+body:has(#app>.bt){padding:0;height:100dvh;overflow:hidden}
+body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
+.bt{height:100dvh;box-sizing:border-box;max-width:1280px;margin:0 auto;display:grid;gap:6px;
+  grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto;
+  grid-template-areas:"top" "opp" "mid" "last" "me" "hand" "act";
+  padding:max(6px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+.btTop{grid-area:top;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.btRound{display:flex;align-items:baseline;gap:5px;font-size:11px;color:var(--muted);white-space:nowrap}
+.btRound b{font-family:var(--display);font-size:20px;color:var(--ink);line-height:1}
+.btTop .btns{gap:4px;flex-wrap:nowrap}.btTop .b.small{padding:5px 9px;font-size:12px}
+.bt>.zone{padding:7px 10px;gap:5px;border-radius:10px}
+.btOpp{grid-area:opp}.btMid{grid-area:mid;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.btLast{grid-area:last;padding:5px 10px;min-height:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btMe{grid-area:me}.btField{grid-area:field;display:none}.btHand{grid-area:hand;min-width:0}.btAct{grid-area:act}
+.bt .sh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bt .sh .who{font-size:15px}
+.bt .mini{font-size:11px;color:var(--muted);margin-left:auto}.bt .mini b{color:var(--ink);font-weight:700;margin:0 4px 0 1px}
+.bt .lives svg{height:26px;width:auto}
+.bt .tableRow{gap:7px;flex-wrap:nowrap;align-items:flex-end}
+.bt .tableRow .tcg.s,.bt .tableRow .emptySlot,.bt .tableRow .deckPile{width:40px;font-size:6.5px}
+.bt .tableRow .emptySlot{aspect-ratio:5/7;height:auto}
+.bt .slot{font-size:9px;gap:2px}
+.bt .badges{gap:4px}.bt .badge{font-size:10px;padding:1px 6px}
+.bt .hand{padding:12px 2px 2px;margin:0;overflow-y:hidden}
+.btAct{border-top:0;padding-top:0;gap:5px}
+.btAct .phase{font-size:12px;line-height:1.35}
+.btAct .detail{font-size:12px;line-height:1.45;max-height:4.4em;overflow-y:auto;background:rgba(0,0,0,.25);border-radius:8px;padding:5px 8px}
+.btAct .resnote{color:var(--candle)}
+.actBtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px}
+.actBtns .b{padding:10px 6px;font-size:13px;min-height:44px}
+.actBtns .endT:not(:disabled){background:linear-gradient(180deg,#f0b860,#d18a2c);color:#1b1408;border-color:#f3c77e;font-weight:700}
+.trkTabs{display:none;gap:6px}.trkTabs em{font-style:normal;color:var(--candle);font-weight:700}
+.bt .tracker .grid{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px}
+.bt .tt{padding:4px 5px}.bt .tt .tn{font-size:12px}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,92vw);z-index:30;background:var(--table);border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(0,0,0,.5);padding:max(10px,env(safe-area-inset-top,0px)) 12px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;transform:translateX(105%);transition:transform .25s ease;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.drawer>.sh{display:flex;justify-content:space-between;align-items:center}
+@media (max-width:700px){
+  .trkTabs{display:flex}.trkTabs .chip{flex:1;padding:5px 6px;font-size:12px}
+  .bt .tableRow .tcg.s,.bt .tableRow .emptySlot,.bt .tableRow .deckPile{width:31px;font-size:5px}
+  .bt .tableRow .deckPile{font-size:10px}
+  .bt .slot{font-size:8px;gap:1px}
+  .bt>.zone{padding:6px 8px;gap:4px}
+  .bt .sh .who{font-size:14px}.bt .lives svg{height:22px}
+  .actBtns{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
+  .actBtns .b{font-size:11.5px;padding:6px 2px;min-height:42px;line-height:1.25}
+  .btAct .phase{font-size:11.5px}
+  .bt .duo{grid-template-columns:minmax(0,1fr)}
+  .bt .duo.t-opp .col:nth-child(2),.bt .duo.t-me .col:nth-child(1){display:none}
+  .bt .duo .colh b{display:none}
+  .btMid>.sh .label{font-size:10px}
+}
+@media (max-width:420px){.btTop .b.small{padding:5px 7px;font-size:11px}.bt .mini{font-size:10px}}
+/* 横に広い画面：推理表を右の列に縦いっぱいに */
+@media (min-width:1000px){
+  .bt{grid-template-columns:minmax(0,1fr) minmax(360px,440px);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;
+    grid-template-areas:"top top" "opp mid" "field mid" "last mid" "me mid" "hand mid" "act mid";gap:8px 12px}
+  .bt{grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto}
+  .btField{display:flex;justify-content:center;align-items:center;gap:clamp(16px,6vw,80px);min-height:0}
+  .fldSide{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .fldSide .tcg{width:clamp(80px,9vw,124px);font-size:clamp(9px,1vw,14px)}
+  .fldSide.cpu .tcg{box-shadow:0 0 0 2px var(--blood),0 10px 28px rgba(0,0,0,.6)}.fldSide.me .tcg{box-shadow:0 0 0 2px var(--candle),0 10px 28px rgba(0,0,0,.6)}
+  .fldL{font-size:12px;color:var(--muted)}.fldT{font-size:11px;color:var(--muted)}
+  .fldEmpty{width:clamp(80px,9vw,124px);aspect-ratio:5/7;border:1px dashed var(--line);border-radius:10px;display:grid;place-items:center;font-size:11px;color:var(--muted);text-align:center;padding:6px}
+  .bt .tableRow .tcg.s,.bt .tableRow .emptySlot,.bt .tableRow .deckPile{width:52px;font-size:8px}
+  .bt .duo{grid-template-columns:minmax(0,1fr)}
+  .bt .duo .col{grid-row:auto;grid-template-rows:auto}
+}
+.hc{touch-action:pan-x}
+.hc.dragging{opacity:.25}
+.dragGhost{position:fixed;z-index:60;pointer-events:none;margin:0;transition:transform .08s;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.dragGhost.ok{box-shadow:0 0 0 3px var(--candle),0 0 30px 6px rgba(233,166,76,.6),0 18px 40px rgba(0,0,0,.6)}
+body.dragOn .btMid,body.dragOn .btField{outline:2px dashed rgba(233,166,76,.35);outline-offset:-2px}
+body.dropOk .btMid,body.dropOk .btField{outline-color:var(--candle);background-color:rgba(233,166,76,.06)}
+body.dragOn .btLast::after{content:'　↑ 上で離すと使う';color:var(--candle)}
 </style>
 
 <div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1698,6 +1774,8 @@ function knowNotes(k){const n=[];if(k.allowed)n.push(`候補：${[...k.allowed].
 const liveCount=obs=>Object.values(probs(obs).w).filter(x=>x>0).length;
 /* ---- log view ---- */
 let LF='all';
+// 対戦画面：スマホで推理表のどちらを出すか、記録の引き出しが開いているか
+let TRK='opp',LOGOPEN=false;
 const NAME2K={};CARDS.forEach(c=>NAME2K[c.n]=c.k);
 function logKind(t){
   if(/的中/.test(t))return'hit';
@@ -1750,43 +1828,57 @@ function render(){
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
-  $('#app').innerHTML=`
-  <div class="top"><h1>心臓人狼</h1><div class="btns"><button type="button" class="b small" id="bRules">ルール</button><button type="button" class="b small" id="snd">音 ${sndOn()?'ON':'OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div></div>
-  ${hudHTML()}
-  <section class="zone side ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
-    <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}</div>${stats(cpu)}${badges(cpu)}
+  const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
+  const mini=p=>`<span class="mini">手札<b>${p.hand.length}</b> 山札<b>${p.deck.length}</b> 捨て<b>${p.discard.length}</b> 前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b> 単〈${N(p.single)}〉</span>`;
+  const dr=$('#drawer'),drScroll=dr?dr.scrollTop:0;
+  $('#app').innerHTML=`<div class="bt">
+  <header class="btTop">
+    <div class="btRound"><span>ROUND</span><b>${S.round||1}</b><span>${S.turnNo?S.turnNo+'ターン':''}${wn?`・観戦${wn}人`:''}</span></div>
+    <div class="btns"><button type="button" class="b small" id="bLog">記録</button><button type="button" class="b small" id="bRules">ルール</button><button type="button" class="b small" id="snd" aria-label="音">${sndOn()?'音 ON':'音 OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div>
+  </header>
+  <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
+    <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
     <div class="tableRow"><div class="slot">${backHTML('s')}心臓</div><div class="slot">${cpu.setCard?backHTML('s','伏せ'):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="oppHand" aria-label="${OPN()}の手札${cpu.hand.length}枚">${cpu.hand.map(()=>backHTML('s')).join('')}</div></div>
   </section>
-  <section class="zone tracker">
-    <div class="sh"><span class="label">推理の状況（●＝公開済み、消えたマスは候補外）</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率を表示</label></div>
-    ${ready?`<div class="duo">
+  <section class="zone tracker btMid">
+    <div class="sh"><span class="label">推理の状況（●公開済み・消えたマスは候補外）</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率</label></div>
+    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button></div>
+    <div class="duo t-${TRK}">
       <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
       <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種${SP?'':`・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em>`}</span></div>${trackGrid(me,cpu,SP?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
   </section>
-  <div class="lastLog ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
-  <section class="zone side ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
-    <div class="sh"><span class="who">${MYN()}</span>${lives(me)}</div>${stats(me)}${badges(me)}
+  ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
+  <div class="lastLog btLast ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
+  <section class="zone side btMe ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
+    <div class="sh"><span class="who">${MYN()}</span>${lives(me)}${mini(me)}</div>${badges(me)}
     <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
-    ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div>`})()}
-    <div class="actions"><div class="phase">${phase}</div>
-      ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${C[S.sel.type].e}${C[S.sel.type].set?'':'（伏せるとブラフになります）'}</div>${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<div class="detail resnote">今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</div>`:''}`:''}
-      ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns">
-        <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用のカードです':'このカードを使う'}</button>
-        <button type="button" class="b" id="bSet" ${ph==='play'&&S.sel&&!S.busy?'':'disabled'}>${me.setCard?'伏せ直す（今の伏せは捨て札へ）':'伏せる'}</button>
-        ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'カードを使わずに進む':'宣言に進む'}</button>`:''}
-        <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
-        <button type="button" class="b" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
-      </div>`}</div>
   </section>
-  <section class="zone">
-    <div class="label">使われたカード（新しい順）。カードや推理表をタップすると効果を確認できます</div>
-    ${histRow('cpu',OPN())}${histRow('me',MYN())}
-  </section>
-  <section class="zone">
-    <div class="sh"><span class="label">ログ（新しいターンが上）</span><div class="filters"><button type="button" class="chip ${LF==='all'?'on':''}" data-lf="all">すべて</button><button type="button" class="chip ${LF==='key'?'on':''}" data-lf="key">推理に関わるものだけ</button></div></div>
-    <div class="log" id="log">${logHTML()}</div>
-  </section>`;
+  ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
+  <div class="actions btAct"><div class="phase">${phase}</div>
+    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${C[S.sel.type].e}${C[S.sel.type].set?'':'（伏せるとブラフになります）'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:''}
+    ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
+      <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':'使う'}</button>
+      <button type="button" class="b" id="bSet" ${ph==='play'&&S.sel&&!S.busy?'':'disabled'}>${me.setCard?'伏せ直す':'伏せる'}</button>
+      ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
+      <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
+      <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
+    </div>`}</div>
+  <aside class="drawer ${LOGOPEN?'open':''}" id="drawer" aria-label="記録" ${LOGOPEN?'':'inert'}>
+    <div class="sh"><b>記録</b><button type="button" class="b small" id="bLogClose">閉じる</button></div>
+    <section class="zone">
+      <div class="label">使われたカード（新しい順）。タップで効果を確認</div>
+      ${histRow('cpu',OPN())}${histRow('me',MYN())}
+    </section>
+    <section class="zone">
+      <div class="sh"><span class="label">ログ（新しいターンが上）</span><div class="filters"><button type="button" class="chip ${LF==='all'?'on':''}" data-lf="all">すべて</button><button type="button" class="chip ${LF==='key'?'on':''}" data-lf="key">推理だけ</button></div></div>
+      <div class="log" id="log">${logHTML()}</div>
+    </section>
+  </aside>
+  </div>`;
+  {const d=$('#drawer');if(d)d.scrollTop=drScroll}
+  $('#bLog').onclick=()=>{LOGOPEN=true;render()};$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
+  document.querySelectorAll('[data-trk]').forEach(b=>b.onclick=()=>{TRK=b.dataset.trk;render()});
   const lg=$('#log');if(lg)lg.scrollTop=logScroll;
   document.querySelectorAll('[data-lf]').forEach(b=>b.onclick=()=>{LF=b.dataset.lf;render()});
   $('#pToggle').onchange=e=>{SV.showP=e.target.checked;save();render()};
@@ -1795,7 +1887,7 @@ function render(){
   document.querySelectorAll('.hc').forEach(b=>{const t=b.querySelector('.tcg');b.onpointermove=e=>{if(e.pointerType!=='mouse'||RM)return;const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(500px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.08)`};b.onpointerleave=()=>{t.style.transform=''}});
   document.querySelectorAll('.hc').forEach(b=>{
     const card=()=>me.hand[+b.dataset.i];let lp=0,lpFired=false;
-    b.onpointerdown=e=>{lpFired=false;clearTimeout(lp);lp=setTimeout(()=>{lpFired=true;showCardInfo(card().type)},450)};
+    b.onpointerdown=e=>{lpFired=false;clearTimeout(lp);lp=setTimeout(()=>{lpFired=true;showCardInfo(card().type)},450);if(ph==='play'&&!S.busy&&!e.target.closest('.hinfo'))dragCard(b,e,card,()=>{clearTimeout(lp);lpFired=true})};
     b.onpointerup=b.onpointercancel=()=>clearTimeout(lp);
     b.onpointerleave=(f=>e=>{clearTimeout(lp);f&&f(e)})(b.onpointerleave);
     b.oncontextmenu=e=>e.preventDefault();
@@ -1806,6 +1898,39 @@ function render(){
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
   $('#quit').onclick=e=>{if(SP)return watchLeave();if(S.over)return S.online?netLeave():go('menu');if(!armed){armed=true;e.target.textContent='本当に降参する';return}if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+}
+
+
+/* 手札のカードを上に引っ張って、手札の列より上で離すと使う（伏せ専用は伏せる）。横に動かしたときは手札のスクロールに任せる */
+function dragCard(b,e,card,cancelLp){
+  const sx=e.clientX,sy=e.clientY,hand=b.closest('.hand'),line=(hand?hand.getBoundingClientRect().top:innerHeight*.6)-24;
+  let ghost=null,ox=0,oy=0,over=false;
+  const move=ev=>{
+    const dx=ev.clientX-sx,dy=ev.clientY-sy;
+    if(!ghost){
+      if(Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy))return end();
+      if(!(dy<-18&&Math.abs(dy)>Math.abs(dx)))return;
+      cancelLp();
+      const t=b.querySelector('.tcg'),r=t.getBoundingClientRect();ox=sx-r.left;oy=sy-r.top;
+      ghost=t.cloneNode(true);ghost.classList.add('dragGhost');ghost.style.width=r.width+'px';ghost.style.transform='';
+      document.body.appendChild(ghost);b.classList.add('dragging');document.body.classList.add('dragOn');
+    }
+    ev.preventDefault();
+    over=ev.clientY<line;
+    ghost.style.left=(ev.clientX-ox)+'px';ghost.style.top=(ev.clientY-oy)+'px';
+    ghost.style.transform=`rotate(${Math.max(-12,Math.min(12,dx/12))}deg) scale(${over?1.18:1.05})`;
+    ghost.classList.toggle('ok',over);document.body.classList.toggle('dropOk',over);
+  };
+  const up=()=>{
+    const was=ghost,ok=over;end();
+    if(!was)return;
+    b.addEventListener('click',ev=>{ev.stopPropagation();ev.preventDefault()},{capture:true,once:true});
+    if(ok&&PH()==='play'&&!S.busy){const c=card();if(c){S.sel=c;SFX.select&&SFX.select();C[c.type].set?onSet():onPlay();return}}
+    render();
+  };
+  function end(){removeEventListener('pointermove',move);removeEventListener('pointerup',up);removeEventListener('pointercancel',end);
+    if(ghost){ghost.remove();ghost=null}b.classList.remove('dragging');document.body.classList.remove('dragOn','dropOk')}
+  addEventListener('pointermove',move,{passive:false});addEventListener('pointerup',up);addEventListener('pointercancel',end);
 }
 
 /* ---- online（友達と対戦） ----
@@ -1998,6 +2123,8 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:20,d:'2026-11-03',t:'手札のカードを指（マウス）で上に引っ張って離すと、そのカードを使えるようになりました。'},
+  {id:19,d:'2026-11-03',t:'対戦画面を作り直しました。スクロールせずに1画面で遊べます。スマホでは推理表をタブで切り替え、ログと使われたカードは右上の「記録」から見られます。パソコンでは、最後に使われたカードが盤面の真ん中に出ます。'},
   {id:18,d:'2026-11-02',t:'Googleログインが、このページの上に小窓が出る方式になりました（ログイン中にほかの住所へ移動しません）。'},
   {id:17,d:'2026-11-02',t:'試合の観戦ができるようになりました。メニューの「試合を観戦する」から、いま対戦中の誰かの試合をランダムに見られます（どちらの手札と心臓も見えません）。'},
   {id:16,d:'2026-11-02',t:'メニューの名前の右のペンから、名前を変えられるようになりました（1日1回まで）。'},
