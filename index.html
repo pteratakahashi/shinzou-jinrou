@@ -718,7 +718,7 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
   .bt{grid-template-columns:minmax(0,1fr) minmax(360px,440px);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;
     grid-template-areas:"top top" "opp mid" "field mid" "last mid" "me mid" "hand mid" "act mid";gap:8px 12px}
   .bt{grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto}
-  .btField{display:flex;justify-content:center;align-items:center;gap:clamp(16px,6vw,80px);min-height:0}
+  .btField{display:none}
   .fldSide{display:flex;flex-direction:column;align-items:center;gap:4px}
   .fldSide .tcg{width:clamp(80px,9vw,124px);font-size:clamp(9px,1vw,14px)}
   .fldSide.cpu .tcg{box-shadow:0 0 0 2px var(--blood),0 10px 28px rgba(0,0,0,.6)}.fldSide.me .tcg{box-shadow:0 0 0 2px var(--candle),0 10px 28px rgba(0,0,0,.6)}
@@ -2959,6 +2959,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:33,d:'2026-11-04',t:'PCの対戦画面のまん中に出ていた「最後に使ったカード」の大きな表示をなくしました（画面が狭いと他の表示に重なっていたため。同じ内容は捨て札と「最近使ったカード」で見られます）。'},
   {id:32,d:'2026-11-04',t:'PCで画面を拡大しているときなど、縦が短い画面で「使う」「ターン終了」のボタンが画面の外に隠れて進めなくなる不具合を直しました（ページをスクロールでき、ボタンは下に固定されます）。'},
   {id:31,d:'2026-11-03',t:'レジェンドの大狼の絵を、鎧をまとった銀の大狼に描き直しました。カードの絵の後ろに名前の一文字が透けて見えていたのを直しました。'},
   {id:30,d:'2026-11-03',t:'全82種のカード絵を、腰から上・同じ等身・同じ顔の大きさでそろえて描き直しました。絵がなかった新しい30種にも絵がつきました。'},
