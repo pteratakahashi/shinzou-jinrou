@@ -843,10 +843,10 @@ const RAW=[
  ['confessor','告解師','告','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓ではない種類を4つ知る。共鳴：コストなし。'],
  ['stargazer','星読み','星','info','C','相手の心臓の名前が偶数文字か奇数文字かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['clairvoy','千里眼','眼','info','R','種類を1つ指定し、相手の心臓か判定する。違ったら1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
- ['berserker','猛り狼','猛','atk','R','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストが1つになる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['berserker','猛り狼','猛','atk','R','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせる。共鳴：さらに1枚捨てさせ、コストが1つになる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['ghoul','屍鬼','屍','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：自分の捨て札からランダムに1枚を手札に戻す。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['kidnapper','人さらい','攫','atk','C','相手の手札をランダムに1枚、相手の山札の一番下に戻す（捨て札にならないので反射されない）。1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['howler','遠吠え','吠','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['howler','遠吠え','吠','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：相手の手札が4枚以上なら、さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['wererat','鼠男','鼠','atk','C','相手の山札の上から5枚を捨て札にする。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['witch','魔女','魔','atk','R','相手は自分で選んだ手札を1枚捨てる。共鳴：2枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
@@ -865,7 +865,7 @@ const RAW=[
  ['innkeeper','宿屋','宿','sup','C','手札が3枚以下なら3枚、4枚以上なら2枚引く。'],
  ['drummer','鼓手','鼓','sup','C','相手の心臓ではない種類を1つ知る。次に使う共鳴つきのカードは必ず共鳴する。'],
  ['gambler','博徒','賭','sup','R','このターン、宣言+1回。共鳴：1枚引く。'],
- ['moonqueen','月の女王','月','one','L','相手の心臓の系統を知る。'],
+ ['moonqueen','月の女王','月','one','L','コスト：自分の心臓の系統を相手に知られる。効果：相手の心臓の系統を知る。'],
 ];
 // カードの文を「条件／コスト／効果／共鳴／襲撃」ごとに行を分けて、見出しを付ける
 const EFF_L={'条件':'cond','コスト':'cost','効果':'eff','共鳴':'res','襲撃':'raid'};
@@ -1311,7 +1311,7 @@ function renderDeck(){
 }
 /* ---- 構築済みデッキ（全カードから自由に組む） ---- */
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
-const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":65,"types":["clairvoy","stargazer","diviner","seer","gatekeeper","prophet","medium","knight","hunter","detective","tracker","cursewolf","listener"],"single":"mirror"},{"name":"語り部の推理","wr":60,"types":["clairvoy","stargazer","diviner","seer","gatekeeper","prophet","medium","knight","tracker","cursewolf","listener","detective","hunter"],"single":"teller"},{"name":"大狼の牙","wr":56,"types":["chief","nun","madman","pack","witch","berserker","banker","knight","kidnapper","watchdog","cursewolf","howler","baker"],"single":"greatwolf"}];
+const FREE_PRESETS=[{"name":"月の女王の導き","wr":56,"types":["madman","fox","witch","bodyguard","priest","nekomata","diviner","wolf","messenger","bard","seer","pack","alpha"],"single":"moonqueen"},{"name":"大狼の牙","wr":55,"types":["warder","seer","sage","detective","diviner","witch","fox","madman","bard","wolf","alpha","watchman","mason"],"single":"greatwolf"},{"name":"語り部の推理","wr":48,"types":["watchman","warder","wolf","fox","diviner","seer","silencer","detective","madman","poisoner","villager","sage","reflect"],"single":"teller"}];
 let FF='all';
 const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
@@ -1462,8 +1462,8 @@ function showRulesOverlay(){
 
 /* ================= draft（対戦ごとに7パック） ================= */
 // おまかせ構築とCPU用の優先順（シミュレーションの勝率順）
-const RANK=['cursewolf', 'berserker', 'seer', 'medium', 'alpha', 'pack', 'diviner', 'madman', 'clairvoy', 'wolf', 'prophet', 'stargazer', 'witch', 'vampire', 'ghoul', 'nekomata', 'watchdog', 'kidnapper', 'silencer', 'howler', 'nightmare', 'detective', 'mason', 'villager', 'fortune', 'phantom', 'knight', 'astrologer', 'gatekeeper', 'executioner', 'poisoner', 'twins', 'chief', 'bastion', 'bodyguard', 'necro', 'innkeeper', 'priest', 'inquisitor', 'decoy', 'confessor', 'messenger', 'cleric', 'warder', 'listener', 'bard', 'gravedigger', 'shieldbearer', 'sentinel', 'hunter', 'spy', 'fox', 'tactician', 'reflect', 'sage', 'baker', 'lookout', 'nun', 'wererat', 'apprentice', 'peddler', 'banker', 'drummer', 'exorcist', 'elder', 'alchemist', 'trapper', 'watchman', 'tracker', 'assassin', 'cryboy', 'gambler'];
-const RANK1=['moonqueen', 'greatwolf', 'greatdet', 'mirror', 'oracle', 'curser', 'teller', 'whitewolf', 'timewitch', 'saint'];
+const RANK=['diviner', 'seer', 'berserker', 'detective', 'medium', 'cursewolf', 'alpha', 'madman', 'pack', 'stargazer', 'astrologer', 'howler', 'wolf', 'fox', 'nekomata', 'prophet', 'silencer', 'witch', 'clairvoy', 'mason', 'kidnapper', 'villager', 'vampire', 'phantom', 'nightmare', 'hunter', 'twins', 'warder', 'chief', 'watchdog', 'ghoul', 'knight', 'executioner', 'inquisitor', 'gatekeeper', 'bard', 'bodyguard', 'messenger', 'priest', 'elder', 'tactician', 'baker', 'bastion', 'decoy', 'necro', 'sage', 'nun', 'reflect', 'apprentice', 'cryboy', 'poisoner', 'shieldbearer', 'innkeeper', 'alchemist', 'cleric', 'lookout', 'sentinel', 'gravedigger', 'spy', 'listener', 'banker', 'peddler', 'drummer', 'tracker', 'watchman', 'wererat', 'trapper', 'exorcist', 'confessor', 'assassin', 'gambler', 'fortune'];
+const RANK1=['moonqueen', 'greatwolf', 'greatdet', 'oracle', 'teller', 'mirror', 'curser', 'timewitch', 'whitewolf', 'saint'];
 // レア＝勝率上位15種（シングルはレジェンド）
 CARDS.forEach(c=>{if(!c.single){const i=RANK.indexOf(c.k);c.r=i>=0&&i<Math.round(NORMAL.length*.35)?'R':(c.r==='S'?'S':'C')}});
 let D=null,DF2='all';
@@ -1804,6 +1804,7 @@ async function payCost(p,c,R){
   const o=opp(p),w=whoOf(p);
   switch(c.type){
     case 'medium':giveAway(p,1);break;
+    case 'moonqueen':{const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));log(`コスト：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。`,w);break}
     case 'berserker':giveAway(p,R?1:2);break;
     case 'confessor':if(!R)giveAway(p,1);break;
     case 'astrologer':if(!R)giveAway(p,1);break;
@@ -1965,10 +1966,10 @@ async function playCard0(p,c,copy=false){
     case 'confessor':learnNot(p,4,'告解');break;
     case 'stargazer':{const odd=N(o.heart.type).length%2;narrow(p,typesOf(o).filter(t=>N(t).length%2===odd));log(`星読み：${o.name}の心臓の名前は${odd?'奇数':'偶数'}文字。`,w);if(R)learnNot(p,2);break}
     case 'clairvoy':{const ty=(await chooseTypes(p,1,'千里眼：1種類を選ぶ','相手の心臓がこの種類かを判定します。'))[0];judge(p,[ty]);if(o.heart.type!==ty)draw(p,1);if(R)learnNot(p,2);break}
-    case 'berserker':{const n=2;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
+    case 'berserker':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'ghoul':{if(o.hand.length)forcedDiscard(o,rand(o.hand),p);const back=p.discard.filter(x=>x!==c);if(R&&back.length){const x=rand(back);rm(p.discard,x);p.hand.push(x);log(`${p.name}は捨て札から1枚を手札に戻した。`,w)}await raid(p,o);break}
     case 'kidnapper':{const n=1;draw(p,1);for(let i=0;i<n&&o.hand.length;i++){const x=rand(o.hand);rm(o.hand,x);o.deck.unshift(x);log(`${o.name}の手札が1枚、山札の一番下に戻された。`,w)}await raid(p,o);break}
-    case 'howler':{const n=1+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
+    case 'howler':{const n=1+(R&&o.hand.length>=4?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'nightmare':{draw(p,1);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
     case 'wererat':{const n=5;let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);await raid(p,o);break}
     case 'witch':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++){let x;if(o.isCpu)x=o.hand.map(h=>[h,cpuScore(o,h)]).sort((a,b)=>a[1]-b[1])[0][0];else x=await by(o,()=>pickCard(o.hand,`魔女：捨てるカードを選ぶ（${i+1}/${n}）`,'手札から捨てるカードを選んでください。'));forcedDiscard(o,x,p)}await raid(p,o);break}
@@ -2065,7 +2066,7 @@ function cpuScore(p,c){
     case 'bodyguard':s=threat>.2?4:1.8;break;case 'decoy':s=threat>.2?4.2:2;break;
     case 'silencer':s=2.6;break;case 'reflect':s=2.2;break;case 'gatekeeper':s=2.4;break;
     case 'villager':s=p.f.boosted?1.4:(p.hand.length>2?2.6:1.8);break;case 'chief':s=2.3;break;
-    case 'mason':s=p.deck.some(x=>x.type==='mason')?2.6:1.8;break;case 'mirror':case 'warder':s=2;break;case 'nekomata':s=1;break;case 'baker':s=2.2;break;case 'bard':s=2.1;break;case 'alchemist':s=1.8;break;
+    case 'mason':s=p.deck.some(x=>x.type==='mason')?2.6:1.8;break;case 'mirror':s=-1;break;case 'warder':s=2;break;case 'nekomata':s=1;break;case 'baker':s=2.2;break;case 'bard':s=2.1;break;case 'alchemist':s=1.8;break;
     case 'twins':s=p.discard.some(x=>x.type==='twins')?3.2:1.6;break;case 'sage':s=p.deck.length?2:.3;break;case 'priest':s=p.discard.length>1?1.6:.2;break;
     case 'elder':s=maxP>.18?3.5:.8;break;case 'cryboy':s=maxP>.15?3.2:1.2;break;case 'executioner':s=maxP>.12?2.8:1.5;break;
     case 'prophet':s=live>3?3.4:.6;break;case 'spy':s=o.setCard?3:1.6;break;
