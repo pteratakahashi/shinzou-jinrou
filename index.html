@@ -198,6 +198,13 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 .fpWrap{display:flex;gap:8px;align-items:center;margin:6px 0}.fpList{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .chip.fp{white-space:nowrap;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}.chip.fp small{font-size:10px;opacity:.75}
 .fBar{position:sticky;bottom:0;z-index:6;background:var(--table);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fRows{display:flex;flex-direction:column;gap:6px;width:100%}
+.fRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fLab{flex:none;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em;width:2.6em}
+.chip.fc{border-left:4px solid var(--cc,var(--line))}
+.chip.fa{border-radius:8px}.chip.fa .adot{display:inline-block;width:.75em;height:.75em;border-radius:50%;background:var(--ac);margin-right:.35em;vertical-align:-.05em;box-shadow:0 0 .35em var(--ac)}
+.fIn{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dSum{display:flex;flex-direction:column;gap:2px;font-size:12px;width:100%}.dSum>div{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.dSum b{margin-left:2px;color:var(--ink)}.dSum span:not(.fLab){color:var(--muted)}
 .fCpu{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fcCat{font-size:12px}
 .dkHead{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--table);padding:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
 .count{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
@@ -923,7 +930,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103083011';
+const APP_VER='20261103083514';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1359,22 +1366,46 @@ function renderPacks(){
 }
 
 /* ---- deck ---- */
+/* ---- 絞り込み：「系統」と「属性」は別の段。両方選ぶと両方に当てはまるカードだけ ---- */
+const fState=()=>({cat:'all',attr:'all',inDeck:false});
+function filterBar(st,o={}){
+  const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].concat(o.single?[['one','シングル']]:[]);
+  const ats=[['all','すべて'],['月','月'],['血','血'],['聖','聖'],['影','影'],['plain','通常']];
+  return`<div class="fRows">
+    <div class="fRow"><span class="fLab">系統</span>${cats.map(([k,l])=>`<button type="button" class="chip fc ${st.cat===k?'on':''}" data-fc="${k}" ${k!=='all'?`style="--cc:var(--c-${k})"`:''}>${l}</button>`).join('')}</div>
+    <div class="fRow"><span class="fLab">属性</span>${ats.map(([k,l])=>`<button type="button" class="chip fa ${st.attr===k?'on':''}" data-fa="${k}" ${ATTR_COL[k]?`style="--ac:${ATTR_COL[k]}"`:''}>${ATTR_COL[k]?'<i class="adot"></i>':''}${l}</button>`).join('')}</div>
+    ${o.inDeck?`<label class="fIn"><input type="checkbox" data-fin ${st.inDeck?'checked':''}> デッキに入れたカードだけ</label>`:''}
+  </div>`;
+}
+const fMatch=(st,c,inn)=>(st.cat==='all'||c.cat===st.cat)&&(st.attr==='all'||(st.attr==='plain'?c.plain:c.attr===st.attr))&&(!st.inDeck||inn);
+function bindFilter(st,redraw){
+  document.querySelectorAll('[data-fc]').forEach(b=>b.onclick=()=>{st.cat=b.dataset.fc;redraw()});
+  document.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{st.attr=b.dataset.fa;redraw()});
+  const fi=document.querySelector('[data-fin]');if(fi)fi.onchange=()=>{st.inDeck=fi.checked;redraw()};
+}
+// デッキの内訳（系統の段・属性の段）
+function deckSum(types){
+  const cs=['info','atk','grd','sup'].map(k=>[CAT[k],types.filter(t=>C[t].cat===k).length]);
+  const as=['月','血','聖','影'].map(a=>[a,types.filter(t=>C[t].attr===a).length]).concat([['通常',types.filter(t=>C[t].plain).length]]);
+  return`<div class="dSum"><div><span class="fLab">系統</span>${cs.map(([l,v])=>`<span>${l}<b>${v}</b></span>`).join('')}</div><div><span class="fLab">属性</span>${as.map(([l,v])=>`<span>${l}<b>${v}</b></span>`).join('')}</div></div>`;
+}
+const DFS=fState(),DF2S=fState(),FFS=fState(),CFS=fState();
 let DF='all';
 function renderDeck(){
   const d=SV.deck;const n=d.types.length;
-  const list=NORMAL.filter(c=>DF==='all'||(DF==='in'?d.types.includes(c.k):c.cat===DF));
+  const list=NORMAL.filter(c=>fMatch(DFS,c,d.types.includes(c.k)));
   const pips=k=>{let s='';for(let i=0;i<3;i++)s+=i<own(k)?'●':'<i>○</i>';return s};
   const iss=deckIssues();
   $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single&&own(d.single)?'1':'0'}/1 ＝ ${n*3+(d.single?1:0)}/40枚</span></div>
-   <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].map(([k,l])=>`<button type="button" class="chip ${DF===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div></div>
+   ${deckSum(d.types)}${filterBar(DFS,{inDeck:true})}</div>
   <div class="note">${iss.length?esc(iss.join('／')):'このデッキで対戦できます。'} シングル以外のカードは3枚そろうとデッキに入れられます。</div>
   <h3 style="font-size:16px">カード（13種・各3枚）</h3>
   <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k),lock=own(c.k)<3;return`<button type="button" class="dk ${inn?'in':''} ${lock?'lock':''}" data-k="${c.k}" ${lock?'aria-disabled="true"':''}>${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own"><span class="pips">${pips(c.k)}</span>${lock?'<span class="muted">あと'+(3-own(c.k))+'枚</span>':''}${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
   <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k,lock=own(c.k)<1;return`<button type="button" class="dk sg ${inn?'in':''} ${lock?'lock':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${lock?'<span class="muted">未所持</span>':'<span class="muted">所持</span>'}${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>`;
   $('#back').onclick=()=>go('menu');
-  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{DF=b.dataset.f;renderDeck()});
+  bindFilter(DFS,()=>{const y=window.scrollY;renderDeck();window.scrollTo(0,y)});
   document.querySelectorAll('.dk').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;
     if(C[k].single){if(own(k)<1)return;d.single=k}
@@ -1391,14 +1422,14 @@ const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.
 const freeCpu=()=>SV.freeCpu||'strong';
 function renderFree(){
   const d=freeDeck(),n=d.types.length,ok=freeOk(d);
-  const list=NORMAL.filter(c=>FF==='all'||(FF==='in'?d.types.includes(c.k):FF==='plain'?c.plain:FF.startsWith('a:')?c.attr===FF.slice(2):c.cat===FF));
+  const list=NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k)));
   const cnt=['info','atk','grd','sup'].map(k=>[k,d.types.filter(t=>C[t].cat===k).length]).filter(e=>e[1]);
   const acnt=['月','血','聖','影'].map(a=>[a,d.types.filter(t=>C[t].attr===a).length]).concat([['通常',d.types.filter(t=>C[t].plain).length]]).filter(e=>e[1]);
   $('#app').innerHTML=`<div class="top"><h1>構築済みデッキ</h1><button type="button" class="b small" id="back">戻る</button></div>
   <p class="note" style="margin-top:0">全カードから自由に選べます。カード13種（各3枚）＋シングル1枚＝40枚。同じ属性（月・血・聖・影）を続けて使うと共鳴します。</p>
   ${FREE_PRESETS.length?`<div class="fpWrap"><span class="label">おすすめ</span><div class="fpList">${FREE_PRESETS.map((x,i)=>`<button type="button" class="chip fp" data-p="${i}">${esc(x.name)}<small>勝率${x.wr}%</small></button>`).join('')}</div></div>`:''}
-  <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span>${cnt.length?`<span class="muted fcCat"> ${cnt.map(([k,v])=>`${CAT[k]}${v}`).join('・')}／${acnt.map(([a,v])=>`${a}${v}`).join('・')}</span>`:''}</div>
-   <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['a:月','月'],['a:血','血'],['a:聖','聖'],['a:影','影'],['plain','通常']].map(([k,l])=>`<button type="button" class="chip ${FF===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+  <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></div>${deckSum(d.types)}
+   ${filterBar(FFS,{inDeck:true})}
    <div class="btns"><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
   <div class="note" id="fNote">${ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください'}</div>
   <h3 style="font-size:16px">カード（13種・各3枚）</h3>
@@ -1409,7 +1440,7 @@ function renderFree(){
    <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキで対戦</button></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   $('#back').onclick=()=>go('menu');
-  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=keep(()=>{FF=b.dataset.f}));
+  bindFilter(FFS,()=>{const y=window.scrollY;renderFree();window.scrollTo(0,y)});
   document.querySelectorAll('[data-cpu]').forEach(b=>b.onclick=keep(()=>{SV.freeCpu=b.dataset.cpu}));
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=keep(()=>{const x=FREE_PRESETS[+b.dataset.p];SV.freeDeck={types:[...x.types],single:x.single}}));
   $('#fAuto').onclick=keep(()=>{const x=FREE_PRESETS.length?rand(FREE_PRESETS):null;SV.freeDeck=x?{types:[...x.types],single:x.single}:autoBuild(NORMAL.map(c=>c.k),SINGLE.map(c=>c.k),6)});
@@ -1511,12 +1542,12 @@ function renderHowto(){
 let CF='all';
 function renderCards(){
   const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['one','シングル']];
-  const list=CARDS.filter(c=>CF==='all'||c.cat===CF);
+  const list=CARDS.filter(c=>fMatch(CFS,c,false));
   $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">全${CARDS.length}種</span></div>
-  <div class="filters cardFilters">${cats.map(([k,t])=>`<button type="button" class="chip ${CF===k?'on':''}" data-cf="${k}">${t}</button>`).join('')}</div>
+  ${filterBar(CFS,{single:true})}
   <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>
   ${tabBarHTML('cards')}`;
-  document.querySelectorAll('[data-cf]').forEach(b=>b.onclick=()=>{CF=b.dataset.cf;renderCards()});bindTabBar();
+  bindFilter(CFS,()=>{const y=window.scrollY;renderCards();window.scrollTo(0,y)});bindTabBar();
 }
 
 // 対戦中に開くルール。#modal（カード選択など）とぶつからないよう専用の重ね画面にする。閉じれば対戦はそのまま
@@ -1587,23 +1618,23 @@ function renderDraft(){
     return;
   }
   const dk=d.deck,n=dk.types.length,ok=n===13&&dk.single;
-  const list=[...d.pool].sort((a,b)=>Object.keys(CAT).indexOf(C[a].cat)-Object.keys(CAT).indexOf(C[b].cat)).filter(k=>DF2==='all'||(DF2==='in'?dk.types.includes(k):C[k].cat===DF2));
+  const list=[...d.pool].sort((a,b)=>Object.keys(CAT).indexOf(C[a].cat)-Object.keys(CAT).indexOf(C[b].cat)).filter(k=>fMatch(DF2S,C[k],dk.types.includes(k)));
   setBg('pack');
   $('#app').innerHTML=`<div class="top"><h1>デッキを組む</h1><button type="button" class="b small" id="back">やめる</button></div>
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${dk.single?1:0}/1</span></div>
     <div class="btns"><button type="button" class="b small" id="auto">おまかせで組む</button><button type="button" class="b small" id="clear">全部外す</button><button type="button" class="b primary" id="go" ${ok?'':'disabled'}>${NET.conn?'このデッキで友達と対戦':'このデッキで対戦'}</button></div></div>
-  <div class="statline">${['info','atk','grd','sup'].map(ct=>`<span>${CAT[ct]} <b>${dk.types.filter(k=>C[k].cat===ct).length}</b></span>`).join('')}</div>
+  ${deckSum(dk.types)}
   <div class="note">7パックで出たカード${d.pool.length}種から13種、シングル${d.singles.length}種から1種を選びます。同じ属性を多く入れると「共鳴」しやすくなります。${d.filled.length?`13種に届かなかったので、${d.filled.map(N).join('・')}を追加しました。`:''}</div>
-  <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].map(([k,l])=>`<button type="button" class="chip ${DF2===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+  ${filterBar(DF2S,{inDeck:true})}
   <h3 style="font-size:16px">カード（13種・各3枚）</h3>
-  <div class="dkList">${list.map(k=>{const c=C[k],inn=dk.types.includes(k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')||'<span class="note">この系統のカードはありません</span>'}</div>
+  <div class="dkList">${list.map(k=>{const c=C[k],inn=dk.types.includes(k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')||'<span class="note">当てはまるカードはありません</span>'}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
   <div class="dkList">${d.singles.map(k=>{const c=C[k],inn=dk.single===k;return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>`;
   $('#back').onclick=()=>go('menu');
   $('#auto').onclick=()=>{d.deck=autoBuild(d.pool,d.singles);renderDraft()};
   $('#clear').onclick=()=>{d.deck={types:[],single:null};renderDraft()};
   $('#go').onclick=()=>{if(d.deck.types.length===13&&d.deck.single)startBattle()};
-  document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{DF2=b.dataset.f;renderDraft()});
+  bindFilter(DF2S,()=>{const y=window.scrollY;renderDraft();window.scrollTo(0,y)});
   document.querySelectorAll('.dk').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;
     if(C[k].single)dk.single=k;
