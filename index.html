@@ -36,6 +36,11 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .cat-info{--cc:var(--c-info)}.cat-atk{--cc:var(--c-atk)}.cat-grd{--cc:var(--c-grd)}.cat-sup{--cc:var(--c-sup)}.cat-one{--cc:var(--c-one)}
 .tname{display:flex;justify-content:space-between;align-items:center;gap:.3em;font-family:var(--display);font-size:1.15em;line-height:1.15;padding:.12em .35em;background:rgba(0,0,0,.38);border-radius:.3em}
 .tname .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.atb{font-family:var(--body);font-weight:700;font-size:.62em;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%;background:var(--ac);color:#140c1c;flex:none;margin-left:auto;box-shadow:0 0 .4em var(--ac)}
+.atb.pl{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
+.tcg.s .atb{display:none}
+.atTag{display:inline-block;font-size:11px;font-weight:700;padding:0 .5em;margin-left:.4em;border-radius:99px;background:var(--ac);color:#140c1c;vertical-align:middle}
+.atTag.pl{background:rgba(255,255,255,.2);color:#fff}
 .gem{font-family:var(--body);font-weight:700;font-size:.62em;padding:.05em .45em;border-radius:99px;background:rgba(255,255,255,.14);flex:none}
 .r-R .gem{background:#b9c7e8;color:#1a2140}
 .r-L .gem{background:linear-gradient(90deg,#f3cf6d,#e9a64c);color:#2a1a00}
@@ -783,44 +788,44 @@ const RAW=[
  ['chief','村長','旗','sup','C','1枚引く。次の自分のターン、カードを1枚多く使える。共鳴：次の自分のターン、1枚多く引く。'],
  ['seer','占い師','占','info','S','種類を2つ指定。相手の心臓がその中にあるか判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
- ['hunter','狩人','狩','grd','S','1枚引く。次の相手ターン、相手は宣言できない。相手の心臓ではない種類を1つ知る。共鳴：相手の伏せカードを公開して捨て札にする。'],
+ ['hunter','狩人','狩','grd','S','1枚引く。次の相手ターン、相手は宣言できない。相手の心臓ではない種類を2つ知る。'],
  ['wolf','人狼','狼','atk','S','相手の手札をランダムに1枚捨てさせる。相手の手札が3枚以下なら、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['fox','妖狐','狐','grd','S','コスト：手札のカードを1枚選び、相手に公開する（伏せ専用は不可）。効果：選んだカードを手札に残したまま、その効果だけを使う。共鳴：公開しなくてよい。'],
  ['mason','共有者','共','sup','S','1枚引く。山札に別の共有者があれば、それも手札に加える。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
- ['baker','パン屋','麦','sup','S','2枚引き、手札を1枚選んで捨てる。共鳴：捨てなくてよい。'],
- ['detective','探偵','探','info','S','コスト：自分の心臓の系統を相手に知られる。効果：相手の山札をすべて見る。共鳴：コストなし。'],
- ['elder','長老','老','sup','S','1枚引く。このターン、宣言を2回まで行える。共鳴：3回まで行える。'],
+ ['baker','パン屋','麦','sup','S','2枚引く。'],
+ ['detective','探偵','探','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の山札をすべて見る。'],
+ ['elder','長老','老','sup','S','1枚引く。このターン、宣言を2回まで行える。相手の心臓ではない種類を1つ知る。'],
  ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で2枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。相手の心臓ではない種類を1つ知る。'],
  ['madman','狂人','狂','atk','S','次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札を1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、それが心臓と同じ系統かどうかわかる。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['vampire','吸血鬼','血','atk','C','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせ、自分は1枚引く。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['priest','司祭','祈','sup','C','自分の捨て札からカードを2枚まで選び、手札に戻す。共鳴：3枚まで。'],
- ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にする。共鳴：相手の手札も1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にし、相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['alchemist','錬金術師','錬','sup','C','手札を2枚まで選んで捨て、3枚引く。共鳴：4枚引く。'],
  ['twins','双子','双','sup','C','1枚引く。自分の捨て札に別の双子があれば、さらに2枚引く。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
- ['sage','賢者','賢','sup','C','自分の山札の上3枚を見て、1枚を手札に加える。共鳴：2枚加える。'],
+ ['sage','賢者','賢','sup','C','自分の山札の上3枚を見て、2枚を手札に加える。'],
  ['bard','吟遊詩人','詩','sup','C','3枚引く。次の相手ターン、相手も1枚多く引く。共鳴：相手は多く引かない。'],
- ['nekomata','猫又','猫','grd','R','1枚引く。相手のカードの効果で捨てられたとき、相手の心臓を含む4種類の候補を知る。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['nekomata','猫又','猫','grd','R','1枚引き、相手の心臓ではない種類を1つ知る。相手のカードの効果で捨てられたとき、相手の心臓を含む4種類の候補を知る。'],
  ['bodyguard','用心棒','盾','grd','R','【伏せ専用】心臓を当てられたとき発動。ライフが減らない（心臓の選び直しは行う）。そのかわり、次の自分のターンは宣言できず、選び直した後の手札は2枚になる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせる。共鳴：捨てさせた枚数ぶん自分が引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせ、1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['cryboy','狼少年','嘘','sup','R','1枚引く。このターン、宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
- ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
+ ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。さらに、相手の心臓ではない種類を1つ知る。'],
+ ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。さらに、相手の心臓ではない種類を1つ知る。'],
  ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['bastion','籠城','籠','grd','C','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、相手の手札を1枚捨てさせる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['sentinel','番兵','兵','grd','C','1枚引き、相手の心臓ではない種類を1つ知る。自分が伏せカードを置いていれば、さらに1枚引く。共鳴：もう1つ知る。'],
- ['peddler','行商人','商','sup','C','手札を1枚選んで山札の一番下に戻し、2枚引く（戻したカードは公開されない）。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['apprentice','見習い','習','sup','C','1枚引く。次に使う通常カードは必ず共鳴する。'],
+ ['sentinel','番兵','兵','grd','C','1枚引き、相手の心臓ではない種類を2つ知る。自分が伏せカードを置いていれば、さらに1枚引く。'],
+ ['peddler','行商人','商','sup','C','手札を1枚選んで山札の一番下に戻し、2枚引く（戻したカードは公開されない）。相手の心臓ではない種類を1つ知る。'],
+ ['apprentice','見習い','習','sup','C','1枚引く。次に使う共鳴つきのカードは必ず共鳴する。'],
  ['gatekeeper','門番','門','grd','R','【伏せ専用】相手が情報系カードを使ったとき発動。その効果を無効にし、相手の心臓の系統を知る。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['warder','結界師','結','grd','R','1枚引く。次の相手ターン、相手の情報系カードの効果を受けない。共鳴：攻撃系カードの効果も受けず、相手の心臓ではない種類を1つ知る。'],
- ['astrologer','占星術師','星','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：種類を3つ指定し、相手の心臓がその中にあるか判定する。共鳴：コストなし。'],
- ['necro','降霊術師','魂','info','R','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の心臓の名前の文字数を知る。共鳴：コストが1つになる。'],
+ ['astrologer','占星術師','星','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：種類を3つ指定し、相手の心臓がその中にあるか判定する。共鳴：コストなし、1枚引く。'],
+ ['necro','降霊術師','魂','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓の名前の文字数を知る。'],
  ['assassin','暗殺者','刃','atk','R','種類を1つ宣言してよい。当たれば心臓的中、外れたら手札を2枚捨てる。狩人の効果中でも使える。共鳴：外れても捨てない。'],
  ['greatdet','名探偵','名','one','L','相手の心臓を含む5種類の候補を知る。',1],
  ['curser','呪術師','蠱','one','L','次の宣言が当たると相手のライフ-2。ただし、外れると自分のライフ-1。',1],
@@ -831,46 +836,50 @@ const RAW=[
  ['teller','語り部','語','one','L','自分の捨て札にある系統の数（最大5）だけ、相手の心臓ではない種類を知る。'],
  ['timewitch','時の魔女','時','one','L','このターンの後、もう一度自分のターンを行う。'],
  ['mirror','鏡の巫女','鏡','one','L','1枚引く。心臓にしているとき、当てた相手のライフも1減る（相手のライフが1なら無効）。この効果は1試合に1回だけで、一度起きたら鏡の巫女はもう心臓にできない。'],
- ['fortune','易者','易','info','C','相手の心臓ではない種類を3つ知る。共鳴：さらに1つ知る。'],
- ['listener','聞き耳','耳','info','C','相手の手札をランダムに3枚見て、1枚引く。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['diviner','祈祷師','祷','info','R','系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：1枚引く。'],
- ['tracker','追跡者','跡','info','C','相手の山札の上から5枚を見る。共鳴：1枚引く。'],
+ ['fortune','易者','易','info','C','相手の心臓ではない種類を2つ知る。共鳴：さらに2つ知る。'],
+ ['listener','聞き耳','耳','info','C','相手の手札をランダムに3枚見て、1枚引く。さらに、相手の心臓ではない種類を1つ知る。'],
+ ['diviner','祈祷師','祷','info','R','系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
+ ['tracker','追跡者','跡','info','C','相手の山札の上から5枚を見て、1枚引く。'],
  ['confessor','告解師','告','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓ではない種類を4つ知る。共鳴：コストなし。'],
  ['stargazer','星読み','星','info','C','相手の心臓の名前が偶数文字か奇数文字かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['clairvoy','千里眼','眼','info','R','種類を1つ指定し、相手の心臓か判定する。違ったら1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['berserker','猛り狼','猛','atk','R','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストが1つになる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['ghoul','屍鬼','屍','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：自分の捨て札からランダムに1枚を手札に戻す。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['kidnapper','人さらい','攫','atk','C','相手の手札をランダムに1枚、相手の山札の一番下に戻す（捨て札にならないので反射されない）。共鳴：1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['howler','遠吠え','吠','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：相手の手札が5枚以上なら、さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。共鳴：1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['wererat','鼠男','鼠','atk','C','相手の山札の上から4枚を捨て札にする。共鳴：さらに2枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['kidnapper','人さらい','攫','atk','C','相手の手札をランダムに1枚、相手の山札の一番下に戻す（捨て札にならないので反射されない）。1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['howler','遠吠え','吠','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
+ ['wererat','鼠男','鼠','atk','C','相手の山札の上から5枚を捨て札にする。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['witch','魔女','魔','atk','R','相手は自分で選んだ手札を1枚捨てる。共鳴：2枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が5枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['knight','騎士','騎','grd','R','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、自分は2枚引く。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['nun','修道女','尼','grd','C','1枚引く。次の相手ターン、相手は宣言を外すと追加で1枚捨てる。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['nun','修道女','尼','grd','C','1枚引く。次の相手ターン、相手は宣言を外すと追加で1枚捨てる。相手の心臓ではない種類を1つ知る。'],
  ['watchman','夜警','警','grd','C','【伏せ専用】相手が宣言を外したとき発動。自分は2枚引き、相手の心臓ではない種類を2つ知る。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
- ['shieldbearer','盾持ち','楯','grd','C','1枚引く。次の相手ターン、攻撃系カードの効果を受けない。共鳴：さらに1枚引く。'],
- ['lookout','物見','見','grd','C','1枚引く。相手の伏せカードを公開して捨て札にする。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['shieldbearer','盾持ち','楯','grd','C','2枚引く。次の相手ターン、攻撃系カードの効果を受けない。'],
+ ['lookout','物見','見','grd','C','1枚引く。相手の伏せカードを公開して捨て札にする。相手の心臓ではない種類を1つ知る。'],
  ['cleric','癒し手','癒','grd','C','自分の捨て札から防御系カードを1枚選んで手札に戻し、1枚引く。共鳴：もう1枚戻す。'],
  ['exorcist','祓い師','祓','grd','R','相手が知っている「自分の心臓ではない種類」を2つ忘れさせる。共鳴：3つ。'],
- ['banker','両替商','両','sup','C','手札をすべて山札に戻して混ぜ、同じ枚数を引く。共鳴：1枚多く引く。'],
- ['gravedigger','墓守','墓','sup','C','自分の捨て札から1枚選んで手札に戻す。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['messenger','伝令','伝','sup','C','次の自分のターン、2枚多く引く。共鳴：今すぐ1枚引く。'],
- ['tactician','参謀','謀','sup','R','1枚引く。このターン、宣言を外しても手札を1枚しか捨てない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['innkeeper','宿屋','宿','sup','C','手札が3枚以下なら3枚、4枚以上なら1枚引く。共鳴：さらに1枚引く。'],
- ['drummer','鼓手','鼓','sup','C','相手の心臓ではない種類を1つ知る。次に使う通常カードは必ず共鳴する。'],
+ ['banker','両替商','両','sup','C','手札をすべて山札に戻して混ぜ、1枚多く引く。'],
+ ['gravedigger','墓守','墓','sup','C','自分の捨て札から1枚選んで手札に戻す。共鳴：もう1枚戻す。'],
+ ['messenger','伝令','伝','sup','C','1枚引く。次の自分のターン、2枚多く引く。'],
+ ['tactician','参謀','謀','sup','R','1枚引く。このターン、宣言を外しても手札を1枚しか捨てない。相手の心臓ではない種類を1つ知る。'],
+ ['innkeeper','宿屋','宿','sup','C','手札が3枚以下なら3枚、4枚以上なら2枚引く。'],
+ ['drummer','鼓手','鼓','sup','C','相手の心臓ではない種類を1つ知る。次に使う共鳴つきのカードは必ず共鳴する。'],
  ['gambler','博徒','賭','sup','R','このターン、宣言+1回。そのかわり、次の自分のターンは1枚少なく引く。共鳴：1枚引く。'],
  ['moonqueen','月の女王','月','one','L','相手の心臓の系統を知る。'],
 ];
 // カードの文を「条件／コスト／効果／共鳴／襲撃」ごとに行を分けて、見出しを付ける
 const EFF_L={'条件':'cond','コスト':'cost','効果':'eff','共鳴':'res','襲撃':'raid'};
+const atTag=c=>c.attr?`<span class="atTag" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:c.plain?'<span class="atTag pl">通常</span>':'';
 function effHTML(e){
   const parts=String(e).split(/(条件：|コスト：|効果：|共鳴：|襲撃：)/);let out='',lab=null;
   for(const p of parts){if(!p)continue;const m=p.match(/^(条件|コスト|効果|共鳴|襲撃)：$/);if(m){lab=m[1];continue}
     out+=`<span class="el">${lab?`<b class="ek ek-${EFF_L[lab]}">${lab}</b>`:''}${p}</span>`;lab=null}
   return out;
 }
-const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】')}));
+// 属性：同じ属性のカードを続けて使うと共鳴する。属性のないカード（シングル以外）は「通常カード」で、共鳴しないかわりに効果が少し強い
+const ATTR={"seer": "月", "medium": "月", "astrologer": "月", "watchdog": "月", "stargazer": "月", "clairvoy": "月", "diviner": "月", "fortune": "月", "confessor": "月", "gatekeeper": "月", "warder": "月", "drummer": "月", "wolf": "血", "pack": "血", "cursewolf": "血", "berserker": "血", "alpha": "血", "howler": "血", "ghoul": "血", "vampire": "血", "madman": "血", "twins": "血", "villager": "聖", "chief": "聖", "mason": "聖", "priest": "聖", "bodyguard": "聖", "knight": "聖", "cleric": "聖", "exorcist": "聖", "apprentice": "聖", "watchman": "聖", "bastion": "聖", "fox": "影", "decoy": "影", "silencer": "影", "reflect": "影", "witch": "影", "assassin": "影", "poisoner": "影", "gambler": "影", "cryboy": "影", "gravedigger": "影", "alchemist": "影", "bard": "影", "trapper": "影"};
+const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'};
+const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 const C={};CARDS.forEach(c=>C[c.k]=c);
 const NORMAL=CARDS.filter(c=>!c.single),SINGLE=CARDS.filter(c=>c.single);
 const STARTER=CARDS.filter(c=>c.r==='S').map(c=>c.k);
@@ -1137,7 +1146,7 @@ function catSummary(types){return ['info','atk','grd','sup'].map(ct=>`${CAT[ct]}
 function cardHTML(k,size='m',extra=''){
   const c=C[k];const r=c.r==='S'?'C':c.r;
   const text=(size==='l'||size==='p')?`<div class="ttext">${effHTML(c.e)}</div>`:'';
-  return `<div class="tcg ${size} cat-${c.cat} r-${r} ${extra}"><div class="tname"><span class="nm">${c.n}</span><span class="gem">${r}</span></div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${k}.png" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}</div>`;
+  return `<div class="tcg ${size} cat-${c.cat} r-${r} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:c.plain?'<span class="atb pl">通</span>':''}<span class="gem">${r}</span></div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${k}.png" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}</div>`;
 }
 const backHTML=(size='s',label='')=>`<div class="tcg back ${size}"><span class="bk">心</span>${label?`<span class="bl">${label}</span>`:''}</div>`;
 
@@ -1163,7 +1172,7 @@ function addCard(k){
 }
 function deckIssues(){
   const d=SV.deck,iss=[];
-  if(d.types.length!==13)iss.push(`通常カードを13種選んでください（今${d.types.length}種）`);
+  if(d.types.length!==13)iss.push(`シングル以外のカードを13種選んでください（今${d.types.length}種）`);
   if(d.types.some(k=>own(k)<3))iss.push('3枚そろっていない種類があります');
   if(!d.single||own(d.single)<1)iss.push('シングルカードを1枚選んでください');
   return iss;
@@ -1254,7 +1263,7 @@ function renderPacks(){
       <button type="button" class="pack" id="packBtn" ${SV.packs?'':'disabled'} aria-label="パックを開ける"><span class="pk2">BOOSTER</span><span class="pkh">心</span><span class="pk1">心臓人狼</span><span class="pk2">5 CARDS</span></button>
       <div class="muted">${SV.packs?'パックをタップして開封':'パックがありません'}</div>
       <div class="btns"><button type="button" class="b small" id="exBtn" ${canEx?'':'disabled'}>かけら${PACK_COST}個でパックと交換（所持${SV.shards}）</button></div>
-      <div class="note">1パック5枚。うち1枚はレア以上で、15%でシングルカードが出ます。通常カードは1枚出ると3枚手に入ります。持っているカードが出たらかけらになります。</div>
+      <div class="note">1パック5枚。うち1枚はレア以上で、15%でシングルカードが出ます。シングル以外のカードは1枚出ると3枚手に入ります。持っているカードが出たらかけらになります。</div>
     </div>`;
   }else{
     const all=P.cards.every(c=>c.on);
@@ -1286,11 +1295,11 @@ function renderDeck(){
   $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single&&own(d.single)?'1':'0'}/1 ＝ ${n*3+(d.single?1:0)}/40枚</span></div>
    <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].map(([k,l])=>`<button type="button" class="chip ${DF===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div></div>
-  <div class="note">${iss.length?esc(iss.join('／')):'このデッキで対戦できます。'} 通常カードは3枚そろうとデッキに入れられます。</div>
-  <h3 style="font-size:16px">通常カード</h3>
-  <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k),lock=own(c.k)<3;return`<button type="button" class="dk ${inn?'in':''} ${lock?'lock':''}" data-k="${c.k}" ${lock?'aria-disabled="true"':''}>${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own"><span class="pips">${pips(c.k)}</span>${lock?'<span class="muted">あと'+(3-own(c.k))+'枚</span>':''}${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
+  <div class="note">${iss.length?esc(iss.join('／')):'このデッキで対戦できます。'} シングル以外のカードは3枚そろうとデッキに入れられます。</div>
+  <h3 style="font-size:16px">カード（13種・各3枚）</h3>
+  <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k),lock=own(c.k)<3;return`<button type="button" class="dk ${inn?'in':''} ${lock?'lock':''}" data-k="${c.k}" ${lock?'aria-disabled="true"':''}>${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own"><span class="pips">${pips(c.k)}</span>${lock?'<span class="muted">あと'+(3-own(c.k))+'枚</span>':''}${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
-  <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k,lock=own(c.k)<1;return`<button type="button" class="dk sg ${inn?'in':''} ${lock?'lock':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${lock?'<span class="muted">未所持</span>':'<span class="muted">所持</span>'}${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>`;
+  <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k,lock=own(c.k)<1;return`<button type="button" class="dk sg ${inn?'in':''} ${lock?'lock':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${lock?'<span class="muted">未所持</span>':'<span class="muted">所持</span>'}${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>`;
   $('#back').onclick=()=>go('menu');
   document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{DF=b.dataset.f;renderDeck()});
   document.querySelectorAll('.dk').forEach(b=>b.onclick=()=>{
@@ -1309,19 +1318,20 @@ const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.
 const freeCpu=()=>SV.freeCpu||'strong';
 function renderFree(){
   const d=freeDeck(),n=d.types.length,ok=freeOk(d);
-  const list=NORMAL.filter(c=>FF==='all'||(FF==='in'?d.types.includes(c.k):c.cat===FF));
+  const list=NORMAL.filter(c=>FF==='all'||(FF==='in'?d.types.includes(c.k):FF==='plain'?c.plain:FF.startsWith('a:')?c.attr===FF.slice(2):c.cat===FF));
   const cnt=['info','atk','grd','sup'].map(k=>[k,d.types.filter(t=>C[t].cat===k).length]).filter(e=>e[1]);
+  const acnt=['月','血','聖','影'].map(a=>[a,d.types.filter(t=>C[t].attr===a).length]).concat([['通',d.types.filter(t=>C[t].plain).length]]).filter(e=>e[1]);
   $('#app').innerHTML=`<div class="top"><h1>構築済みデッキ</h1><button type="button" class="b small" id="back">戻る</button></div>
-  <p class="note" style="margin-top:0">全カードから自由に選べます。通常カード13種（各3枚）＋シングル1枚＝40枚。</p>
+  <p class="note" style="margin-top:0">全カードから自由に選べます。カード13種（各3枚）＋シングル1枚＝40枚。同じ属性（月・血・聖・影）を続けて使うと共鳴します。</p>
   ${FREE_PRESETS.length?`<div class="fpWrap"><span class="label">おすすめ</span><div class="fpList">${FREE_PRESETS.map((x,i)=>`<button type="button" class="chip fp" data-p="${i}">${esc(x.name)}<small>勝率${x.wr}%</small></button>`).join('')}</div></div>`:''}
-  <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span>${cnt.length?`<span class="muted fcCat"> ${cnt.map(([k,v])=>`${CAT[k]}${v}`).join('・')}</span>`:''}</div>
-   <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].map(([k,l])=>`<button type="button" class="chip ${FF===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+  <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span>${cnt.length?`<span class="muted fcCat"> ${cnt.map(([k,v])=>`${CAT[k]}${v}`).join('・')}／${acnt.map(([a,v])=>`${a}${v}`).join('・')}</span>`:''}</div>
+   <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['a:月','月'],['a:血','血'],['a:聖','聖'],['a:影','影'],['plain','通常']].map(([k,l])=>`<button type="button" class="chip ${FF===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
    <div class="btns"><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
-  <div class="note" id="fNote">${ok?'このデッキで対戦できます。':n!==13?`通常カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください'}</div>
-  <h3 style="font-size:16px">通常カード</h3>
-  <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
+  <div class="note" id="fNote">${ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください'}</div>
+  <h3 style="font-size:16px">カード（13種・各3枚）</h3>
+  <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
-  <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k;return`<button type="button" class="dk sg ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
+  <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k;return`<button type="button" class="dk sg ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
   <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['strong','強豪デッキ'],['mirror','同じデッキ'],['pack','パックから']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
    <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキで対戦</button></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
@@ -1406,7 +1416,7 @@ function rulesListHTML(){
   <section class="hw terms"><div class="hwNo">用語</div><div class="hwBody">
     <dl class="hwTerms">
       <dt>系統</dt><dd>カードは5つに分かれます：${chip('info','情報')}${chip('atk','攻撃')}${chip('grd','防御')}${chip('sup','補助')}${chip('one','シングル')}</dd>
-      <dt>共鳴</dt><dd>直前に自分が使ったカード（前のターンの分も含む）と<b>同じ系統</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。シングルカードは共鳴しません。同じ系統ばかり使うと、心臓の系統も読まれやすくなります。</dd>
+      <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分も含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>通常カード</dt><dd>属性のない「通」マークのカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
       <dt>襲撃</dt><dd>襲撃のある攻撃系カードを使ったあと、相手の手札が1枚以下なら（もともと0枚でも）、相手の心臓が1つ止まります。相手は心臓はそのままで、手札が5枚になるまで引きます。襲撃した側のターンはそこで終わります。</dd>
@@ -1510,12 +1520,12 @@ function renderDraft(){
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${dk.single?1:0}/1</span></div>
     <div class="btns"><button type="button" class="b small" id="auto">おまかせで組む</button><button type="button" class="b small" id="clear">全部外す</button><button type="button" class="b primary" id="go" ${ok?'':'disabled'}>${NET.conn?'このデッキで友達と対戦':'このデッキで対戦'}</button></div></div>
   <div class="statline">${['info','atk','grd','sup'].map(ct=>`<span>${CAT[ct]} <b>${dk.types.filter(k=>C[k].cat===ct).length}</b></span>`).join('')}</div>
-  <div class="note">7パックで出た通常カード${d.pool.length}種から13種、シングル${d.singles.length}種から1種を選びます。同じ系統を多く入れると「共鳴」しやすくなります。${d.filled.length?`13種に届かなかったので、${d.filled.map(N).join('・')}を追加しました。`:''}</div>
+  <div class="note">7パックで出たカード${d.pool.length}種から13種、シングル${d.singles.length}種から1種を選びます。同じ属性を多く入れると「共鳴」しやすくなります。${d.filled.length?`13種に届かなかったので、${d.filled.map(N).join('・')}を追加しました。`:''}</div>
   <div class="filters">${[['all','すべて'],['in','デッキ内'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助']].map(([k,l])=>`<button type="button" class="chip ${DF2===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
-  <h3 style="font-size:16px">通常カード</h3>
-  <div class="dkList">${list.map(k=>{const c=C[k],inn=dk.types.includes(k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')||'<span class="note">この系統のカードはありません</span>'}</div>
+  <h3 style="font-size:16px">カード（13種・各3枚）</h3>
+  <div class="dkList">${list.map(k=>{const c=C[k],inn=dk.types.includes(k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')||'<span class="note">この系統のカードはありません</span>'}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
-  <div class="dkList">${d.singles.map(k=>{const c=C[k],inn=dk.single===k;return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>`;
+  <div class="dkList">${d.singles.map(k=>{const c=C[k],inn=dk.single===k;return`<button type="button" class="dk ${inn?'in':''}" data-k="${k}">${cardHTML(k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>`;
   $('#back').onclick=()=>go('menu');
   $('#auto').onclick=()=>{d.deck=autoBuild(d.pool,d.singles);renderDraft()};
   $('#clear').onclick=()=>{d.deck={types:[],single:null};renderDraft()};
@@ -1539,7 +1549,7 @@ const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 function saveGame(next){
   if(!S||S.over||S.sim||S.online)return;
   const ids=a=>a.map(c=>c.id);
-  const P=pl=>({name:pl.name,isCpu:pl.isCpu,types:pl.types,single:pl.single,life:pl.life,f:pl.f,lastCat:pl.lastCat||null,chain:pl.chain||0,heart:pl.heart.id,setCard:pl.setCard?pl.setCard.id:null,hand:ids(pl.hand),deck:ids(pl.deck),discard:ids(pl.discard),pool:ids(pl.pool)});
+  const P=pl=>({name:pl.name,isCpu:pl.isCpu,types:pl.types,single:pl.single,life:pl.life,f:pl.f,lastCat:pl.lastCat||null,lastAttr:pl.lastAttr||null,chain:pl.chain||0,heart:pl.heart.id,setCard:pl.setCard?pl.setCard.id:null,hand:ids(pl.hand),deck:ids(pl.deck),discard:ids(pl.discard),pool:ids(pl.pool)});
   const Ks=k=>({known:[...k.known],excluded:[...k.excluded],allowed:k.allowed?[...k.allowed]:null,stale:!!k.stale});
   lsSet(GAME_KEY,{v:1,at:Date.now(),next,round:S.round||1,turnNo:S.turnNo,uid,me:P(S.me),cpu:P(S.cpu),cards:Object.values(S.byId).map(c=>[c.id,c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},log:S.log.slice(-150),hist:S.hist.slice(-80),deck:D?D.deck:null});
 }
@@ -1547,7 +1557,7 @@ function resumeGame(){
   const g=lsGet(GAME_KEY);if(!g)return go('menu');
   try{
     S={me:null,cpu:null,know:{},byId:{},log:g.log||[],hist:g.hist||[],last:null,turnNo:g.turnNo,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null};
-    const mk=d=>({name:d.name,isCpu:d.isCpu,types:d.types,single:d.single,life:d.life,f:d.f||{},lastCat:d.lastCat,chain:d.chain,pool:[],deck:[],hand:[],discard:[],heart:null,setCard:null});
+    const mk=d=>({name:d.name,isCpu:d.isCpu,types:d.types,single:d.single,life:d.life,f:d.f||{},lastCat:d.lastCat,lastAttr:d.lastAttr,chain:d.chain,pool:[],deck:[],hand:[],discard:[],heart:null,setCard:null});
     S.me=mk(g.me);S.cpu=mk(g.cpu);
     g.cards.forEach(([id,type,o])=>{S.byId[id]={id,type,owner:o==='me'?S.me:S.cpu}});
     uid=Math.max(uid,g.uid||0);
@@ -1604,7 +1614,7 @@ function triggerNow(owner){
   S.hist.push({who:whoOf(owner),k:c.type,turn:S.turnNo});
   log(`${owner.name}の伏せカード〈${N(c.type)}〉が発動！`,whoOf(owner));
   learnNot(owner,1);
-  if(owner.lastCat==='grd'){draw(owner,1);log('共鳴！（防御系が続いた）1枚引く。',whoOf(owner));learnNot(owner,1)}
+  if(owner.lastAttr&&owner.lastAttr===C[c.type].attr){draw(owner,1);log(`共鳴！（${C[c.type].attr}の属性）1枚引く。`,whoOf(owner));learnNot(owner,1)}
   return c;
 }
 async function triggerSet(owner){const c=triggerNow(owner);render();await fxTrap(c.type);return c}
@@ -1798,8 +1808,8 @@ async function payCost(p,c,R){
     case 'confessor':if(!R)giveAway(p,1);break;
     case 'astrologer':if(!R)giveAway(p,1);break;
     case 'vampire':case 'poisoner':if(!R)giveAway(p,1);break;
-    case 'necro':giveAway(p,R?1:2);break;
-    case 'detective':if(R)break;{const cat=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===cat));log(`コスト：${p.name}の心臓は「${CAT[cat]}」系統だと知られた。`,w);break}
+    case 'necro':giveAway(p,1);break;
+    case 'detective':giveAway(p,1);break;
     case 'cursewolf':if(!R&&p.hand.length){const x=rand(p.hand);toDiscard(p,x);log(`コスト：${p.name}は〈${N(x.type)}〉を捨てた。`,w)}break;
     case 'saint':if(p.life===1){const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));p.f.guesses=0;const hn=p.hand.length;[...p.hand].forEach(x=>toDiscard(p,x));log(`コスト：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。このターンは宣言できず、手札${hn}枚を捨てた。`,w)}break;
     case 'oracle':{const b=cands(o,3);log(`コスト：${p.name}の心臓は ${b.map(x=>'〈'+N(x)+'〉').join('')} のどれかだと知られた。`,whoOf(o));break}
@@ -1819,12 +1829,12 @@ async function playCard(p,c,copy=false){const pv=S.decider;S.decider=p;try{retur
 async function playCard0(p,c,copy=false){
   const o=opp(p),w=whoOf(p);
   S.me.f.reflect=S.cpu.f.reflect=false;
-  const R=!C[c.type].single&&(p.lastCat===C[c.type].cat||!!p.f.forceRes);if(!C[c.type].single)p.f.forceRes=false;p.lastCat=C[c.type].cat;
+  const at=C[c.type].attr;const R=!!at&&((p.lastAttr&&p.lastAttr===at)||!!p.f.forceRes);if(at)p.f.forceRes=false;p.lastCat=C[c.type].cat;if(!C[c.type].single)p.lastAttr=at;
   if(copy)log(`${p.name}は妖狐で〈${N(c.type)}〉に化けた。`,w);
   else{toDiscard(p,c);log(`${p.name}は〈${N(c.type)}〉を使った。`,w);S.hist.push({who:w,k:c.type,turn:S.turnNo})}
   render();await fxPlay(c.type,w);
   if(!C[c.type].single)p.chain=R?(p.chain||1)+1:1;
-  if(R){log(`共鳴！（${CAT[C[c.type].cat]}系）`,w);await fxRes()}
+  if(R){log(`共鳴！（${at}の属性）`,w);await fxRes()}
   await payCost(p,c,R);
   if(p.f.watched){
     const same=C[c.type].cat===C[p.heart.type].cat;const k=K(o);
@@ -1844,7 +1854,7 @@ async function playCard0(p,c,copy=false){
   if(C[c.type].set){draw(p,1);log('伏せずに使ったので、1枚引いた。',w);render();return}
   switch(c.type){
     case 'seer':judge(p,await chooseTypes(p,2,'占い師：2種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));if(R){draw(p,1);learnNot(p,2)}break;
-    case 'astrologer':judge(p,await chooseTypes(p,3,'占星術師：3種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));break;
+    case 'astrologer':judge(p,await chooseTypes(p,3,'占星術師：3種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));if(R)draw(p,1);break;
     case 'medium':{
       const pw=probs(p).w,cats=[...new Set(typesOf(o).map(t=>C[t].cat))];
       const wt=ct=>typesOf(o).filter(t=>C[t].cat===ct).reduce((s,t)=>s+pw[t],0);
@@ -1869,26 +1879,24 @@ async function playCard0(p,c,copy=false){
       const hits=o.hand.filter(x=>tys.includes(x.type));
       log(`審問：${tys.map(t=>'〈'+N(t)+'〉').join('')} → ${hits.length}枚`,w);
       hits.forEach(x=>forcedDiscard(o,x,p));
-      if(R&&hits.length){draw(p,hits.length);log(`審問の共鳴：${hits.length}枚引いた。`,w)}
+      draw(p,1);
       await raid(p,o);break;}
-    case 'hunter':if(R&&o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`狩人の共鳴：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w)}draw(p,1);o.f.noGuess=true;log(`${o.name}は次のターン宣言できない。`);learnNot(p,1,'狩人');break;
+    case 'hunter':draw(p,1);o.f.noGuess=true;log(`${o.name}は次のターン宣言できない。`);learnNot(p,2,'狩人');break;
     case 'wolf':{const had=o.hand.length;const n=1+(had<=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
     case 'vampire':{const had=o.hand.length;if(had)forcedDiscard(o,rand(o.hand),p);draw(p,1);await raid(p,o,had);break}
     case 'cursewolf':{const had=o.hand.length;for(let i=0;i<2&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
-    case 'phantom':for(let i=0;i<2&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);log(`${o.name}の山札の〈${N(x.type)}〉が捨て札になった。`);if(x.type==='nekomata')nekoCurse(o)}if(R&&o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break;
+    case 'phantom':for(let i=0;i<2&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);log(`${o.name}の山札の〈${N(x.type)}〉が捨て札になった。`);if(x.type==='nekomata')nekoCurse(o)}if(o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break;
     case 'greatwolf':[...o.hand].forEach(x=>forcedDiscard(o,x,p));[...p.hand].forEach(x=>toDiscard(p,x));draw(o,2);draw(p,4);log('お互いに手札を捨て、相手は2枚、自分は4枚引き直した。');break;
     case 'fox':{
       const x=p.f.foxPick;p.f.foxPick=null;
       if(!x||!p.hand.includes(x)){log('化けられるカードがない。',w);break}
       await playCard(p,x,true);break;}
     case 'mason':{draw(p,R?2:1);if(R)learnNot(p,1);const m=p.deck.find(x=>x.type==='mason');if(m){rm(p.deck,m);p.hand.push(m);log('もう1枚の共有者を手札に加えた。',w)}break;}
-    case 'mirror':case 'nekomata':case 'warder':draw(p,1);if(R&&c.type!=='mirror')learnNot(p,1);if(c.type==='warder')p.f.ward=R?'all':'info';break;
+    case 'mirror':case 'nekomata':case 'warder':draw(p,1);if((R&&c.type==='warder')||c.type==='nekomata')learnNot(p,1);if(c.type==='warder')p.f.ward=R?'all':'info';break;
     case 'bard':draw(p,3);if(!R)o.f.extraDraw=(o.f.extraDraw||0)+1;break;
     case 'twins':draw(p,R?2:1);if(R)learnNot(p,1);if(p.discard.some(x=>x.type==='twins'&&x!==c)){draw(p,2);log('双子がそろった！さらに2枚引く。',w)}break;
     case 'baker':{
-      draw(p,2);if(!p.hand.length||R)break;
-      const x=p.isCpu?worst(p):(render(),await pickCard(p.hand,'パン屋：捨てるカードを1枚選ぶ','捨てたカードは公開されます。'));
-      toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`,w);break;}
+      draw(p,2);break;}
     case 'alchemist':{
       let xs;
       if(p.isCpu)xs=p.hand.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>a[1]-b[1]).slice(0,2).map(e=>e[0]);
@@ -1896,16 +1904,16 @@ async function playCard0(p,c,copy=false){
       xs.forEach(x=>{toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`,w)});draw(p,R?4:3);break;}
     case 'sage':{
       const top=p.deck.slice(-3).reverse();if(!top.length)break;
-      const n=R?2:1;
+      const n=2;
       const xs=p.isCpu?top.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]):await pickCards(top,'賢者：手札に加えるカード',`山札の上3枚から${n}枚を選びます。`,Math.min(n,top.length),n);
       xs.forEach(x=>{rm(p.deck,x);p.hand.push(x)});break;}
     case 'priest':{
       const pool=p.discard.filter(x=>x!==c);if(!pool.length){log('戻せるカードがない。');break}
       const mx=R?3:2;const xs=p.isCpu?pool.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]).slice(0,mx).map(e=>e[0]):await pickCards(pool,'司祭：手札に戻すカード',`自分の捨て札から${mx}枚まで選びます。`,1,mx);
       xs.forEach(x=>{rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)});break;}
-    case 'elder':draw(p,1);if(p.f.blocked)log('狩人の効果で宣言できないままです。');else p.f.guesses=Math.max(p.f.guesses,0)+(R?2:1);break;
+    case 'elder':draw(p,1);if(p.f.blocked)log('狩人の効果で宣言できないままです。');else p.f.guesses=Math.max(p.f.guesses,0)+1;learnNot(p,1,'長老');break;
     case 'cryboy':draw(p,1);if(!R)p.f.harsh=true;if(!p.f.blocked)p.f.guesses++;break;
-    case 'executioner':p.f.safe=true;if(R)learnNot(p,1);break;
+    case 'executioner':p.f.safe=true;learnNot(p,1,'処刑人');break;
     case 'madman':if(R&&o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);if(S.over||S.cur!==p)break;o.f.forceGuess=true;log(`${o.name}は次のターン、必ず宣言しなければならない。`);break;
     case 'assassin':{
       let ty=null;
@@ -1928,19 +1936,19 @@ async function playCard0(p,c,copy=false){
     case 'prophet':{
       const hi=t=>{const r=C[t].r;return r==='R'||r==='L'};const isHi=hi(o.heart.type);
       narrow(p,typesOf(o).filter(t=>hi(t)===isHi));
-      log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);if(R)learnNot(p,2);break;}
+      log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);learnNot(p,1,'預言者');break;}
     case 'spy':{
       if(o.setCard){K(p).known.add(o.setCard.id);log(`密偵：${o.name}の伏せカードは〈${N(o.setCard.type)}〉。`,w)}
       else{draw(p,1);log('相手は伏せていないので、1枚引いた。',w)}
-      if(R)learnNot(p,2);break;}
+      learnNot(p,1,'密偵');break;}
     case 'pack':{const had=o.hand.length;const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
     case 'poisoner':{o.f.noDraw=true;log(`${o.name}は次のターン、カードを引けない。`,w);await raid(p,o);break}
-    case 'sentinel':draw(p,p.setCard?2:1);learnNot(p,R?2:1);break;
+    case 'sentinel':draw(p,p.setCard?2:1);learnNot(p,2,'番兵');break;
     case 'peddler':{
       if(p.hand.length){const x=p.isCpu?worst(p):(render(),await pickCard(p.hand,'行商人：山札の下に戻すカード','戻したカードは相手には公開されません。'));rm(p.hand,x);p.deck.unshift(x)}
-      draw(p,2);if(R)learnNot(p,1);break;}
-    case 'fortune':learnNot(p,R?4:3,'易者');break;
-    case 'listener':reveal(p,shuffle([...o.hand]).slice(0,3));draw(p,1);if(R)learnNot(p,1);break;
+      draw(p,2);learnNot(p,1,'行商人');break;}
+    case 'fortune':learnNot(p,R?4:2,'易者');break;
+    case 'listener':reveal(p,shuffle([...o.hand]).slice(0,3));draw(p,1);learnNot(p,1,'聞き耳');break;
     case 'diviner':{
       const pw=probs(p).w,cats=[...new Set(typesOf(o).map(t=>C[t].cat))];
       const wt=ct=>typesOf(o).filter(t=>C[t].cat===ct).reduce((a,t)=>a+pw[t],0);
@@ -1951,33 +1959,33 @@ async function playCard0(p,c,copy=false){
       const group=typesOf(o).filter(t=>pr.includes(C[t].cat)),yes=pr.includes(C[o.heart.type].cat);
       if(yes)narrow(p,group);else group.forEach(t=>K(p).excluded.add(t));
       log(`祈祷：${o.name}の心臓は「${pr.map(y=>CAT[y]).join('・')}」のどちらか${yes?'である':'ではない'}。`,w);
-      if(R)draw(p,1);break;}
-    case 'tracker':reveal(p,o.deck.slice(-5));if(R)draw(p,1);break;
+      if(R){draw(p,1);learnNot(p,2)}break;}
+    case 'tracker':reveal(p,o.deck.slice(-5));draw(p,1);break;
     case 'confessor':learnNot(p,4,'告解');break;
     case 'stargazer':{const odd=N(o.heart.type).length%2;narrow(p,typesOf(o).filter(t=>N(t).length%2===odd));log(`星読み：${o.name}の心臓の名前は${odd?'奇数':'偶数'}文字。`,w);if(R)learnNot(p,2);break}
     case 'clairvoy':{const ty=(await chooseTypes(p,1,'千里眼：1種類を選ぶ','相手の心臓がこの種類かを判定します。'))[0];judge(p,[ty]);if(o.heart.type!==ty)draw(p,1);if(R)learnNot(p,2);break}
     case 'berserker':{const n=2;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'ghoul':{if(o.hand.length)forcedDiscard(o,rand(o.hand),p);const back=p.discard.filter(x=>x!==c);if(R&&back.length){const x=rand(back);rm(p.discard,x);p.hand.push(x);log(`${p.name}は捨て札から1枚を手札に戻した。`,w)}await raid(p,o);break}
-    case 'kidnapper':{const n=1;if(R)draw(p,1);for(let i=0;i<n&&o.hand.length;i++){const x=rand(o.hand);rm(o.hand,x);o.deck.unshift(x);log(`${o.name}の手札が1枚、山札の一番下に戻された。`,w)}await raid(p,o);break}
-    case 'howler':{const n=1+(R&&o.hand.length>=5?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
-    case 'nightmare':{if(R)draw(p,1);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
-    case 'wererat':{const n=4+(R?2:0);let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);await raid(p,o);break}
+    case 'kidnapper':{const n=1;draw(p,1);for(let i=0;i<n&&o.hand.length;i++){const x=rand(o.hand);rm(o.hand,x);o.deck.unshift(x);log(`${o.name}の手札が1枚、山札の一番下に戻された。`,w)}await raid(p,o);break}
+    case 'howler':{const n=1+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
+    case 'nightmare':{draw(p,1);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
+    case 'wererat':{const n=5;let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);await raid(p,o);break}
     case 'witch':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++){let x;if(o.isCpu)x=o.hand.map(h=>[h,cpuScore(o,h)]).sort((a,b)=>a[1]-b[1])[0][0];else x=await by(o,()=>pickCard(o.hand,`魔女：捨てるカードを選ぶ（${i+1}/${n}）`,'手札から捨てるカードを選んでください。'));forcedDiscard(o,x,p)}await raid(p,o);break}
     case 'alpha':{const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=5?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
-    case 'nun':draw(p,1);o.f.nun=true;log(`${o.name}は次のターン、宣言を外すと1枚多く捨てる。`,w);if(R)learnNot(p,1);break;
-    case 'shieldbearer':draw(p,R?2:1);p.f.atkWard=true;log(`${p.name}は次の相手ターン、攻撃系カードの効果を受けない。`,w);break;
-    case 'lookout':draw(p,1);if(o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`物見：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w)}else log('相手は伏せていなかった。',w);if(R)learnNot(p,1);break;
+    case 'nun':draw(p,1);o.f.nun=true;log(`${o.name}は次のターン、宣言を外すと1枚多く捨てる。`,w);learnNot(p,1,'修道女');break;
+    case 'shieldbearer':draw(p,2);p.f.atkWard=true;log(`${p.name}は次の相手ターン、攻撃系カードの効果を受けない。`,w);break;
+    case 'lookout':draw(p,1);if(o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`物見：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w)}else log('相手は伏せていなかった。',w);learnNot(p,1,'物見');break;
     case 'cleric':{const n=R?2:1;for(let i=0;i<n;i++){const gs=p.discard.filter(x=>x!==c&&C[x.type].cat==='grd');if(!gs.length)break;let x;if(p.isCpu)x=gs.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1])[0][0];else x=await by(p,()=>pickCard(gs,'癒し手：手札に戻すカード','捨て札の防御系カードから1枚選びます。'));rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)}draw(p,1);break}
     case 'exorcist':{const k=K(o),n=R?3:2;const ex=shuffle([...k.excluded].filter(t=>typesOf(p).includes(t))).slice(0,n);ex.forEach(t=>k.excluded.delete(t));if(k.allowed&&!ex.length){}log(ex.length?`祓い：${o.name}は ${ex.map(t=>'〈'+N(t)+'〉').join('')} が心臓ではないことを忘れた。`:'祓い：相手は忘れる情報を持っていなかった。',w);break}
-    case 'banker':{const n=p.hand.length;p.deck.push(...p.hand);p.hand=[];p.deck=shuffle(p.deck);draw(p,n+(R?1:0));log(`${p.name}は手札を入れ替えた。`,w);break}
-    case 'gravedigger':{const back=p.discard.filter(x=>x!==c);if(back.length){let x;if(p.isCpu)x=back.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1])[0][0];else x=await by(p,()=>pickCard(back,'墓守：手札に戻すカード','捨て札から1枚選びます。'));rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)}if(R)learnNot(p,1);break}
-    case 'messenger':p.f.nextDraw=(p.f.nextDraw||0)+2;log('次のターン、2枚多く引く。',w);if(R)draw(p,1);break;
-    case 'tactician':draw(p,1);p.f.soft=true;log('このターン、宣言を外しても1枚しか捨てない。',w);if(R)learnNot(p,1);break;
-    case 'innkeeper':draw(p,(p.hand.length<=3?3:1)+(R?1:0));break;
-    case 'drummer':learnNot(p,1,'鼓手');p.f.forceRes=true;log('次に使う通常カードは必ず共鳴する。',w);break;
+    case 'banker':{const n=p.hand.length;p.deck.push(...p.hand);p.hand=[];p.deck=shuffle(p.deck);draw(p,n+1);log(`${p.name}は手札を入れ替えた。`,w);break}
+    case 'gravedigger':{for(let t=0;t<(R?2:1);t++){const back=p.discard.filter(x=>x!==c);if(!back.length)break;let x;if(p.isCpu)x=back.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1])[0][0];else x=await by(p,()=>pickCard(back,'墓守：手札に戻すカード','捨て札から1枚選びます。'));rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)}break}
+    case 'messenger':draw(p,1);p.f.nextDraw=(p.f.nextDraw||0)+2;log('次のターン、2枚多く引く。',w);break;
+    case 'tactician':draw(p,1);p.f.soft=true;log('このターン、宣言を外しても1枚しか捨てない。',w);learnNot(p,1,'参謀');break;
+    case 'innkeeper':draw(p,p.hand.length<=3?3:2);break;
+    case 'drummer':learnNot(p,1,'鼓手');p.f.forceRes=true;log('次に使う共鳴つきのカードは必ず共鳴する。',w);break;
     case 'gambler':if(!p.f.blocked)p.f.guesses++;p.f.skipDraw=true;log('このターン、宣言+1回。次の自分のターンは1枚少なく引く。',w);if(R)draw(p,1);break;
     case 'moonqueen':{const mc=C[o.heart.type].cat;narrow(p,typesOf(o).filter(t=>C[t].cat===mc));log(`月の女王：${o.name}の心臓は「${CAT[mc]}」系統。`,w);break}
-    case 'apprentice':draw(p,1);p.f.forceRes=true;log('次に使う通常カードは必ず共鳴する。',w);break;
+    case 'apprentice':draw(p,1);p.f.forceRes=true;log('次に使う共鳴つきのカードは必ず共鳴する。',w);break;
     case 'whitewolf':{
       if(!o.hand.length){log('相手の手札がない。',w);await raid(p,o);break}
       o.hand.forEach(x=>K(p).known.add(x.id));log(`白狼：${o.name}の手札は ${o.hand.map(x=>'〈'+N(x.type)+'〉').join('')}`,w);
@@ -2066,7 +2074,8 @@ function cpuScore(p,c){
     case 'greatdet':s=4.2;break;case 'oracle':s=4.6;break;case 'curser':s=maxP>.4?3.8:.4;break;case 'saint':s=p.life===1?(threat>.3?1.5:4.5):-1;break;case 'timewitch':s=p.hand.length>=4?4:1;break;
   }
   if(C[c.type].e.includes('襲撃：')&&o.hand.length<=(['wolf','pack','madman','phantom'].includes(c.type)?2:3)&&!o.f.ward)s+=3;
-  if(!C[c.type].single&&!C[c.type].set&&p.lastCat===C[c.type].cat)s+=1;
+  if(C[c.type].attr&&!C[c.type].set&&p.lastAttr===C[c.type].attr)s+=1;
+  if(C[c.type].attr&&!C[c.type].set&&p.hand.some(h=>h!==c&&C[h.type].attr===C[c.type].attr&&!C[h.type].set))s+=.3;
   if(c.type===p.heart.type&&Math.random()<.6)s-=1.5;
   return s+Math.random()*1.4;
 }
@@ -2090,7 +2099,7 @@ async function cpuTurn(p,plays,g){
   while(!g.over&&p.hand.length&&(p.f.req>0||p.f.opt>0)){
     // ブラフ伏せ：伏せ枠が空いていれば、たまに一番いらないカードを伏せる
     if(!p.setCard&&p.f.req>0&&p.hand.length>2&&Math.random()<.15){use();await doSet(p,worst(p));await sleep(300);continue}
-    const opts=p.hand.filter(h=>!(p.f.setFree===0&&RULES.freeSet&&C[h.type].set)).map(h=>[h,C[h.type].set&&p.setCard?1.5+(p.lastCat==='grd'?0:.3):cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
+    const opts=p.hand.filter(h=>!(p.f.setFree===0&&RULES.freeSet&&C[h.type].set)).map(h=>[h,C[h.type].set&&p.setCard?1.5+(p.lastAttr===C[h.type].attr?0:.3):cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
     if(!opts.length)break;
     const [c,sc]=opts[0];
     if(p.f.req<=0&&sc<2)break;
@@ -2227,7 +2236,7 @@ async function startBattle(){
 
 /* ---- battle render ---- */
 function hudHTML(){
-  const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?MYN():OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b>${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
+  const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?MYN():OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastAttr||'－'}</b>${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
   const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
   return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}${wn?`<span class="watchN">観戦 ${wn}人</span>`:''}</div>${side(S.me,true)}</div>`;
 }
@@ -2255,7 +2264,7 @@ function badges(p){
   if(p.f.extraDraw)b.push([`次ターン+${p.f.extraDraw}ドロー`,'ok']);
   if(p.f.nextOpt)b.push([`次ターン+${p.f.nextOpt}枚使える`,'ok']);
   if(S.cur===p&&p.f.opt>0)b.push([`追加で${p.f.opt}枚使える`,'ok']);
-  if(p.f.forceRes)b.push(['見習い：次は必ず共鳴','ok']);
+  if(p.f.forceRes)b.push(['次は必ず共鳴','ok']);
   if(p.f.noDraw)b.push(['毒：次ターン引けない','warn']);
   if(p.f.poisoned)b.push(['毒：このターン引けない','warn']);
   if(p.f.harsh)b.push(['狼少年：外すと3枚捨てる','warn']);
@@ -2267,7 +2276,7 @@ function badges(p){
   if(p.f.extraTurn)b.push(['追加ターン','ok']);
   return b.length?`<div class="badges">${b.map(x=>`<span class="badge ${x[1]}">${x[0]}</span>`).join('')}</div>`:'';
 }
-function stats(p){return`<div class="stats"><span>前回 <b>${p.lastCat?CAT[p.lastCat]+'系':'なし'}</b></span><span>手札 <b>${p.hand.length}</b></span><span>山札 <b>${p.deck.length}</b></span><span>捨て札 <b>${p.discard.length}</b></span><span>シングル <b>${N(p.single)}</b></span></div>`}
+function stats(p){return`<div class="stats"><span>前回 <b>${p.lastAttr?p.lastAttr+'属性':'なし'}</b></span><span>手札 <b>${p.hand.length}</b></span><span>山札 <b>${p.deck.length}</b></span><span>捨て札 <b>${p.discard.length}</b></span><span>シングル <b>${N(p.single)}</b></span></div>`}
 function piles(p){
   const top=p.discard[p.discard.length-1];
   return`<div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><div class="slot">${top?`<button type="button" class="cardBtn" data-card="${top.type}" aria-label="${N(top.type)}の効果を見る">${cardHTML(top.type,'s')}</button>`:'<div class="emptySlot"></div>'}捨て札</div>`;
@@ -2349,13 +2358,13 @@ function render0(){
   if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
-  const resOk=c=>!C[c.type].single&&!C[c.type].set&&(me.lastCat===C[c.type].cat||me.f.forceRes);
+  const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
   const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
   const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
-  const mini=p=>`<span class="mini">手札<b>${p.hand.length}</b> 山札<b>${p.deck.length}</b> 捨て<b>${p.discard.length}</b> 前回<b>${p.lastCat?CAT[p.lastCat]:'－'}</b> 単〈${N(p.single)}〉</span>`;
+  const mini=p=>`<span class="mini">手札<b>${p.hand.length}</b> 山札<b>${p.deck.length}</b> 捨て<b>${p.discard.length}</b> 前回<b>${p.lastAttr||'－'}</b> 単〈${N(p.single)}〉</span>`;
   const dr=$('#drawer'),drScroll=dr?dr.scrollTop:0;
   $('#app').innerHTML=`<div class="bt">
   <header class="btTop">
@@ -2780,6 +2789,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:26,d:'2026-11-03',t:'カードに「属性」（月・血・聖・影）がつきました。共鳴は、同じ属性のカードを続けて使ったときに起きます（系統がちがっても共鳴します）。属性のない「通常カード」は、共鳴しないかわりにはじめから効果が強めです。あわせて全カードを見直しました。'},
   {id:25,d:'2026-11-03',t:'新しいカードを30種追加しました（情報7・攻撃8・防御7・補助7・シングル1）。あわせて全体のバランスを調整し、パックのCPUのデッキの組み方も新しいバランスに合わせました。'},
   {id:24,d:'2026-11-03',t:'「遊び方」を新しくしました。勝ち方・ターンの流れ・宣言の結果・用語を、順番に図つきで説明しています。カード一覧は下のタブの「カード」から、系統ごとに絞って見られます。'},
   {id:23,d:'2026-11-03',t:'ショップができました。銀貨で「カードの縁」（金・月光・血の月・虹）と「称号」に交換できます（見た目だけで強さは変わりません）。'},
@@ -2973,7 +2983,7 @@ async function startOnline(a,b){
 // spec＝観戦者用：どちらのプレイヤーのカードも、相手に知られていないものは種類を送らない。本人だけのログも送らない
 function netSnap(spec,full){
   const ids=a=>a.map(c=>c.id);
-  const P=pl=>({types:pl.types,single:pl.single,life:pl.life,f:pl.f,lastCat:pl.lastCat||null,chain:pl.chain||0,heart:pl.heart?pl.heart.id:null,setCard:pl.setCard?pl.setCard.id:null,hand:ids(pl.hand),deck:ids(pl.deck),discard:ids(pl.discard),pool:ids(pl.pool)});
+  const P=pl=>({types:pl.types,single:pl.single,life:pl.life,f:pl.f,lastCat:pl.lastCat||null,lastAttr:pl.lastAttr||null,chain:pl.chain||0,heart:pl.heart?pl.heart.id:null,setCard:pl.setCard?pl.setCard.id:null,hand:ids(pl.hand),deck:ids(pl.deck),discard:ids(pl.discard),pool:ids(pl.pool)});
   const Ks=k=>({known:[...k.known],excluded:[...k.excluded],allowed:k.allowed?[...k.allowed]:null,stale:!!k.stale});
   // ゲストがまだ知らないホストのカード（心臓・手札・山札・伏せ）は種類を送らない
   const gk=S.know.cpu.known,hide=new Set(),secret=p=>[...p.hand,...p.deck,p.heart,p.setCard];
@@ -3006,7 +3016,7 @@ const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRo
 function guestApply(sn){
   const swt=t=>String(t).replace(/@(me|cpu)/g,(m,r)=>'@'+swR(r));
   const old=S&&S.guest&&S.gid===sn.gid?S:null;
-  const mk=(d,name)=>({name,isCpu:false,types:d.types,single:d.single,life:d.life,f:d.f||{},lastCat:d.lastCat,chain:d.chain,pool:[],deck:[],hand:[],discard:[],heart:null,setCard:null});
+  const mk=(d,name)=>({name,isCpu:false,types:d.types,single:d.single,life:d.life,f:d.f||{},lastCat:d.lastCat,lastAttr:d.lastAttr,chain:d.chain,pool:[],deck:[],hand:[],discard:[],heart:null,setCard:null});
   const pl={me:mk(sn.cpu,'@me'),cpu:mk(sn.me,'@cpu')};
   const byId={};sn.cards.forEach(([id,type,o])=>{byId[id]={id,type,owner:pl[swR(o)]}});
   const fill=(p,d)=>{const m=a=>a.map(i=>byId[i]).filter(Boolean);p.pool=m(d.pool);p.deck=m(d.deck);p.hand=m(d.hand);p.discard=m(d.discard);p.heart=d.heart!=null?byId[d.heart]:null;p.setCard=d.setCard!=null?byId[d.setCard]:null};
