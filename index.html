@@ -47,6 +47,9 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .atb{font-family:var(--body);font-weight:700;font-size:.62em;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%;background:var(--ac);color:#140c1c;flex:none;margin-left:auto;box-shadow:0 0 .4em var(--ac)}
 .b.bluff{border-color:#a77ce0;color:#e2d2ff}
 #updBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:9999;display:flex;gap:12px;align-items:center;background:#2a2150;border:1px solid var(--candle);border-radius:99px;padding:8px 10px 8px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);font-weight:700;white-space:nowrap}
+.tLeft{margin-left:.6em;font-variant-numeric:tabular-nums;font-size:.92em;padding:.05em .55em;border-radius:99px;background:rgba(255,255,255,.1)}
+.tLeft.warn{background:var(--blood);color:#fff;animation:resGlow 1s ease-in-out infinite}
+.pauseBar{grid-column:1/-1;margin:4px 0;padding:8px 12px;border-radius:10px;background:#3a2150;border:1px solid #a77ce0;font-weight:700;text-align:center}
 .b.bluffX{border-color:#a77ce0;color:#e2d2ff}
 .bluffNote{display:block;font-size:.92em;color:#cdb8f5;margin-top:2px}
 .atb.pl{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
@@ -907,7 +910,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103074437';
+const APP_VER='20261103075146';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1268,6 +1271,7 @@ function renderMenu(){
   </div>
   ${profileHTML()}
   <div class="menu">
+    ${ONL.get()&&!NET.conn?`<button type="button" class="mi main" id="mRejoin"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(ONL.get().opp||'相手')}さんとの対戦の続き（${ago(ONL.get().at)}）</span></button>`:''}
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
     <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
@@ -1285,6 +1289,7 @@ function renderMenu(){
   ${tabBarHTML('menu')}`;
   $('#mBattle').onclick=()=>startDraft();
   const mr=$('#mResume');if(mr)mr.onclick=resumeGame;
+  const mrj=$('#mRejoin');if(mrj)mrj.onclick=onlineRejoin;
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
   $('#mRules').onclick=()=>go('howto');
   $('#mFree').onclick=()=>go('free');
@@ -1758,7 +1763,11 @@ async function fxStamp(t,cls,k){
   await fxShow(`<div class="dim"></div>${cls==='hit'?'<div class="slashes"><i></i><i></i><i></i></div>':''}<div class="stampWrap">${k?cardHTML(k,'l'):''}<div class="stamp ${cls}">${t}</div></div>${k?'<span class="tapHint fixed">タップで次へ</span>':''}`,k?2200:1100,!!k);fxClear()}
 
 /* ---- modals ---- */
-function modal(html,setup){return new Promise(res=>{const m=$('#modal');m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;setup(m,v=>{m.hidden=true;m.innerHTML='';res(v)})})}
+// def：時間切れのときに自動で決める答え。modalAuto() で今の選択を自動で決め、modalKill() で答えずに閉じる
+let MODAL_CUR=null;const KILL={kill:1};
+function modal(html,setup,def){return new Promise(res=>{const m=$('#modal');if(MODAL_CUR)MODAL_CUR.fin(KILL);m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const cur={def};const fin=v=>{if(MODAL_CUR===cur)MODAL_CUR=null;m.hidden=true;m.innerHTML='';res(v)};cur.fin=fin;MODAL_CUR=cur;setup(m,fin)})}
+function modalAuto(){const c=MODAL_CUR;if(c&&c.def){let v;try{v=c.def()}catch(e){v=null}c.fin(v);return true}return false}
+function modalKill(){const c=MODAL_CUR;if(c)c.fin(KILL)}
 function tileHTML(target,ty,view,tag='div',cls=''){
   const c=C[ty],n=copies(target,ty);let dots='',out=false,extra='';
   if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty];if(SV.showP)extra=`<span class="pp">推定 ${Math.round(view.w[ty]*100)}%</span>`}
@@ -1778,12 +1787,12 @@ function pickTypes(target,count,title,sub,cancelable,viewer){
     });
     ok.onclick=()=>done([...sel]);
     const c=m.querySelector('#mCancel');if(c)c.onclick=()=>done(null);
-  });
+  },()=>{if(cancelable)return null;let r=[];try{if(viewer)r=ranked(viewer).filter(e=>e[1]>0).map(e=>e[0]).filter(t=>typesOf(target).includes(t))}catch(e){}r=r.concat(shuffle(typesOf(target)).filter(t=>!r.includes(t)));return r.slice(0,count)});
 }
 function pickOption(title,sub,opts){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'opt',title,sub,opts});
   const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div style="display:flex;flex-direction:column;gap:8px">${opts.map((o,i)=>`<button type="button" class="b" style="text-align:left;display:flex;flex-direction:column;gap:2px" data-i="${i}"><span style="font-family:var(--display);font-size:17px;font-weight:400">${o.label}</span><span class="note">${o.desc}</span></button>`).join('')}</div>`;
-  return modal(html,(m,done)=>{m.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>done(opts[+b.dataset.i].value))});
+  return modal(html,(m,done)=>{m.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>done(opts[+b.dataset.i].value))},()=>opts[0].value);
 }
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
@@ -1797,7 +1806,7 @@ function pickCards(cards,title,sub,min,max){
       ok.disabled=sel.length<min;
     });
     ok.onclick=()=>done(sel.map(i=>cards[i]));
-  });
+  },()=>cards.slice(0,Math.max(min,Math.min(1,max))));
 }
 const pickCard=async(cards,t,s)=>(await pickCards(cards,t,s,1,1))[0];
 
@@ -2232,6 +2241,7 @@ function endAs(P){if(S.phase!=='guess'||S.cur!==P||S.busy)return;if(P.f.mustGues
 async function runTurn(p){
   const g=S;if(g.over)return;
   saveGame(whoOf(p));
+  if(g.online&&!g.guest){g.deadline=Date.now()+TURN_MS;g.timeUpAt=0;onlineSave(whoOf(p))}
   g.turnNo++;g.cur=p;p.f.ward=false;p.f.atkWard=false;p.f.shield=false;p.f.decoy=false;
   let bluffWin=false;
   if(p.setCard){const c=p.setCard,o=opp(p);p.setCard=null;K(o).known.add(c.id);
@@ -2263,7 +2273,7 @@ async function gameOver(w){
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
   const rated=on&&LADDER.rated()&&NET.mid,rp=rated?LADDER.report(NET.mid,win,'ko'):null;
-  if(!on)lsDel(GAME_KEY);
+  if(!on)lsDel(GAME_KEY);else ONL.clear();
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);quake();FXC.burst('#ffffff',120,12);
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();
   if(win){SFX.win();FXC.confetti();screenFlash('gold');VOICE.say('You win!')}else{SFX.lose();screenFlash('red');VOICE.say('You lose.',{rate:.8})}
@@ -2462,7 +2472,8 @@ function render0(){
     <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
   </section>
   ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
-  <div class="actions btAct"><div class="phase">${phase}</div>
+  ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています…（最大3分）</div>`:''}
+  <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}</div>
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」で、効果のある伏せ札のふりをして伏せられます。次の相手ターンに相手がカードを1枚も使わなければブラフ成功（自分のデッキに伏せ専用カードが入っているときだけ）：自分のターンにこのカードが手札に戻り、カードを1枚多く使えます。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:''}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':'使う'}</button>
@@ -2676,16 +2687,16 @@ function renderShop(){
    盤面（ゲストから見えてはいけないカードは伏せる）と演出を送り、ゲストの操作と選択を受け取る。
    ホストから見た me / cpu を、ゲスト側では入れ替えて「自分＝me」として描く。 */
 const ROOM_PREFIX='shinzoujinrou-v1-',CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-const NET={peer:null,conn:null,host:false,state:'idle',code:'',err:'',opp:null,ready:{me:null,cpu:null},lastDeck:null,asks:{},askN:0,sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,joinTimer:0,
+const NET={peer:null,conn:null,host:false,state:'idle',code:'',err:'',opp:null,ready:{me:null,cpu:null},lastDeck:null,asks:{},askQ:{},askN:0,sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,joinTimer:0,
   specs:[],spec:false,wconn:null,specQ:0,lastSpec:'',watchNames:null,
   send(o){try{if(NET.conn&&NET.conn.open)NET.conn.send(o)}catch(e){}},
   // 観戦している人全員に送る
   cast(o){for(const c of NET.specs)try{if(c.open)c.send(o)}catch(e){}},
   lib(){return window.Peer?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc)})},
-  ask(q){NET.sync(true);return new Promise(res=>{const id=++NET.askN;NET.asks[id]=res;NET.send({t:'ask',id,...q})})},
+  ask(q){NET.sync(true);return new Promise(res=>{const id=++NET.askN;NET.asks[id]=res;NET.askQ[id]={t:'ask',id,...q};NET.send(NET.askQ[id])})},
   sync(force){
     if(!NET.conn||!S||!S.online||S.guest)return;
-    const sn=netSnap(),j=JSON.stringify(sn);
+    const sn=netSnap(),j=JSON.stringify({...sn,left:sn.left==null?null:Math.round(sn.left/10000)});
     if(force||j!==NET.lastSnap){
       NET.lastSnap=j;if(sn.logs.length)NET.sentQ=sn.logs[sn.logs.length-1].q;else NET.sentQ=Math.max(NET.sentQ,LOGQ);
       NET.send({t:'snap',s:sn});
@@ -2861,6 +2872,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:28,d:'2026-11-03',t:'友達対戦・ランクマッチに、1ターン90秒の制限時間がつきました（時間切れになると自動で進みます）。対戦中にアプリを閉じたり通信が切れたりしても、3分以内ならメニューの「対戦に戻る」から同じ試合に戻れます。'},
   {id:27,d:'2026-11-03',t:'ブラフができるようになりました。伏せ専用ではないカードを選ぶと「ブラフ」ボタンが出ます。相手が警戒して次のターンにカードを使わなかったらブラフ成功で、そのカードが手札に戻り、自分のターンにカードを1枚多く使えます。'},
   {id:26,d:'2026-11-03',t:'カードに「属性」（月・血・聖・影）がつきました。共鳴は、同じ属性のカードを続けて使ったときに起きます（系統がちがっても共鳴します）。属性のない「通常カード」は、共鳴しないかわりにはじめから効果が強めです。あわせて全カードを見直しました。'},
   {id:25,d:'2026-11-03',t:'新しいカードを30種追加しました（情報7・攻撃8・防御7・補助7・シングル1）。あわせて全体のバランスを調整し、パックのCPUのデッキの組み方も新しいバランスに合わせました。'},
@@ -2953,7 +2965,7 @@ function netReset(){
   const p=NET.peer;NET.peer=null;NET.conn=null;
   NET.specs.forEach(c=>{try{c.close()}catch(e){}});
   try{if(p)p.destroy()}catch(e){}
-  Object.assign(NET,{specs:[],spec:false,wconn:null,specQ:0,lastSpec:'',watchNames:null,state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRp:null,mid:null,ranked:false});
+  Object.assign(NET,{specs:[],spec:false,wconn:null,specQ:0,lastSpec:'',watchNames:null,state:'idle',opp:null,ready:{me:null,cpu:null},asks:{},askQ:{},askOpen:null,resumeNext:null,sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,oppUid:null,oppRp:null,mid:null,ranked:false});
 }
 function netFail(msg){if(MM.on&&++MM.fails>3)mmStop();if(MM.on){netReset();MM.joining=false;setTimeout(()=>{if(MM.on)mmStart()},800);return}netReset();NET.err=msg;VIEW='online';window.scrollTo(0,0);renderOnline()}
 function netErr(e){
@@ -2970,7 +2982,7 @@ async function netHost(){
   NET.code=code;
   const peer=NET.peer=new Peer(ROOM_PREFIX+code);
   peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';if(VIEW==='online')renderOnline();if(MM.on)mmTick()});
-  peer.on('connection',c=>{if(NET.peer!==peer)return;if(c.metadata&&c.metadata.watch)return specBind(c);if(NET.conn){c.on('open',()=>{try{c.send({t:'full'})}catch(e){}setTimeout(()=>c.close(),800)});return}netBind(c)});
+  peer.on('connection',c=>hostConn(peer,c));
   peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(NET.peer!==peer)return;if(e.type==='unavailable-id')return netHost();if(NET.conn&&e.type!=='peer-unavailable')return;netFail(netErr(e))});
 }
@@ -2981,17 +2993,24 @@ async function netJoin(code){
   try{await NET.lib()}catch(e){return netFail('通信の部品を読み込めませんでした。ネットにつながっているか確かめてください。')}
   const peer=NET.peer=new Peer();
   peer.on('open',()=>{if(NET.peer!==peer)return;netBind(peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json'}))});
-  peer.on('error',e=>{if(NET.peer!==peer)return;if(NET.conn&&NET.conn.open)return;netFail(netErr(e))});
+  peer.on('error',e=>{if(NET.peer!==peer||NET.paused)return;if(NET.conn&&NET.conn.open)return;netFail(netErr(e))});
   NET.joinTimer=setTimeout(()=>{if(NET.peer===peer&&NET.state==='joining')netFail('部屋につながりませんでした。コードを確かめて、もう一度試してください。')},25000);
 }
-function netBind(c){
+function netBind(c,rejoin){
   NET.conn=c;
-  c.on('open',()=>{clearTimeout(NET.joinTimer);NET.state='connected';if(MM.on){NET.ranked=true;MM.fails=0;mmStop()}NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});SFX.res();if(VIEW==='online')renderOnline()});
+  c.on('open',()=>{if(c.__dead||NET.conn!==c)return;clearTimeout(NET.joinTimer);NET.state='connected';
+    if(rejoin){NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});
+      if(NET.host&&S&&S.online){NET.send({t:'resume',mid:NET.mid,gid:S.gid});netResumed();NET.lastSnap='';NET.sentQ=0;NET.sync(true);for(const q of Object.values(NET.askQ))NET.send(q);
+        if(NET.resumeNext){const nx=NET.resumeNext;NET.resumeNext=null;runTurn(nx==='me'?S.me:S.cpu)}else render()}
+      else netResumed();
+      return}if(MM.on){NET.ranked=true;MM.fails=0;mmStop()}NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});SFX.res();if(VIEW==='online')renderOnline()});
   c.on('data',m=>{try{netRecv(m)}catch(e){console.error(e)}});
-  c.on('close',()=>netLost());
-  c.on('error',()=>netLost());
+  c.on('close',()=>{if(c.__dead||NET.conn!==c)return;netDrop()});
+  c.on('error',()=>{if(c.__dead||NET.conn!==c)return;netDrop()});
 }
+function netDrop(){if(S&&S.online&&!S.over&&!NET.leaving&&!S.spec)return netPause();netLost()}
 function netLost(msg){
+  NET.paused=false;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);ONL.clear();
   if(!NET.conn&&!NET.peer)return;
   const live=!!(S&&S.online&&!S.over&&NET.mid),mid=NET.mid,opp=NET.oppUid;
   const leaving=NET.leaving;netReset();
@@ -3002,7 +3021,7 @@ function netLost(msg){
   if(S&&S.online&&VIEW==='battle'){S=null}
   VIEW='online';window.scrollTo(0,0);renderOnline();
 }
-function netLeave(){mmStop();NET.send({t:'bye'});NET.leaving=true;setTimeout(()=>{netReset()},300);if(S&&S.online)S.over=true;go('menu')}
+function netLeave(){ONL.clear();mmStop();NET.send({t:'bye'});NET.leaving=true;setTimeout(()=>{netReset()},300);if(S&&S.online)S.over=true;go('menu')}
 
 function netRecv(m){
   if(!m||typeof m!=='object')return;
@@ -3013,16 +3032,130 @@ function netRecv(m){
     case'bye':netLost(`${NET.opp||'相手'}さんが対戦をやめました。`);break;
     case'deck':if(!deckOk(m.deck)||NET.verBad)return;NET.ready.cpu=m.deck;if(NET.host)netMaybeStart();if(VIEW==='online')renderOnline();break;
     // ここから下はゲストが受け取るもの
-    case'start':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):null;LADDER.startMatch(NET.mid);NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();
+    case'start':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):null;ONL.save({role:'guest',code:NET.code,gid:m.gid||null,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});LADDER.startMatch(NET.mid);NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();
       $('#app').innerHTML='<div class="onl"><p class="note">対戦を準備しています…</p></div>';break;
     case'snap':if(!NET.host)guestApply(m.s);break;
     case'fx':if(!NET.host)guestFx(m.n,m.a);break;
     case'ask':if(!NET.host)NET.fxq=NET.fxq.then(()=>guestAsk(m)).catch(e=>console.error(e));break;
     case'over':if(!NET.host)NET.fxq=NET.fxq.then(()=>{if(!S||!S.guest)return;if(m.hh)S.cpu.heart={type:m.hh};S.over=false;gameOver(m.w==='me'?S.cpu:S.me)});break;
     // ホストが受け取るもの
-    case'ans':if(NET.host){const f=NET.asks[m.id];if(f){delete NET.asks[m.id];f(m.v)}}break;
+    case'ans':if(NET.host){const f=NET.asks[m.id];if(f){delete NET.asks[m.id];delete NET.askQ[m.id];f(m.v)}}break;
+    case'askEnd':if(!NET.host&&NET.askOpen===m.id)modalKill();break;
+    case'resume':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):NET.mid;NET.paused=false;modalKill();NET.fxq=Promise.resolve();if(S&&S.guest&&S.gid!==m.gid)S=null;VIEW='battle';ONL.save({role:'guest',code:NET.code,gid:m.gid,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});if(!S)$('#app').innerHTML='<div class="onl"><p class="note">対戦に戻っています…</p></div>';else render();break;
     case'cmd':if(NET.host)hostCmd(m);break;
   }
+}
+
+/* ---- 制限時間（友達対戦・ランクマッチ）と再接続 ---- */
+const TURN_MS=90000,REJOIN_MS=180000,ONL_KEY='hw2_onl',ONLG_KEY='hw2_onlg';
+const ONL={save(o){lsSet(ONL_KEY,{...(lsGet(ONL_KEY)||{}),...o,at:Date.now()})},get(){const o=lsGet(ONL_KEY);return o&&Date.now()-o.at<30*60000?o:null},clear(){lsDel(ONL_KEY);lsDel(ONLG_KEY)}};
+// ホスト：ターンのはじめごとに盤面を保存（アプリを閉じても、そのターンのはじめから再開できる）
+function onlineSave(next){
+  if(!S||!S.online||S.guest||S.over)return;
+  const ids=a=>a.map(c=>c.id);
+  const P=pl=>({name:pl.name,types:pl.types,single:pl.single,life:pl.life,f:pl.f,lastCat:pl.lastCat||null,lastAttr:pl.lastAttr||null,chain:pl.chain||0,heart:pl.heart.id,setCard:pl.setCard?pl.setCard.id:null,hand:ids(pl.hand),deck:ids(pl.deck),discard:ids(pl.discard),pool:ids(pl.pool),mirrorUsed:!!pl.f.mirrorUsed});
+  const Ks=k=>({known:[...k.known],excluded:[...k.excluded],allowed:k.allowed?[...k.allowed]:null,stale:!!k.stale});
+  lsSet(ONLG_KEY,{at:Date.now(),next,gid:S.gid,round:S.round||1,turnNo:S.turnNo,uid,names:S.names,me:P(S.me),cpu:P(S.cpu),cards:Object.values(S.byId).map(c=>[c.id,c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},log:S.log.slice(-150),hist:S.hist.slice(-80)});
+  ONL.save({});
+}
+function onlineLoad(){
+  const g=lsGet(ONLG_KEY);if(!g)return null;
+  const n={me:null,cpu:null,know:{},byId:{},log:g.log||[],hist:g.hist||[],last:null,turnNo:g.turnNo,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:g.gid,names:g.names,round:g.round||1};
+  const mk=d=>({name:d.name,isCpu:false,types:d.types,single:d.single,life:d.life,f:d.f||{},lastCat:d.lastCat,lastAttr:d.lastAttr,chain:d.chain,pool:[],deck:[],hand:[],discard:[],heart:null,setCard:null});
+  n.me=mk(g.me);n.cpu=mk(g.cpu);n.cpu.remote=true;
+  g.cards.forEach(([id,type,o])=>{n.byId[id]={id,type,owner:o==='me'?n.me:n.cpu}});
+  uid=Math.max(uid,g.uid||0);
+  const fill=(pl,d)=>{const m=a=>a.map(i=>n.byId[i]);pl.pool=m(d.pool);pl.deck=m(d.deck);pl.hand=m(d.hand);pl.discard=m(d.discard);pl.heart=n.byId[d.heart];pl.setCard=d.setCard?n.byId[d.setCard]:null};
+  fill(n.me,g.me);fill(n.cpu,g.cpu);
+  const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
+  n.know={me:Kd(g.know.me),cpu:Kd(g.know.cpu)};n.last=n.log[n.log.length-1]||null;n.me.hand.forEach(c=>n.seen.add(c.id));
+  return{S:n,next:g.next};
+}
+// 時間切れ：選択中のものは自動で決め、使える分は使わずに進んで、ターンを終える
+function askDefault(q){
+  if(q.k==='opt')return q.opts&&q.opts[0]?q.opts[0].value:null;
+  if(q.k==='cards')return q.cards.slice(0,Math.max(q.min||0,Math.min(1,q.max||1))).map(c=>c[0]);
+  if(q.k==='types'){if(q.cancelable)return null;const t=S[q.target];return shuffle(typesOf(t)).slice(0,q.count)}
+  return null;
+}
+function timeUpTick(){
+  if(!S||!S.online||S.guest||S.over||S.paused||!S.deadline||Date.now()<S.deadline)return;
+  if(!S.timeUpAt){S.timeUpAt=Date.now();log(`時間切れ（${S.cur?S.cur.name:'心臓選び'}）。自動で進めます。`,'sys');SFX.miss&&SFX.miss()}
+  modalAuto();
+  for(const id of Object.keys(NET.asks)){const q=NET.askQ[id],f=NET.asks[id];delete NET.asks[id];delete NET.askQ[id];NET.send({t:'askEnd',id:+id});if(f)f(q?askDefault(q):null)}
+  if(!S.busy&&S.cur&&S.turnNo){const P=S.cur;P.f.mustGuess=false;if(S.phase==='play')skipAs(P);if(S.phase==='guess'&&S.cur===P)endAs(P)}
+  NET.sync();
+}
+setInterval(()=>{
+  timeUpTick();
+  const el=document.getElementById('tLeft');
+  if(el&&S&&S.deadline){const sec=Math.max(0,Math.ceil((S.deadline-Date.now())/1000));el.textContent=S.paused||NET.paused?'一時停止中':`残り${sec}秒`;el.classList.toggle('warn',sec<=15&&!S.paused)}
+},500);
+
+// 通信が切れたとき：対戦中なら3分は再接続を待つ
+function netPause(){
+  if(NET.paused)return;
+  NET.paused=true;NET.pauseAt=Date.now();
+  try{if(NET.conn)NET.conn.close()}catch(e){}NET.conn=null;
+  if(S){S.paused=true;S.pauseLeft=S.deadline?Math.max(5000,S.deadline-Date.now()):null}
+  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},REJOIN_MS);
+  if(!NET.host)guestRetry();
+  if(VIEW==='battle')render();
+}
+function netResumed(){
+  NET.paused=false;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);
+  if(S){S.paused=false;if(S.pauseLeft)S.deadline=Date.now()+S.pauseLeft;S.pauseLeft=null}
+}
+// ゲスト：同じ部屋に、同じ試合の続きとしてつなぎ直す
+async function guestRetry(){
+  clearTimeout(NET.retryT);
+  if(!NET.paused||NET.host)return;
+  try{await NET.lib()}catch(e){NET.retryT=setTimeout(guestRetry,4000);return}
+  const o=ONL.get();const gid=(S&&S.gid)||(o&&o.gid);
+  let peer=NET.peer;
+  if(!peer||peer.destroyed){peer=NET.peer=new Peer();peer.on('error',()=>{});await new Promise(r=>{peer.on('open',r);setTimeout(r,8000)})}
+  else if(peer.disconnected){try{peer.reconnect()}catch(e){}}
+  if(!NET.paused)return;
+  try{const c=peer.connect(ROOM_PREFIX+NET.code,{reliable:true,serialization:'json',metadata:{rejoin:gid}});netBind(c,true)}catch(e){}
+  NET.retryT=setTimeout(()=>{if(NET.paused&&(!NET.conn||!NET.conn.open)){try{if(NET.conn)NET.conn.close()}catch(e){}NET.conn=null;guestRetry()}},5000);
+}
+// メニューの「対戦に戻る」
+async function onlineRejoin(){
+  const o=ONL.get();if(!o)return go('online');
+  netReset();NET.err='';NET.code=o.code;NET.opp=o.opp;NET.oppUid=o.oppUid||null;NET.mid=o.mid||null;NET.ranked=!!o.ranked;
+  VIEW='battle';window.scrollTo(0,0);
+  if(o.role==='guest'){
+    NET.host=false;NET.state='joining';NET.paused=true;S=null;
+    $('#app').innerHTML='<div class="onl"><p class="note">対戦に戻っています…（相手が対戦を続けていれば、つながります）</p><div class="btns"><button type="button" class="b" id="rjStop">あきらめてメニューへ</button></div></div>';
+    $('#rjStop').onclick=()=>{ONL.clear();netReset();go('menu')};
+    clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused&&!S){NET.paused=false;ONL.clear();netReset();NET.err='対戦に戻れませんでした（相手が対戦をやめた可能性があります）。';go('online')}},REJOIN_MS);
+    guestRetry();return;
+  }
+  // ホスト：保存したターンのはじめから再開。同じ部屋コードで部屋を開き直して、相手が戻るのを待つ
+  const L=onlineLoad();if(!L){ONL.clear();return go('online')}
+  NET.host=true;NET.state='opening';S=L.S;S.paused=true;S.deadline=Date.now()+TURN_MS;S.pauseLeft=TURN_MS;NET.paused=true;NET.resumeNext=L.next;
+  log('― 中断したところ（ターンのはじめ）から再開します。相手を待っています ―','sys');render();
+  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},REJOIN_MS);
+  try{await NET.lib()}catch(e){return}
+  let tries=0;
+  const open=()=>{const peer=NET.peer=new Peer(ROOM_PREFIX+NET.code);
+    peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';liveStart()});
+    peer.on('connection',c=>hostConn(peer,c));
+    peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
+    peer.on('error',e=>{if(NET.peer!==peer)return;if(e.type==='unavailable-id'&&++tries<40){try{peer.destroy()}catch(_){}setTimeout(open,3000)}});};
+  open();
+}
+// ホストへの新しい接続（観戦・新規・同じ試合への再接続）
+function hostConn(peer,c){
+  if(NET.peer!==peer)return;
+  if(c.metadata&&c.metadata.watch)return specBind(c);
+  const rj=c.metadata&&c.metadata.rejoin;
+  if(rj&&S&&S.online&&!S.guest&&!S.over&&S.gid===rj){
+    if(NET.conn&&NET.conn!==c){const old=NET.conn;NET.conn=null;old.__dead=true;try{old.close()}catch(e){}}
+    return netBind(c,true);
+  }
+  if(NET.conn){c.on('open',()=>{try{c.send({t:'full'})}catch(e){}setTimeout(()=>c.close(),800)});return}
+  netBind(c);
 }
 
 /* ホスト側 */
@@ -3038,9 +3171,10 @@ async function startOnline(a,b){
   NET.sentQ=LOGQ;NET.lastSnap='';
   VIEW='battle';window.scrollTo(0,0);
   NET.mid=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,'');
-  NET.send({t:'start',mid:NET.mid});NET.cast({t:'start'});LADDER.startMatch(NET.mid);liveStart();
-  S={me:newPlayer('@me',false,[...a.types],a.single),cpu:newPlayer('@cpu',false,[...b.types],b.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:Date.now(),names:{me:netName(),cpu:NET.opp||'相手'}};
+  const gid0=Date.now();NET.send({t:'start',mid:NET.mid,gid:gid0});NET.cast({t:'start'});LADDER.startMatch(NET.mid);liveStart();
+  S={me:newPlayer('@me',false,[...a.types],a.single),cpu:newPlayer('@cpu',false,[...b.types],b.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:gid0,names:{me:netName(),cpu:NET.opp||'相手'}};
   S.cpu.remote=true;const g=S;
+  ONL.save({role:'host',code:NET.code,gid:gid0,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});S.deadline=Date.now()+TURN_MS;
   mkPool(S.me);mkPool(S.cpu);render();
   await fxVs();if(g!==S)return;
   const first=Math.random()<.5?S.me:S.cpu,second=opp(first);
@@ -3066,7 +3200,7 @@ function netSnap(spec,full){
   if(spec)secret(S.cpu).forEach(c=>{if(c&&!S.know.me.known.has(c.id))hide.add(c.id)});
   const logs=spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
   return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,me:P(S.me),cpu:P(S.cpu),
-    cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,logs,watchers:NET.specs.length};
+    cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
 }
 function hostCmd(m){
   if(!S||!S.online||S.guest||S.over)return;
@@ -3100,7 +3234,7 @@ function guestApply(sn){
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),last:old?old.last:null,
     turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,
-    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
+    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});
   S=n;
@@ -3117,9 +3251,12 @@ async function guestAsk(m){
   if(!S||!S.guest)return;
   const P=r=>r?S[swR(r)]:null;
   let v=null;
+  NET.askOpen=m.id;
   if(m.k==='types')v=await pickTypes(P(m.target),m.count,m.title,m.sub,m.cancelable,P(m.viewer));
   else if(m.k==='opt')v=await pickOption(m.title,m.sub,m.opts);
-  else if(m.k==='cards'){const cs=m.cards.map(([id,type])=>({id,type}));v=(await pickCards(cs,m.title,m.sub,m.min,m.max)).map(c=>c.id)}
+  else if(m.k==='cards'){const cs=m.cards.map(([id,type])=>({id,type}));v=await pickCards(cs,m.title,m.sub,m.min,m.max);if(v!==KILL)v=v.map(c=>c.id)}
+  if(NET.askOpen===m.id)NET.askOpen=null;
+  if(v===KILL)return;
   NET.send({t:'ans',id:m.id,v});
 }
 
