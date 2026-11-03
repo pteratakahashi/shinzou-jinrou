@@ -903,6 +903,11 @@ function effHTML(e){
 const ATTR={"seer": "月", "stargazer": "月", "astrologer": "月", "howler": "月", "madman": "月", "witch": "月", "warder": "月", "gatekeeper": "月", "fox": "月", "drummer": "月", "bard": "月", "apprentice": "月", "watchdog": "血", "diviner": "血", "wolf": "血", "pack": "血", "alpha": "血", "bodyguard": "血", "reflect": "血", "trapper": "血", "twins": "血", "cryboy": "血", "alchemist": "血", "medium": "聖", "confessor": "聖", "clairvoy": "聖", "assassin": "聖", "berserker": "聖", "knight": "聖", "cleric": "聖", "exorcist": "聖", "bastion": "聖", "villager": "聖", "chief": "聖", "mason": "聖", "fortune": "影", "cursewolf": "影", "ghoul": "影", "vampire": "影", "poisoner": "影", "decoy": "影", "silencer": "影", "watchman": "影", "gravedigger": "影", "gambler": "影", "priest": "影"};
 const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'};
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
+// 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
+const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
+CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
+const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
+const byCat=(a,b)=>CIDX[a]-CIDX[b];
 const C={};CARDS.forEach(c=>C[c.k]=c);
 const NORMAL=CARDS.filter(c=>!c.single),SINGLE=CARDS.filter(c=>c.single);
 const STARTER=CARDS.filter(c=>c.r==='S').map(c=>c.k);
@@ -1617,7 +1622,7 @@ function ago(t){const m=Math.round((Date.now()-t)/60000);return m<1?'たった�
 /* ================= battle engine ================= */
 let S=null,uid=0;
 function newPlayer(name,isCpu,types,single){return{name,isCpu,types,single,life:3,pool:[],deck:[],hand:[],discard:[],heart:null,f:{}}}
-const typesOf=p=>[...p.types,p.single];
+const typesOf=p=>[...p.types].sort(byCat).concat([p.single]);
 const copies=(p,k)=>k===p.single?1:3;
 const opp=p=>p===S.me?S.cpu:S.me;
 const K=obs=>obs===S.me?S.know.me:S.know.cpu;
@@ -1769,7 +1774,7 @@ function pickOption(title,sub,opts){
 }
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
-  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>{const d=C[c.type],rr=d.r==='S'?'C':d.r;return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]+'・'+{C:'コモン',R:'レア'}[rr]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
+  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type],rr=d.r==='S'?'C':d.r;return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]+'・'+{C:'コモン',R:'レア'}[rr]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
   return modal(html,(m,done)=>{
     const sel=[];const ok=m.querySelector('#mOk');
     m.querySelectorAll('.cardPick button').forEach(b=>b.onclick=()=>{
@@ -2411,6 +2416,7 @@ function render0(){
   if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
+  if(!SP)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
   const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
   const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
