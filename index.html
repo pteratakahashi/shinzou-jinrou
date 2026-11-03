@@ -910,7 +910,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103075653';
+const APP_VER='20261103075955';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3083,7 +3083,13 @@ function timeUpTick(){
   if(!S.timeUpAt){S.timeUpAt=Date.now();log(`時間切れ（${S.cur?S.cur.name:'心臓選び'}）。自動で進めます。`,'sys');SFX.miss&&SFX.miss()}
   modalAuto();
   for(const id of Object.keys(NET.asks)){const q=NET.askQ[id],f=NET.asks[id];delete NET.asks[id];delete NET.askQ[id];NET.send({t:'askEnd',id:+id});if(f)f(q?askDefault(q):null)}
-  if(!S.busy&&S.cur&&S.turnNo){const P=S.cur;P.f.mustGuess=false;if(S.phase==='play')skipAs(P);if(S.phase==='guess'&&S.cur===P)endAs(P)}
+  if(!S.busy&&S.cur&&S.turnNo){const P=S.cur;
+    if(S.phase==='play')skipAs(P);
+    // 狂人などで「必ず宣言」のときは、残っている候補からランダムに宣言させる（時間切れや切断で逃げられないように）
+    if(S.phase==='guess'&&S.cur===P&&P.f.mustGuess&&P.f.guesses>0&&P.hand.length){
+      const w=probs(P).w,live=typesOf(opp(P)).filter(t=>w[t]>0),ty=rand(live.length?live:typesOf(opp(P)));
+      log(`時間切れのため、ランダムに「${N(ty)}」と宣言した。`,whoOf(P));guessAs(P,ty);return}
+    P.f.mustGuess=false;if(S.phase==='guess'&&S.cur===P)endAs(P)}
   NET.sync();
 }
 setInterval(()=>{
