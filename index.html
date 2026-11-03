@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>心臓人狼</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#11152a">
@@ -47,6 +47,18 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .atb{font-family:var(--body);font-weight:700;font-size:.62em;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%;background:var(--ac);color:#140c1c;flex:none;margin-left:auto;box-shadow:0 0 .4em var(--ac)}
 .b.bluff{border-color:#a77ce0;color:#e2d2ff}
 #updBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:9999;display:flex;gap:12px;align-items:center;background:#2a2150;border:1px solid var(--candle);border-radius:99px;padding:8px 10px 8px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);font-weight:700;white-space:nowrap}
+.mHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 0 0}.mHead h2{margin:0}
+.xBtn{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:26px;line-height:1;cursor:pointer}
+.info2{display:flex;gap:14px;align-items:flex-start}.i2Art{flex:none}.info2 .infoText{min-width:0}
+@media (max-width:520px){.info2 .tcg.m{width:72px}.info2 .infoText .eff{font-size:14px;line-height:1.6}}
+.oppLast{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;font-size:12px;margin-top:6px;padding:4px 6px;border-radius:8px;background:rgba(0,0,0,.25);scrollbar-width:none}
+.oppLast::-webkit-scrollbar{display:none}.olH{color:var(--muted);margin-right:4px;flex:none}.olSep{color:var(--muted);flex:none}
+.laRes{font-size:10px;font-weight:700;padding:0 .4em;border-radius:4px;background:#5a4210;color:#ffd77a;margin-left:2px;flex:none}.laSub{color:var(--muted);flex:none}
+.la-hit{color:var(--blood)}.la-miss{color:var(--muted)}.la-void{color:#a77ce0}
+.disBtn{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}.disBtn b{margin-left:3px;color:var(--candle)}
+.disList{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.disItem{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);text-align:left;cursor:pointer}
+.disItem .tcg.s{width:40px;font-size:6px}.disN{flex:1;min-width:0;font-size:13px}.disItem b{color:var(--candle)}
 .tLeft{margin-left:.6em;font-variant-numeric:tabular-nums;font-size:.92em;padding:.05em .55em;border-radius:99px;background:rgba(255,255,255,.1)}
 .tLeft.warn{background:var(--blood);color:#fff;animation:resGlow 1s ease-in-out infinite}
 .pauseBar{grid-column:1/-1;margin:4px 0;padding:8px 12px;border-radius:10px;background:#3a2150;border:1px solid #a77ce0;font-weight:700;text-align:center}
@@ -673,7 +685,8 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
   .bt .btMid .duo .colh{flex:none;font-size:11px;line-height:1.3}
   .bt .btMid .duo .col>div:last-child:empty{display:none}
   .bt .btMid .duo .col>div:last-child{flex:none;font-size:10.5px}
-  .bt .btMid .grid{flex:1;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(30px,1fr);gap:4px}
+  .bt .btMid .grid{flex:1 0 auto;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(30px,1fr);gap:4px}
+  .bt .btMid .duo .col>div:last-child{display:none}
   .bt .btMid .tt{padding:2px 6px;gap:1px;border-radius:6px;justify-content:center;min-height:0;overflow:hidden}
   .bt .btMid .tt .tn{font-size:clamp(10px,3.3vw,13px);line-height:1.15}
   .bt .btMid .tt .tn small{font-size:9px;margin-left:2px}
@@ -910,7 +923,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103075955';
+const APP_VER='20261103083011';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1672,7 +1685,7 @@ function setHeart(p,type){const cards=[...p.pool];const h=cards.find(c=>c.type==
 function triggerNow(owner){
   const c=owner.setCard;owner.setCard=null;owner.discard.push(c);K(opp(owner)).known.add(c.id);
   S.hist.push({who:whoOf(owner),k:c.type,turn:S.turnNo});
-  log(`${owner.name}の伏せカード〈${N(c.type)}〉が発動！`,whoOf(owner));
+  log(`${owner.name}の伏せカード〈${N(c.type)}〉が発動！`,whoOf(owner));act({who:whoOf(owner),kind:'trig',k:c.type});
   learnNot(owner,1);
   if(owner.lastAttr&&owner.lastAttr===C[c.type].attr){draw(owner,1);log(`共鳴！（${C[c.type].attr}の属性）1枚引く。`,whoOf(owner));learnNot(owner,1)}
   // 発動した伏せカードも「直前に使ったカード」になる。次の自分のターンに同じ属性を使えば共鳴する
@@ -1689,7 +1702,7 @@ function decoyPenalty(p){
 async function doSet(p,c){
   rm(p.hand,c);
   if(p.setCard){const old=p.setCard;p.discard.push(old);K(opp(p)).known.add(old.id);log(`${p.name}は伏せていた〈${N(old.type)}〉を捨てた。`,whoOf(p))}
-  p.setCard=c;p.f.setTurn=S.turnNo;log(`${p.name}はカードを1枚伏せた。`,whoOf(p));SFX.set();
+  p.setCard=c;p.f.setTurn=S.turnNo;act({who:whoOf(p),kind:'set'});log(`${p.name}はカードを1枚伏せた。`,whoOf(p));SFX.set();
   render();await fxSet(whoOf(p));render();
 }
 function draw(p,n){
@@ -1831,7 +1844,7 @@ function judge(p,set){
 function nekoCurse(owner){const cand=cands(owner,4);log(`猫又の祟り！${opp(owner).name}の心臓は ${cand.map(x=>'〈'+N(x)+'〉').join('')} のどれか。`,whoOf(owner))}
 async function raid(p,o,had){
   if(o.hand.length<=1&&!S.over){
-    o.life=Math.max(0,o.life-1);S.shake=whoOf(o);log(`襲撃！${o.name}の手札が残りわずかになった。ライフ-1（残り${o.life}）`,whoOf(p));render();
+    o.life=Math.max(0,o.life-1);S.shake=whoOf(o);act({who:whoOf(p),kind:'raid'});log(`襲撃！${o.name}の手札が残りわずかになった。ライフ-1（残り${o.life}）`,whoOf(p));render();
     await fxRaid();await fxHeartBreak(whoOf(o),o.life+1);S.round=(S.round||1)+1;if(o.life<=0)return gameOver(p);
     // 襲撃された側は心臓はそのままで、手札が5枚になるまで引く。襲撃した側のターンはここで終わる（宣言もできない）
     const need=Math.max(0,5-o.hand.length);const wasP=o.f.poisoned;o.f.poisoned=false;draw(o,need);o.f.poisoned=wasP;if(S.over)return;
@@ -1840,6 +1853,8 @@ async function raid(p,o,had){
     render();if(!S.sim)await fxRound();
   }
 }
+// 対戦中の行動の記録（「相手の前のターン」の表示用）。伏せたカードの種類は記録しない
+function act(o){if(!S)return;(S.acts=S.acts||[]).push({...o,turn:S.turnNo});if(S.acts.length>80)S.acts.shift()}
 function learnNot(p,n,lab='共鳴'){
   const o=opp(p),k=K(p);
   const pool=shuffle(typesOf(o).filter(t=>t!==o.heart.type&&!k.excluded.has(t)&&(!k.allowed||k.allowed.has(t)))).slice(0,n);
@@ -1901,6 +1916,7 @@ async function playCard0(p,c,copy=false){
   else{toDiscard(p,c);p.f.played=(p.f.played||0)+1;log(`${p.name}は〈${N(c.type)}〉を使った。`,w);S.hist.push({who:w,k:c.type,turn:S.turnNo})}
   render();await fxPlay(c.type,w);
   if(!C[c.type].single)p.chain=R?(p.chain||1)+1:1;
+  act({who:w,kind:'play',k:c.type,res:R,copy:!!copy});
   if(R){log(`共鳴！（${at}の属性）`,w);await fxRes()}
   await payCost(p,c,R);
   if(p.f.watched){
@@ -2087,9 +2103,9 @@ async function resolveHit(p,o){
 async function doGuess(p,ty){
   const o=opp(p),w=whoOf(p);p.f.guesses--;p.f.mustGuess=false;
   log(`${p.name}は「${N(ty)}」と宣言した。`,w);render();await fxCall(N(ty));
-  if(hasSet(o,'decoy')){await triggerSet(o);log('影武者が身代わりになった。宣言は無効（当たり外れは明かされない）。',w);decoyPenalty(p);render();return'miss'}
-  if(o.heart.type===ty)return resolveHit(p,o);
-  K(p).excluded.add(ty);await fxStamp('外れ','miss');log('外れ。',w);
+  if(hasSet(o,'decoy')){await triggerSet(o);act({who:w,kind:'guess',k:ty,r:'void'});log('影武者が身代わりになった。宣言は無効（当たり外れは明かされない）。',w);decoyPenalty(p);render();return'miss'}
+  if(o.heart.type===ty){act({who:w,kind:'guess',k:ty,r:'hit'});return resolveHit(p,o)}
+  act({who:w,kind:'guess',k:ty,r:'miss'});K(p).excluded.add(ty);await fxStamp('外れ','miss');log('外れ。',w);
   if(p.f.curse){p.f.curse=false;p.life=Math.max(0,p.life-1);S.shake=w;log(`呪術師の反動。${p.name}のライフ-1（残り${p.life}）`,w);render();if(p.life<=0){await gameOver(o);return'over'}}
   if(hasSet(o,'watchman')){await triggerSet(o);draw(o,2);learnNot(o,3,'夜警');log(`夜警：${o.name}は2枚引いた。`,whoOf(o))}
   if(p.f.safe){p.f.safe=false;log('ペナルティなし。')}
@@ -2242,11 +2258,11 @@ async function runTurn(p){
   const g=S;if(g.over)return;
   saveGame(whoOf(p));
   if(g.online&&!g.guest){g.deadline=Date.now()+TURN_MS;g.timeUpAt=0;onlineSave(whoOf(p))}
-  g.turnNo++;g.cur=p;p.f.ward=false;p.f.atkWard=false;p.f.shield=false;p.f.decoy=false;
+  g.turnNo++;g.cur=p;act({who:whoOf(p),kind:'start'});if(S.pendBluff===whoOf(p)){act({who:whoOf(p),kind:'bluff'});S.pendBluff=null}p.f.ward=false;p.f.atkWard=false;p.f.shield=false;p.f.decoy=false;
   let bluffWin=false;
   if(p.setCard){const c=p.setCard,o=opp(p);p.setCard=null;K(o).known.add(c.id);
     // ブラフ成功：伏せ専用でないカードを伏せていて、そのあとの相手のターンに相手がカードを1枚も使わなかった
-    if(!C[c.type].set&&typesOf(p).some(t=>C[t].set)&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p))}
+    if(!C[c.type].set&&typesOf(p).some(t=>C[t].set)&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;S.pendBluff=whoOf(p);p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p))}
     else{p.discard.push(c);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}}
   p.f.blocked=!!p.f.noGuess;p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
   p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;p.f.played=0;
@@ -2360,11 +2376,40 @@ function badges(p){
 function stats(p){return`<div class="stats"><span>前回 <b>${p.lastAttr?p.lastAttr+'属性':'なし'}</b></span><span>手札 <b>${p.hand.length}</b></span><span>山札 <b>${p.deck.length}</b></span><span>捨て札 <b>${p.discard.length}</b></span><span>シングル <b>${N(p.single)}</b></span></div>`}
 function piles(p){
   const top=p.discard[p.discard.length-1];
-  return`<div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><div class="slot">${top?`<button type="button" class="cardBtn" data-card="${top.type}" aria-label="${N(top.type)}の効果を見る">${cardHTML(top.type,'s')}</button>`:'<div class="emptySlot"></div>'}捨て札</div>`;
+  return`<div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><button type="button" class="slot disBtn" data-dis="${whoOf(p)}" aria-label="捨て札の一覧を見る（${p.discard.length}枚）">${top?cardHTML(top.type,'s'):'<div class="emptySlot"></div>'}<span>捨て札<b>${p.discard.length}</b></span></button>`;
 }
 function trackGrid(target,obs,mark){
   const v=probs(obs);let best=0;for(const t in v.w)best=Math.max(best,v.w[t]);
   return`<div class="grid">${typesOf(target).map(ty=>tileHTML(target,ty,v,'button','tip '+(SV.showP&&v.w[ty]===best&&best>0?'hot ':'')+(ty===mark?'mine':''))).join('')}</div>`;
+}
+function lastActsHTML(){
+  const A=(S&&S.acts)||[];let T=null;
+  for(let i=A.length-1;i>=0;i--)if(A[i].kind==='start'&&A[i].who==='cpu'){T=A[i].turn;break}
+  if(T==null)return'';
+  const now=S.cur===S.cpu&&S.turnNo===T&&!S.over;
+  const chip=k=>`<button type="button" class="cardBtn lchip" data-card="${k}">${N(k)}</button>`;
+  const parts=A.filter(a=>a.turn===T&&a.kind!=='start').map(a=>{
+    if(a.kind==='play')return chip(a.k)+(a.res?'<span class="laRes">共鳴</span>':'')+(a.copy?'<span class="laSub">妖狐で</span>':'');
+    if(a.kind==='set')return a.who==='cpu'?'<span class="laSub">1枚伏せた</span>':'';
+    if(a.kind==='trig')return`<span class="laSub">${a.who==='me'?'あなたの':'相手の'}伏せ</span>${chip(a.k)}<span class="laSub">発動</span>`;
+    if(a.kind==='guess')return a.who==='cpu'?`<span class="laSub">「${N(a.k)}」と宣言→</span><b class="la-${a.r}">${a.r==='hit'?'的中':a.r==='void'?'無効':'外れ'}</b>`:'';
+    if(a.kind==='bluff')return a.who==='cpu'?'<b class="la-hit">ブラフ成功</b>':'';
+    if(a.kind==='raid')return a.who==='cpu'?'<b class="la-hit">襲撃</b>':'';
+    return'';}).filter(Boolean);
+  return`<div class="oppLast"><span class="olH">${now?'このターン':'前のターン'}（${T}T）</span>${parts.length?parts.join('<span class="olSep">›</span>'):'<span class="laSub">カードを使わなかった</span>'}</div>`;
+}
+function showDiscard(who){
+  const p=who==='me'?S.me:S.cpu;const cnt={};p.discard.forEach(c=>{if(c&&C[c.type])cnt[c.type]=(cnt[c.type]||0)+1});
+  const ks=Object.keys(cnt).sort(byCat);
+  const cats=['info','atk','grd','sup','one'].map(k=>[k,p.discard.filter(c=>c&&C[c.type]&&C[c.type].cat===k).length]).filter(e=>e[1]);
+  const attrs=['月','血','聖','影'].map(a=>[a,p.discard.filter(c=>c&&C[c.type]&&C[c.type].attr===a).length]).filter(e=>e[1]);
+  modal(`<div class="mHead"><h2>${who==='me'?MYN():OPN()}の捨て札（${p.discard.length}枚）</h2><button type="button" class="xBtn" id="dX" aria-label="閉じる">×</button></div>
+    ${cats.length?`<p class="note" style="margin:0">系統：${cats.map(([k,v])=>`${CAT[k]}${v}`).join('・')}${attrs.length?`／属性：${attrs.map(([a,v])=>`${a}${v}`).join('・')}`:''}</p>`:''}
+    ${ks.length?`<div class="disList">${ks.map(k=>`<button type="button" class="disItem" data-k="${k}">${cardHTML(k,'s')}<span class="disN">${N(k)}</span><b>×${cnt[k]}</b></button>`).join('')}</div>`:'<p class="note">まだ捨て札はありません。</p>'}`,(m,done)=>{
+    const close=()=>{m.onclick=null;done()};
+    m.querySelector('#dX').onclick=close;m.onclick=e=>{if(e.target===m)close()};
+    m.querySelectorAll('.disItem').forEach(b=>b.onclick=()=>{m.onclick=null;done();setTimeout(()=>showCardInfo(b.dataset.k),0)});
+  });
 }
 function knowNotes(k){const n=[];if(k.allowed)n.push(`候補：${[...k.allowed].map(N).join('・')}`);if(k.excluded.size)n.push(`除外：${[...k.excluded].map(N).join('・')}`);return n.length?`<div class="note">${n.join(' ／ ')}</div>`:''}
 const liveCount=obs=>Object.values(probs(obs).w).filter(x=>x>0).length;
@@ -2399,8 +2444,10 @@ function showCardInfo(k){
   const rn={C:'コモン',R:'レア',L:'シングル'}[r];
   let usage='';
   if(S&&VIEW==='battle'){const a=S.hist.filter(h=>h.k===k&&h.who==='cpu').length,b=S.hist.filter(h=>h.k===k&&h.who==='me').length;usage=`<p>この対戦で使われた回数：${OPN()} ${a}回／${MYN()} ${b}回</p>`}
-  modal(`<div class="info">${cardHTML(k,'l')}<div class="infoText"><h2>${c.n}</h2><p>${CAT[c.cat]}系統・${rn}</p><div class="eff">${effHTML(c.e)}</div>${usage}<div class="btns"><button type="button" class="b" id="iClose">閉じる</button></div></div></div>`,(m,done)=>{
-    m.querySelector('#iClose').onclick=()=>{m.onclick=null;done()};
+  modal(`<div class="mHead"><h2>${c.n}${atTag(c)}</h2><button type="button" class="xBtn" id="iX" aria-label="閉じる">×</button></div>
+    <div class="info2"><div class="i2Art">${cardHTML(k,'m')}</div><div class="infoText"><p class="note" style="margin:0">${CAT[c.cat]}系統・${rn}${c.set?'・伏せ専用':''}${c.plain?'・通常カード（共鳴なし）':''}</p><div class="eff">${effHTML(c.e)}</div>${usage}</div></div>
+    <div class="btns"><button type="button" class="b" id="iClose">閉じる</button></div>`,(m,done)=>{
+    m.querySelector('#iClose').onclick=()=>{m.onclick=null;done()};m.querySelector('#iX').onclick=()=>{m.onclick=null;done()};
     m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
   });
 }
@@ -2456,6 +2503,7 @@ function render0(){
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
     <div class="tableRow"><div class="slot">${backHTML('s')}心臓</div><div class="slot">${cpu.setCard?backHTML('s','伏せ'):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="oppHand" aria-label="${OPN()}の手札${cpu.hand.length}枚">${cpu.hand.map(()=>backHTML('s')).join('')}</div></div>
+    ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
     <div class="sh"><span class="label">推理の状況（●公開済み・消えたマスは候補外）</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率</label></div>
@@ -3206,7 +3254,7 @@ function netSnap(spec,full){
   if(spec)secret(S.cpu).forEach(c=>{if(c&&!S.know.me.known.has(c.id))hide.add(c.id)});
   const logs=spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
   return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,me:P(S.me),cpu:P(S.cpu),
-    cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
+    cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,acts:(S.acts||[]).slice(-40),logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
 }
 function hostCmd(m){
   if(!S||!S.online||S.guest||S.over)return;
@@ -3238,7 +3286,7 @@ function guestApply(sn){
   fill(pl.me,sn.cpu);fill(pl.cpu,sn.me);
   if(old)['_shownLife','_lfFrom','_lfT0'].forEach(k=>{pl.me[k]=old.me[k];pl.cpu[k]=old.cpu[k]})
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
-  const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),last:old?old.last:null,
+  const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:swR(a.who)})),last:old?old.last:null,
     turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,
     seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
@@ -3443,6 +3491,7 @@ function renderOnline(){
 let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(VIEW==='battle'&&S&&!S.busy)render()},200)});
 $('#app').addEventListener('click',e=>{
   if(VIEW!=='battle')return;
+  const ds=e.target.closest('[data-dis]');if(ds&&S){showDiscard(ds.dataset.dis);return}
   const el=e.target.closest('[data-card], .tip[data-ty]');
   if(!el)return;
   showCardInfo(el.dataset.card||el.dataset.ty);
