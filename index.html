@@ -46,7 +46,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .tname .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .atb{font-family:var(--body);font-weight:700;font-size:.62em;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%;background:var(--ac);color:#140c1c;flex:none;margin-left:auto;box-shadow:0 0 .4em var(--ac)}
 .b.bluff{border-color:#a77ce0;color:#e2d2ff}
-#updBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9999;display:flex;gap:12px;align-items:center;background:#2a2150;border:1px solid var(--candle);border-radius:99px;padding:8px 10px 8px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);font-weight:700;white-space:nowrap}
+#updBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:9999;display:flex;gap:12px;align-items:center;background:#2a2150;border:1px solid var(--candle);border-radius:99px;padding:8px 10px 8px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);font-weight:700;white-space:nowrap}
 .b.bluffX{border-color:#a77ce0;color:#e2d2ff}
 .bluffNote{display:block;font-size:.92em;color:#cdb8f5;margin-top:2px}
 .atb.pl{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
@@ -907,7 +907,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103074402';
+const APP_VER='20261103074437';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
