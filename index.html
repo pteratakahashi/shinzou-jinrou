@@ -910,7 +910,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103075146';
+const APP_VER='20261103075653';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2472,7 +2472,7 @@ function render0(){
     <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
   </section>
   ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
-  ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています…（最大3分）</div>`:''}
+  ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています…（最大2分）</div>`:''}
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}</div>
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」で、効果のある伏せ札のふりをして伏せられます。次の相手ターンに相手がカードを1枚も使わなければブラフ成功（自分のデッキに伏せ専用カードが入っているときだけ）：自分のターンにこのカードが手札に戻り、カードを1枚多く使えます。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:''}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
@@ -2872,7 +2872,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:28,d:'2026-11-03',t:'友達対戦・ランクマッチに、1ターン90秒の制限時間がつきました（時間切れになると自動で進みます）。対戦中にアプリを閉じたり通信が切れたりしても、3分以内ならメニューの「対戦に戻る」から同じ試合に戻れます。'},
+  {id:28,d:'2026-11-03',t:'友達対戦・ランクマッチに、1ターン90秒の制限時間がつきました（時間切れになると自動で進みます）。対戦中にアプリを閉じたり通信が切れたりしても、2分以内ならメニューの「対戦に戻る」から同じ試合に戻れます。'},
   {id:27,d:'2026-11-03',t:'ブラフができるようになりました。伏せ専用ではないカードを選ぶと「ブラフ」ボタンが出ます。相手が警戒して次のターンにカードを使わなかったらブラフ成功で、そのカードが手札に戻り、自分のターンにカードを1枚多く使えます。'},
   {id:26,d:'2026-11-03',t:'カードに「属性」（月・血・聖・影）がつきました。共鳴は、同じ属性のカードを続けて使ったときに起きます（系統がちがっても共鳴します）。属性のない「通常カード」は、共鳴しないかわりにはじめから効果が強めです。あわせて全カードを見直しました。'},
   {id:25,d:'2026-11-03',t:'新しいカードを30種追加しました（情報7・攻撃8・防御7・補助7・シングル1）。あわせて全体のバランスを調整し、パックのCPUのデッキの組み方も新しいバランスに合わせました。'},
@@ -3047,7 +3047,7 @@ function netRecv(m){
 }
 
 /* ---- 制限時間（友達対戦・ランクマッチ）と再接続 ---- */
-const TURN_MS=90000,REJOIN_MS=180000,ONL_KEY='hw2_onl',ONLG_KEY='hw2_onlg';
+const TURN_MS=90000,REJOIN_MS=120000,ONL_KEY='hw2_onl',ONLG_KEY='hw2_onlg';
 const ONL={save(o){lsSet(ONL_KEY,{...(lsGet(ONL_KEY)||{}),...o,at:Date.now()})},get(){const o=lsGet(ONL_KEY);return o&&Date.now()-o.at<30*60000?o:null},clear(){lsDel(ONL_KEY);lsDel(ONLG_KEY)}};
 // ホスト：ターンのはじめごとに盤面を保存（アプリを閉じても、そのターンのはじめから再開できる）
 function onlineSave(next){
