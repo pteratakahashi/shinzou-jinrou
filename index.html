@@ -59,6 +59,13 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .disList{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
 .disItem{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);text-align:left;cursor:pointer}
 .disItem .tcg.s{width:40px;font-size:6px}.disN{flex:1;min-width:0;font-size:13px}.disItem b{color:var(--candle)}
+#tutBox{position:fixed;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));width:min(560px,calc(100vw - 20px));z-index:35;background:#241c46;border:2px solid var(--candle);border-radius:14px;padding:10px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.6);animation:sheetIn .25s ease-out}
+#tutBox.bot{top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+#tutBox p{margin:4px 0 0;font-size:14px;line-height:1.6}#tutBox .btns{margin-top:8px;justify-content:flex-end}
+.tutHd{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--candle);font-weight:700}
+.tutQuit{background:none;border:0;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer}
+.tutHi{outline:3px solid var(--candle)!important;outline-offset:2px;border-radius:10px;animation:tutPulse 1.2s ease-in-out infinite;position:relative;z-index:2}
+@keyframes tutPulse{50%{outline-color:rgba(233,166,76,.25);box-shadow:0 0 18px rgba(233,166,76,.6)}}
 .tLeft{margin-left:.6em;font-variant-numeric:tabular-nums;font-size:.92em;padding:.05em .55em;border-radius:99px;background:rgba(255,255,255,.1)}
 .tLeft.warn{background:var(--blood);color:#fff;animation:resGlow 1s ease-in-out infinite}
 .pauseBar{grid-column:1/-1;margin:4px 0;padding:8px 12px;border-radius:10px;background:#3a2150;border:1px solid #a77ce0;font-weight:700;text-align:center}
@@ -943,7 +950,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103171654';
+const APP_VER='20261103172243';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1310,7 +1317,7 @@ function renderMenu(){
     <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
     <button type="button" class="mi" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>構築済みデッキで対戦</b><span>全カードから自由にデッキを組んで、CPUの強豪デッキに挑みます</span></button>
     <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
-    ${LADDER.on()&&!NET.conn?`<button type="button" class="mi" id="mWatch"><img class="miArt" src="art/spy.png" alt=""><b>試合を観戦する</b><span>いま対戦中の誰かの試合をランダムに見ます</span></button>`:''}
+    <button type="button" class="mi ${!SV.tutDone&&!lsGet(GAME_KEY)?'main':''}" id="mTut"><img class="miArt" src="art/apprentice.png" alt=""><b>チュートリアル</b><span>はじめての人はここから。案内にそって1戦しながらルールを覚えます</span></button>
     ${canInstall()?`<button type="button" class="mi" id="mInstall"><img class="miArt" src="icons/icon-192.png" alt=""><b>アプリとしてホーム画面に追加</b><span>アイコンから全画面で起動できます。CPU戦はオフラインでも遊べます</span></button>`:''}
     <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>はじめての人はここから。勝ち方とターンの流れ</span></button>
   </div>
@@ -1328,7 +1335,7 @@ function renderMenu(){
   $('#mFree').onclick=()=>go('free');
   const mi=$('#mInstall');if(mi)mi.onclick=installApp;
   $('#mOnline').onclick=()=>go('online');
-  const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
+  $('#mTut').onclick=()=>startTutorial();
   bindRankCard();
   $('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');renderMenu()};
   $('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
@@ -1716,14 +1723,17 @@ function by(p,fn){const pv=S.decider;S.decider=p;try{return fn()}finally{S.decid
 function mkPool(p){p.pool=[];for(const k of typesOf(p))for(let i=0;i<copies(p,k);i++){const c={id:++uid,type:k,owner:p};p.pool.push(c);S.byId[c.id]=c}}
 async function dealHeart(p,title,sub,n=6){
   // 全カードを混ぜて6枚引き、その中から1枚を心臓にする（残り5枚が手札）
-  const cards=shuffle([...p.pool]);const six=cards.splice(0,n);
+  const cards=p.tut&&!p.tut.used?tutCards(p):shuffle([...p.pool]);const six=cards.splice(0,n);
   let pool=six.filter(c=>!(c.type==='mirror'&&p.f.mirrorUsed));if(!pool.length)pool=six;
   let h;
-  if(p.isCpu)h=rand(pool);
+  if(p.isCpu)h=(p.tut&&!p.tut.used&&p.tut.heart&&pool.find(c=>c.type===p.tut.heart))||rand(pool);
   else{render();h=await by(p,()=>pickCard(pool,title,sub))}
+  if(p.tut)p.tut.used=true;
   rm(six,h);p.heart=h;p.setCard=null;p.hand=six;p.deck=cards;p.discard=[];
   return h;
 }
+// チュートリアル：最初の手札（first）と、そのあと引く順番（draws）を決めて並べる
+function tutCards(p){const rest=shuffle([...p.pool]);const take=t=>{const c=rest.find(x=>x.type===t);if(c)rm(rest,c);return c};const first=p.tut.first.map(take).filter(Boolean);const draws=(p.tut.draws||[]).map(take).filter(Boolean).reverse();return[...first,...rest,...draws]}
 function setHeart(p,type){const cards=[...p.pool];const h=cards.find(c=>c.type===type);rm(cards,h);p.heart=h;p.setCard=null;p.deck=shuffle(cards);p.hand=[];p.discard=[];draw(p,5)}
 /* ---- face-down cards ---- */
 function triggerNow(owner){
@@ -2208,12 +2218,14 @@ function cpuScore(p,c){
   return s+Math.random()*1.4;
 }
 function cpuGuessPick(p){
+  if(S.tut&&S.turnNo<12&&!p.f.mustGuess)return null;
   const ent=ranked(p);const pr=ent[0][1];if(p.f.mustGuess)return ent[0][0];if(!pr)return null;const h=p.hand.length;
   if(pr>=.4||(pr>=.25&&h>=5)||(p.f.safe&&pr>=.1)||(p.f.guesses>1&&pr>=.2)||(pr>=.16&&h>=8))return ent[0][0];
   return null;
 }
 async function cpuTurn(p,plays,g){
   await sleep(900);
+  if(g.tut&&g.turnNo===2){const w=p.hand.find(c=>c.type==='wolf');if(w){if(p.f.req>0)p.f.req--;await playCard(p,w);await sleep(800)}return}
   const use=()=>{if(p.f.req>0)p.f.req--;else p.f.opt--};
   const freeSetNow=async()=>{
     if(!p.f.setFree||g.over)return;
@@ -2311,6 +2323,7 @@ async function runTurn(p){
   p.f.blocked=!!p.f.noGuess;p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
   p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;p.f.played=0;
   if(bluffWin&&!p.f.boosted){p.f.opt++;p.f.boosted=true}
+  if(g.tut&&g.turnNo===1&&p===g.me){p.f.opt=2;p.f.boosted=true}
   const plays=p.f.req;
   let nd=1+(p.f.extraDraw||0)+(p.f.nextDraw||0);p.f.extraDraw=0;p.f.nextDraw=0;if(p.f.skipDraw){nd=Math.max(0,nd-1);p.f.skipDraw=false;log(`${p.name}は夢魔の効果で、はじめの1枚を引けない。`)}if(p.f.noDraw){p.f.poisoned=true;p.f.noDraw=false;log(`${p.name}は毒師の効果で、このターンはカードを一切引けない。`)}
   g.phase=p.isCpu?'cpu':'none';render();
@@ -2338,11 +2351,13 @@ async function gameOver(w){
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();
   if(win){SFX.win();FXC.confetti();screenFlash('gold');VOICE.say('You win!')}else{SFX.lose();screenFlash('red');VOICE.say('You lose.',{rate:.8})}
   await sleep(600);
-  if(on){if(win)SV.ow=(SV.ow||0)+1;else SV.ol=(SV.ol||0)+1}else if(win)SV.wins++;else SV.losses++;
+  if(S.tut){SV.tutDone=true;TUT.on=false;tutHide()}
+  else if(on){if(win)SV.ow=(SV.ow||0)+1;else SV.ol=(SV.ol||0)+1}else if(win)SV.wins++;else SV.losses++;
   save();
-  const msn=missionsAfterGame(win);
+  const msn=S.tut?'<p>チュートリアルはこれで終わりです。次は「CPUと対戦」や「構築済みデッキで対戦」で遊んでみよう。</p>':missionsAfterGame(win);
   const oh=S.cpu.heart&&S.cpu.heart.type;
   const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
+    :S.tut?`<button type="button" class="b primary" id="rMenu">メニューへ</button><button type="button" class="b" id="rSame">もう一度チュートリアル</button>`
     :S.free?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを組み直す</button><button type="button" class="b" id="rMenu">メニューへ</button>`
     :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
   await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
@@ -2351,6 +2366,7 @@ async function gameOver(w){
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
+    if(S.tut){if(v==='same')startTutorial();else go('menu');return}
     if(S.free){if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu');return}
     if(v==='new')startDraft();else if(v==='same'){if(D)D.quick=true;startBattle()}else go('menu')});
 }
@@ -2359,14 +2375,15 @@ async function startBattle(){
   if(NET.conn)return netDeck({types:[...D.deck.types],single:D.deck.single});
   lsDel(DRAFT_KEY);
   VIEW='battle';window.scrollTo(0,0);
-  let cb;if(D.free)cb=freeCpuDeck();else{const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);cb=autoBuild(cd.pool,cd.singles,8)}
-  S={me:newPlayer('@me',false,[...D.deck.types],D.deck.single),cpu:newPlayer('@cpu',true,cb.types,cb.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,free:!!D.free};
+  let cb;if(D.tut)cb={types:[...TUT_CPU],single:'saint'};else if(D.free)cb=freeCpuDeck();else{const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);cb=autoBuild(cd.pool,cd.singles,8)}
+  S={me:newPlayer('@me',false,[...D.deck.types],D.deck.single),cpu:newPlayer('@cpu',true,cb.types,cb.single),know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,free:!!D.free,tut:!!D.tut};
+  if(S.tut){S.me.tut={first:['wolf','villager','seer','stargazer','silencer'],draws:['chief','greatdet','astrologer']};S.cpu.tut={first:['wolf','pack','prophet','villager','sentinel','baker'],heart:'baker'}}
   mkPool(S.me);mkPool(S.cpu);render();
   if(D.quick)D.quick=false;else await fxVs();
   if(D.free&&cb.name)log(`CPUのデッキは強豪デッキ「${cb.name}」。`,'sys');
   // 先攻・後攻はランダム。先攻は5枚、後攻は6枚から心臓を選ぶ
-  const meFirst=Math.random()<.5;
-  const h=await dealHeart(S.me,'心臓に隠すカードを選ぶ',`${meFirst?'先攻なので、最初に引いた5枚から1枚を心臓にします。残りの4枚が手札になります。':'後攻なので、最初に引いた6枚から1枚を心臓にします。残りの5枚が手札になります。'}この種類を当てられるとライフが1減ります。CPUのシングルは〈${N(S.cpu.single)}〉です。`,meFirst?5:6);
+  const meFirst=S.tut?true:Math.random()<.5;
+  const h=await dealHeart(S.me,'心臓に隠すカードを選ぶ',S.tut?'【チュートリアル】このゲームは、自分のデッキの1枚を「心臓」として隠し、相手の心臓が何のカードかを当て合います。3回当てた方の勝ち。まず、心臓にするカードを1枚選んでください（迷ったら〈人狼〉がおすすめ）。':`${meFirst?'先攻なので、最初に引いた5枚から1枚を心臓にします。残りの4枚が手札になります。':'後攻なので、最初に引いた6枚から1枚を心臓にします。残りの5枚が手札になります。'}この種類を当てられるとライフが1減ります。CPUのシングルは〈${N(S.cpu.single)}〉です。`,meFirst?5:6);
   await dealHeart(S.cpu,'','',meFirst?6:5);
   S.me.hand.forEach(c=>S.seen.add(c.id));
   log(`${meFirst?'あなた':'CPU'}が先攻。`);
@@ -2375,11 +2392,67 @@ async function startBattle(){
   runTurn(meFirst?S.me:S.cpu);
 }
 
+/* ---- チュートリアル ---- */
+const TUT_ME=['seer','stargazer','astrologer','silencer','wolf','pack','villager','chief','baker','hunter','bodyguard','decoy','mason'];
+const TUT_CPU=['wolf','pack','baker','villager','prophet','sentinel','nekomata','hunter','mason','sage','elder','peddler','cursewolf'];
+const TUT={on:false,i:0,act:-1,narrowed:false};
+const myPlayed=k=>((S&&S.acts)||[]).some(a=>a.who==='me'&&a.kind==='play'&&a.k===k);
+const lastGuess=()=>{const g=((S&&S.acts)||[]).filter(a=>a.who==='me'&&a.kind==='guess');return g[g.length-1]||null};
+const myTurn=t=>S&&S.cur===S.me&&S.turnNo===t;
+const inHand=k=>S&&S.me.hand.some(c=>c.type===k);
+const TUT_STEPS=[
+ {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',sel:'.btMid',text:'あなたのターンです。まん中の「推理の状況」に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を減らしていきます。'},
+ {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>myPlayed('seer')||!myTurn(1),sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を2つ選ぶと、相手の心臓がその中にあるかがわかります。'},
+ {when:()=>myTurn(1)&&!S.busy,skip:()=>!inHand('stargazer'),done:()=>myPlayed('stargazer')||!myTurn(1),sel:'.hc[aria-label="星読み"]',text:'判定の結果で、表のマスが消えたり（候補から外れた）残ったりします。次は<b>〈星読み〉</b>を使おう。占い師と同じ<b>「月」の属性</b>なので<b>共鳴</b>して、効果が上乗せされます（光っているのが共鳴できるカード）。'},
+ {when:()=>myTurn(1)&&!S.busy,skip:()=>!inHand('silencer'),done:()=>!!S.me.setCard||!myTurn(1),sel:'.hc[aria-label="口封じ"]',text:'最後に<b>〈口封じ〉</b>をタップして「伏せる」を押そう。伏せたカードは<b>相手のターンに自動で発動</b>します。口封じは、相手が使ったカードを1回無効にします。'},
+ {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),sel:'#bSkip,#bEnd',text:'宣言（心臓を当てる）はまだ早いので、「宣言に進む」→「ターン終了」を押そう。'},
+ {when:()=>S.cur===S.cpu&&S.turnNo===2,done:()=>myTurn(3),text:'相手のターンです。相手がどう動くか見ていよう。'},
+ {when:()=>myTurn(3)&&PH()==='play'&&!S.busy,btn:'次へ',sel:'.oppLast',text:'相手は〈人狼〉で手札を捨てさせようとしましたが、<b>伏せていた口封じが発動して無効</b>にしました！ 相手が前のターンに何をしたかは、相手の欄の<b>「前のターン」</b>で確認できます。'},
+ {when:()=>myTurn(3)&&!S.busy,btn:'次へ',sel:'.disBtn',text:'<b>捨て札</b>をタップすると、捨てられたカードの一覧が見られます。捨て札の数で効果が変わるカードもあるので、ときどき確認しよう。カードを<b>長押し</b>すると効果の説明も見られます。'},
+ {when:()=>myTurn(3)&&!S.busy,skip:()=>!inHand('greatdet'),done:()=>myPlayed('greatdet')||!myTurn(3),sel:'.hc[aria-label="名探偵"]',text:'手札に来た<b>〈名探偵〉</b>は、デッキに1枚だけの強力な<b>シングルカード</b>。相手の心臓を含む5種類まで候補を絞れます。使ってみよう。'},
+ {when:()=>S.turnNo>=3&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>6,sel:'#bSkip,#bGuess',text:'候補がかなり絞れました。残っているマスのどれかが相手の心臓です。「宣言に進む」→<b>「心臓を宣言」</b>で当ててみよう。外れると手札を2枚捨てるので、慎重に。'},
+ {when:()=>!!lastGuess()&&!S.busy,btn:'次へ',textFn:()=>lastGuess().r==='hit'?'<b>的中！</b> 相手のライフが1減りました（タコの心臓が1つ止まります）。当てられた側は、全部のカードを混ぜ直して心臓を選び直します。これを<b>3回</b>当てたら勝ちです。':'外れ…。でも外れた種類は候補から消えました。残りの候補から、次のターンにもう一度宣言しよう。'},
+ {when:()=>!S.busy,btn:'チュートリアルを終える',text:'基本はこれで全部です！ ほかにも、相手の手札を0枚にするとライフを削れる<b>「襲撃」</b>や、伏せ専用でないカードを伏せる<b>「ブラフ」</b>があります。ここからは自由に最後まで戦ってみよう。'},
+];
+function tutHide(){const b=document.getElementById('tutBox');if(b)b.remove();document.querySelectorAll('.tutHi').forEach(e=>e.classList.remove('tutHi'))}
+function tutShow(st){
+  let b=document.getElementById('tutBox');
+  if(!b){b=document.createElement('div');b.id='tutBox';document.body.appendChild(b)}
+  const txt=st.textFn?st.textFn():st.text;
+  if(b.dataset.i!==String(TUT.i)){b.dataset.i=TUT.i;b.innerHTML=`<div class="tutHd"><span>チュートリアル ${TUT.i+1}/${TUT_STEPS.length}</span><button type="button" class="tutQuit">やめる</button></div><p>${txt}</p>${st.btn?`<div class="btns"><button type="button" class="b primary small tutNext">${st.btn}</button></div>`:''}`;
+    b.querySelector('.tutQuit').onclick=()=>{TUT.on=false;tutHide();SV.tutDone=true;save()};
+    const nx=b.querySelector('.tutNext');if(nx)nx.onclick=()=>{TUT.i++;TUT.act=-1;if(TUT.i>=TUT_STEPS.length){TUT.on=false;SV.tutDone=true;save();tutHide()}else tutTick()};}
+  document.querySelectorAll('.tutHi').forEach(e=>e.classList.remove('tutHi'));
+  if(st.sel)document.querySelectorAll(st.sel).forEach(e=>e.classList.add('tutHi'));
+  // 光らせた場所に重なるなら、吹き出しを下に出す
+  const t=st.sel&&document.querySelector(st.sel);
+  if(t){const r=t.getBoundingClientRect(),h=b.offsetHeight||140;b.classList.toggle('bot',r.top<h+24&&r.bottom<innerHeight-h-24)}else b.classList.remove('bot');
+}
+function tutTick(){
+  if(!TUT.on||!S||!S.tut||VIEW!=='battle'||S.over){if(TUT.on&&(!S||!S.tut||VIEW!=='battle'))tutHide();return}
+  // 名探偵のあとは、練習のため候補を2つまで絞る
+  if(!TUT.narrowed&&myPlayed('greatdet')&&!S.busy){TUT.narrowed=true;const k=K(S.me),h=S.cpu.heart.type,others=typesOf(S.cpu).filter(t=>t!==h&&!k.excluded.has(t)&&(!k.allowed||k.allowed.has(t)));const keep=[h,others[0]].filter(Boolean);narrow(S.me,keep);render()}
+  let st=TUT_STEPS[TUT.i];
+  while(st&&TUT.act!==TUT.i&&st.skip&&st.when()&&st.skip()){TUT.i++;st=TUT_STEPS[TUT.i]}
+  if(!st){TUT.on=false;tutHide();return}
+  if(TUT.act!==TUT.i){if(!st.when()){tutHide();return}TUT.act=TUT.i}
+  if(!st.btn&&st.done&&st.done()){TUT.i++;TUT.act=-1;return tutTick()}
+  if($('#modal').hidden)tutShow(st);else{const b=document.getElementById('tutBox');if(b)b.style.display='none'}
+  const b=document.getElementById('tutBox');if(b&&$('#modal').hidden)b.style.display='';
+}
+setInterval(tutTick,300);
+function startTutorial(){
+  lsDel(GAME_KEY);lsDel(DRAFT_KEY);
+  TUT.on=true;TUT.i=0;TUT.act=-1;TUT.narrowed=false;tutHide();
+  D={...newDraft(),deck:{types:[...TUT_ME],single:'greatdet'},stage:'build',tut:true};
+  startBattle();
+}
+
 /* ---- battle render ---- */
 function hudHTML(){
   const side=(p,r)=>{const hl=octoSVG(p.life);return`<div class="hs ${r?'r':''} ${S.cur===p&&!S.over?'on':''}"><span class="hn">${p===S.me?MYN():OPN()} <span class="hl">${hl}</span></span><span class="hx">手札<b class="big">${p.hand.length}</b> 山札<b>${p.deck.length}</b> 伏せ<b>${p.setCard?'あり':'なし'}</b></span><span class="hx">前回<b>${p.lastAttr||'－'}</b>${p===S.me?'':` 推理候補<b>${S.me.heart?liveCount(S.me):'－'}</b>種`}</span></div>`};
   const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
-  return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}${wn?`<span class="watchN">観戦 ${wn}人</span>`:''}</div>${side(S.me,true)}</div>`;
+  return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}</div>${side(S.me,true)}</div>`;
 }
 function handFit(n){
   const avail=Math.min(760,innerWidth)-32-26;const W=innerWidth<560?72:86;const gap=8;
@@ -2510,7 +2583,7 @@ function autoEndCheck(){
   if(!nothingLeft())return;
   autoEndT=setTimeout(()=>{if(nothingLeft()&&$('#modal').hidden)onEnd()},1500);
 }
-function render(){setTimeout(autoEndCheck,0);return render0()}
+function render(){setTimeout(autoEndCheck,0);const r=render0();if(TUT.on)setTimeout(tutTick,0);return r}
 function render0(){
   if(VIEW==='battle'&&S){BGM.set(S.over?null:'battle');BGM.hot(!S.over&&(S.me.life===1||S.cpu.life===1))}
   if(VIEW==='battle'&&S&&!S.over)guardHist();
@@ -2964,6 +3037,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:30,d:'2026-11-04',t:'チュートリアルができました。メニューの「チュートリアル」から、案内にそって1戦しながら、心臓・推理の表・共鳴・伏せ・シングル・宣言の流れを覚えられます。かわりに、試合の観戦はなくしました。'},
   {id:35,d:'2026-11-04',t:'PCで手札のカードを選んだとき、画面が横に広がったり上下にがくっと動いたりしていたのを直しました。'},
   {id:34,d:'2026-11-04',t:'カードを伏せたときの演出で、カードの裏面が縦につぶれて見えていたのを直しました。'},
   {id:33,d:'2026-11-04',t:'PCの対戦画面のまん中に出ていた「最後に使ったカード」の大きな表示をなくしました（画面が狭いと他の表示に重なっていたため。同じ内容は捨て札と「最近使ったカード」で見られます）。'},
@@ -3253,7 +3327,7 @@ async function onlineRejoin(){
 // ホストへの新しい接続（観戦・新規・同じ試合への再接続）
 function hostConn(peer,c){
   if(NET.peer!==peer)return;
-  if(c.metadata&&c.metadata.watch)return specBind(c);
+  if(c.metadata&&c.metadata.watch){try{c.close()}catch(e){}return}
   const rj=c.metadata&&c.metadata.rejoin;
   if(rj&&S&&S.online&&!S.guest&&!S.over&&S.gid===rj){
     if(NET.conn&&NET.conn!==c){const old=NET.conn;NET.conn=null;old.__dead=true;try{old.close()}catch(e){}}
@@ -3376,7 +3450,8 @@ function liveBeat(){
   LADDER.sb.rpc('live_beat',{p_code:LIVE.code,p_names:`${netName()} vs ${NET.opp||'相手'}`,p_tok:LIVE.tok}).then(({error})=>{if(error)console.error(error)});
 }
 function liveStart(){
-  liveEnd();if(!LADDER.sb||!NET.code)return;
+  liveEnd();return; // 観戦はなくした（部屋の一覧には載せない）
+  if(!LADDER.sb||!NET.code)return;
   LIVE.code=NET.code;LIVE.tok=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'');
   liveBeat();LIVE.timer=setInterval(liveBeat,20000);
 }
