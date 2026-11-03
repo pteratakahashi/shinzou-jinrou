@@ -819,6 +819,7 @@ body:has(.tabBar){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 @media (max-width:480px){.hwTerms{grid-template-columns:1fr;gap:2px}.hwTerms dd{margin-bottom:8px}}
 .rcat{display:inline-block;font-size:11px;padding:0 7px;margin:0 2px;border-radius:99px;border:1px solid var(--cc);color:var(--cc);white-space:nowrap}
 .cardFilters{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
+.tcg.l.back{aspect-ratio:5/7;align-self:center}
 /* 縦が短いPC画面（拡大表示・横長ノート）：1画面に収まらないのでページをスクロール、操作ボタンは下に固定 */
 @media (min-width:1000px) and (max-height:820px){
   body:has(#app>.bt){height:auto;min-height:100dvh;overflow-y:auto}
@@ -2959,6 +2960,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:34,d:'2026-11-04',t:'カードを伏せたときの演出で、カードの裏面が縦につぶれて見えていたのを直しました。'},
   {id:33,d:'2026-11-04',t:'PCの対戦画面のまん中に出ていた「最後に使ったカード」の大きな表示をなくしました（画面が狭いと他の表示に重なっていたため。同じ内容は捨て札と「最近使ったカード」で見られます）。'},
   {id:32,d:'2026-11-04',t:'PCで画面を拡大しているときなど、縦が短い画面で「使う」「ターン終了」のボタンが画面の外に隠れて進めなくなる不具合を直しました（ページをスクロールでき、ボタンは下に固定されます）。'},
   {id:31,d:'2026-11-03',t:'レジェンドの大狼の絵を、鎧をまとった銀の大狼に描き直しました。カードの絵の後ろに名前の一文字が透けて見えていたのを直しました。'},
