@@ -73,6 +73,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .r-L .gem{background:linear-gradient(90deg,#f3cf6d,#e9a64c);color:#2a1a00}
 .tart{flex:1;min-height:0;border-radius:.4em;overflow:hidden;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--cc) 85%,#fff 15%),color-mix(in srgb,var(--cc) 30%,#0a0d1c) 78%);display:flex;align-items:center;justify-content:center;position:relative}
 .glyph{font-family:var(--display);font-size:3.3em;line-height:1;color:rgba(255,255,255,.94);text-shadow:0 .06em .25em rgba(0,0,0,.55)}
+.tart:has(img) .glyph{visibility:hidden}
 .catl{position:absolute;left:.3em;bottom:.25em;font-size:.6em;letter-spacing:.1em;padding:0 .4em;border-radius:.3em;background:rgba(10,13,28,.72)}
 .tart img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;image-rendering:pixelated;border-radius:inherit}
 .tart img{-webkit-mask-image:linear-gradient(to bottom,#000 80%,transparent 99%);mask-image:linear-gradient(to bottom,#000 80%,transparent 99%)}
@@ -2951,6 +2952,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:31,d:'2026-11-03',t:'レジェンドの大狼の絵を、鎧をまとった銀の大狼に描き直しました。カードの絵の後ろに名前の一文字が透けて見えていたのを直しました。'},
   {id:30,d:'2026-11-03',t:'全82種のカード絵を、腰から上・同じ等身・同じ顔の大きさでそろえて描き直しました。絵がなかった新しい30種にも絵がつきました。'},
   {id:29,d:'2026-11-03',t:'襲撃の条件を「使ったあと相手の手札が0枚」に戻しました（もともと0枚でも成立します）。攻撃一辺倒になりやすかったための調整です。'},
   {id:28,d:'2026-11-03',t:'友達対戦・ランクマッチに、1ターン90秒の制限時間がつきました（時間切れになると自動で進みます）。対戦中にアプリを閉じたり通信が切れたりしても、2分以内ならメニューの「対戦に戻る」から同じ試合に戻れます。'},
