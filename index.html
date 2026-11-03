@@ -1,5 +1,13 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>心臓人狼 試作版</title>
+<title>心臓人狼</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#11152a">
+<link rel="icon" type="image/png" href="icons/favicon-96.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="心臓人狼">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
@@ -1081,6 +1089,18 @@ const BGM=(()=>{
   };
 })();
 document.addEventListener('pointerdown',()=>BGM.unlock(),{passive:true});
+/* ---- アプリとしてホーム画面に追加（PWA） ---- */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+let BIP=null;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();BIP=e;if(typeof VIEW!=='undefined'&&VIEW==='menu')renderMenu()});
+addEventListener('appinstalled',()=>{BIP=null;if(VIEW==='menu')renderMenu()});
+const canInstall=()=>!isStandalone()&&(BIP||isIOS());
+async function installApp(){
+  if(BIP){BIP.prompt();try{await BIP.userChoice}catch(e){}BIP=null;renderMenu();return}
+  await modal(`<h2>ホーム画面に追加</h2><p>iPhone・iPadでは、Safariの下にある<b>共有ボタン</b>（四角から矢印が出ているマーク）を押して、<b>「ホーム画面に追加」</b>を選んでください。</p><p class="note">追加すると、ホーム画面のアイコンから全画面で遊べます。CPU戦はネットがなくても遊べます。</p><div class="btns"><button type="button" class="b primary" id="iOk">わかった</button></div>`,(m,done)=>{m.querySelector('#iOk').onclick=()=>done()});
+}
 document.addEventListener('visibilitychange',()=>BGM.duck(document.hidden));
 
 document.addEventListener('pointerdown',()=>SFX.unlock(),{passive:true});
@@ -1230,6 +1250,7 @@ function renderMenu(){
     <button type="button" class="mi" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>構築済みデッキで対戦</b><span>全カードから自由にデッキを組んで、CPUの強豪デッキに挑みます</span></button>
     <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
     ${LADDER.on()&&!NET.conn?`<button type="button" class="mi" id="mWatch"><img class="miArt" src="art/spy.png" alt=""><b>試合を観戦する</b><span>いま対戦中の誰かの試合をランダムに見ます</span></button>`:''}
+    ${canInstall()?`<button type="button" class="mi" id="mInstall"><img class="miArt" src="icons/icon-192.png" alt=""><b>アプリとしてホーム画面に追加</b><span>アイコンから全画面で起動できます。CPU戦はオフラインでも遊べます</span></button>`:''}
     <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>はじめての人はここから。勝ち方とターンの流れ</span></button>
   </div>
   ${missionsHTML()}
@@ -1243,6 +1264,7 @@ function renderMenu(){
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
   $('#mRules').onclick=()=>go('howto');
   $('#mFree').onclick=()=>go('free');
+  const mi=$('#mInstall');if(mi)mi.onclick=installApp;
   $('#mOnline').onclick=()=>go('online');
   const mw=$('#mWatch');if(mw)mw.onclick=()=>watchStart();
   bindRankCard();
