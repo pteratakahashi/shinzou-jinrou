@@ -45,6 +45,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .tname{display:flex;justify-content:space-between;align-items:center;gap:.3em;font-family:var(--display);font-size:1.15em;line-height:1.15;padding:.12em .35em;background:rgba(0,0,0,.38);border-radius:.3em}
 .tname .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .atb{font-family:var(--body);font-weight:700;font-size:.62em;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%;background:var(--ac);color:#140c1c;flex:none;margin-left:auto;box-shadow:0 0 .4em var(--ac)}
+.b.bluff{border-color:#a77ce0;color:#e2d2ff}
+.bluffNote{display:block;font-size:.92em;color:#cdb8f5;margin-top:2px}
 .atb.pl{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
 .tcg.s .atb{display:none}
 .atTag{display:inline-block;font-size:11px;font-weight:700;padding:0 .5em;margin-left:.4em;border-radius:99px;background:var(--ac);color:#140c1c;vertical-align:middle}
@@ -1447,7 +1449,7 @@ function rulesListHTML(){
   <section class="hw terms"><div class="hwNo">用語</div><div class="hwBody">
     <dl class="hwTerms">
       <dt>系統</dt><dd>カードは5つに分かれます：${chip('info','情報')}${chip('atk','攻撃')}${chip('grd','防御')}${chip('sup','補助')}${chip('one','シングル')}</dd>
-      <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分や、相手のターンに発動した伏せカードも含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>引く・見る</dt><dd>「引く」は、いつも<b>自分の山札から</b>自分の手札に加えることです。相手の山札や手札を「見る」効果では、カードは動きません（見たカードは相手のところに残ります）。</dd><dt>通常カード</dt><dd>属性マークのないカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
+      <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分や、相手のターンに発動した伏せカードも含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>ブラフ</dt><dd>伏せ専用ではないカードも「ブラフ」ボタンで伏せられます（効果は発動しません）。相手が警戒して、次の相手ターンにカードを1枚も使わなかったら<b>ブラフ成功</b>。自分のターンのはじめにそのカードが手札に戻り、そのターンはカードを1枚多く使えます。</dd><dt>引く・見る</dt><dd>「引く」は、いつも<b>自分の山札から</b>自分の手札に加えることです。相手の山札や手札を「見る」効果では、カードは動きません（見たカードは相手のところに残ります）。</dd><dt>通常カード</dt><dd>属性マークのないカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
       <dt>襲撃</dt><dd>襲撃のある攻撃系カードを使ったあと、相手の手札が1枚以下なら（もともと0枚でも）、相手の心臓が1つ止まります。相手は心臓はそのままで、手札が5枚になるまで引きます。襲撃した側のターンはそこで終わります。</dd>
@@ -1660,7 +1662,7 @@ function decoyPenalty(p){
 async function doSet(p,c){
   rm(p.hand,c);
   if(p.setCard){const old=p.setCard;p.discard.push(old);K(opp(p)).known.add(old.id);log(`${p.name}は伏せていた〈${N(old.type)}〉を捨てた。`,whoOf(p))}
-  p.setCard=c;log(`${p.name}はカードを1枚伏せた。`,whoOf(p));SFX.set();
+  p.setCard=c;p.f.setTurn=S.turnNo;log(`${p.name}はカードを1枚伏せた。`,whoOf(p));SFX.set();
   render();await fxSet(whoOf(p));render();
 }
 function draw(p,n){
@@ -1865,7 +1867,7 @@ async function playCard0(p,c,copy=false){
   S.me.f.reflect=S.cpu.f.reflect=false;
   const at=C[c.type].attr;const R=!!at&&((p.lastAttr&&p.lastAttr===at)||!!p.f.forceRes);if(at)p.f.forceRes=false;p.lastCat=C[c.type].cat;if(!C[c.type].single)p.lastAttr=at;
   if(copy)log(`${p.name}は妖狐で〈${N(c.type)}〉に化けた。`,w);
-  else{toDiscard(p,c);log(`${p.name}は〈${N(c.type)}〉を使った。`,w);S.hist.push({who:w,k:c.type,turn:S.turnNo})}
+  else{toDiscard(p,c);p.f.played=(p.f.played||0)+1;log(`${p.name}は〈${N(c.type)}〉を使った。`,w);S.hist.push({who:w,k:c.type,turn:S.turnNo})}
   render();await fxPlay(c.type,w);
   if(!C[c.type].single)p.chain=R?(p.chain||1)+1:1;
   if(R){log(`共鳴！（${at}の属性）`,w);await fxRes()}
@@ -2131,6 +2133,12 @@ async function cpuTurn(p,plays,g){
     if(!c)return;p.f.setFree=0;await doSet(p,c);await sleep(300);
   };
   if(p.f.setFree)await freeSetNow();
+  // 相手の伏せを警戒して様子を見る（伏せ専用があれば伏せるだけ）。ブラフが効く場面
+  if(opp(p).setCard&&!p.f.mustGuess&&p.f.req<=1&&!p.f.opt&&Math.random()<.2){
+    const st=p.hand.find(h=>C[h.type].set);
+    if(st&&!p.setCard){p.f.req=0;await doSet(p,st);await sleep(300)}else{p.f.req=0;log(`${p.name}は伏せカードを警戒して、カードを使わなかった。`,'cpu')}
+    p.f.opt=0;
+  }
   while(!g.over&&p.hand.length&&(p.f.req>0||p.f.opt>0)){
     // ブラフ伏せ：伏せ枠が空いていれば、たまに一番いらないカードを伏せる
     if(!p.setCard&&p.f.req>0&&p.hand.length>2&&Math.random()<.15){use();await doSet(p,worst(p));await sleep(300);continue}
@@ -2203,9 +2211,14 @@ async function runTurn(p){
   const g=S;if(g.over)return;
   saveGame(whoOf(p));
   g.turnNo++;g.cur=p;p.f.ward=false;p.f.atkWard=false;p.f.shield=false;p.f.decoy=false;
-  if(p.setCard){const c=p.setCard;p.setCard=null;p.discard.push(c);K(opp(p)).known.add(c.id);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}
+  let bluffWin=false;
+  if(p.setCard){const c=p.setCard,o=opp(p);p.setCard=null;K(o).known.add(c.id);
+    // ブラフ成功：伏せ専用でないカードを伏せていて、そのあとの相手のターンに相手がカードを1枚も使わなかった
+    if(!C[c.type].set&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p))}
+    else{p.discard.push(c);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}}
   p.f.blocked=!!p.f.noGuess;p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
-  p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;
+  p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;p.f.played=0;
+  if(bluffWin&&!p.f.boosted){p.f.opt++;p.f.boosted=true}
   const plays=p.f.req;
   let nd=1+(p.f.extraDraw||0)+(p.f.nextDraw||0);p.f.extraDraw=0;p.f.nextDraw=0;if(p.f.skipDraw){nd=Math.max(0,nd-1);p.f.skipDraw=false;log(`${p.name}は夢魔の効果で、はじめの1枚を引けない。`)}if(p.f.noDraw){p.f.poisoned=true;p.f.noDraw=false;log(`${p.name}は毒師の効果で、このターンはカードを一切引けない。`)}
   g.phase=p.isCpu?'cpu':'none';render();
@@ -2217,6 +2230,7 @@ async function runTurn(p){
   render();
   if(p.isCpu)await cpuTurn(p,plays,g);else await playerTurn(p,plays);
   if(g.over||g!==S)return;
+  p.f.lastPlayed=p.f.played||0;p.f.lastEnd=g.turnNo;
   p.f.trapped=false;p.f.watched=false;p.f.poisoned=false;p.f.silenced=false;p.f.harsh=false;p.f.nun=false;p.f.soft=false;p.f.opt=0;p.f.req=0;
   if(p.f.extraTurn){p.f.extraTurn=false;log('時の魔女：もう一度ターンを行う。');return runTurn(p)}
   runTurn(opp(p));
@@ -2426,10 +2440,10 @@ function render0(){
   </section>
   ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   <div class="actions btAct"><div class="phase">${phase}</div>
-    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'（伏せるとブラフになります）'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:''}
+    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」で、効果のある伏せ札のふりをして伏せられます。次の相手ターンに相手がカードを1枚も使わなければブラフ成功：自分のターンにこのカードが手札に戻り、カードを1枚多く使えます。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:''}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':'使う'}</button>
-      <button type="button" class="b" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${me.setCard?'伏せ直す':'伏せる'}</button>
+      <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
       ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
       <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
       <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
@@ -2824,6 +2838,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:27,d:'2026-11-03',t:'ブラフができるようになりました。伏せ専用ではないカードを選ぶと「ブラフ」ボタンが出ます。相手が警戒して次のターンにカードを使わなかったらブラフ成功で、そのカードが手札に戻り、自分のターンにカードを1枚多く使えます。'},
   {id:26,d:'2026-11-03',t:'カードに「属性」（月・血・聖・影）がつきました。共鳴は、同じ属性のカードを続けて使ったときに起きます（系統がちがっても共鳴します）。属性のない「通常カード」は、共鳴しないかわりにはじめから効果が強めです。あわせて全カードを見直しました。'},
   {id:25,d:'2026-11-03',t:'新しいカードを30種追加しました（情報7・攻撃8・防御7・補助7・シングル1）。あわせて全体のバランスを調整し、パックのCPUのデッキの組み方も新しいバランスに合わせました。'},
   {id:24,d:'2026-11-03',t:'「遊び方」を新しくしました。勝ち方・ターンの流れ・宣言の結果・用語を、順番に図つきで説明しています。カード一覧は下のタブの「カード」から、系統ごとに絞って見られます。'},
