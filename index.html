@@ -787,15 +787,15 @@ const RAW=[
  ['villager','村人','村','sup','S','1枚引く。このターン、カードをもう1枚使える（ただし、このターンすでに使える枚数が増えていれば増えない）。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['chief','村長','旗','sup','C','1枚引く。次の自分のターン、カードを1枚多く使える。共鳴：次の自分のターン、1枚多く引く。'],
  ['seer','占い師','占','info','S','種類を2つ指定。相手の心臓がその中にあるか判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
- ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
+ ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['hunter','狩人','狩','grd','S','1枚引く。次の相手ターン、相手は宣言できない。相手の心臓ではない種類を2つ知る。'],
  ['wolf','人狼','狼','atk','S','相手の手札をランダムに1枚捨てさせる。相手の手札が3枚以下なら、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['fox','妖狐','狐','grd','S','コスト：手札のカードを1枚選び、相手に公開する（伏せ専用は不可）。効果：選んだカードを手札に残したまま、その効果だけを使う。共鳴：公開しなくてよい。'],
  ['mason','共有者','共','sup','S','1枚引く。山札に別の共有者があれば、それも手札に加える。共鳴：さらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['baker','パン屋','麦','sup','S','2枚引く。'],
- ['detective','探偵','探','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の山札をすべて見る。'],
+ ['detective','探偵','探','info','S','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の山札をすべて見る。'],
  ['elder','長老','老','sup','S','1枚引く。このターン、宣言を2回まで行える。相手の心臓ではない種類を1つ知る。'],
- ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で2枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で3枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。相手の心臓ではない種類を1つ知る。'],
  ['madman','狂人','狂','atk','S','次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札を1枚捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、それが心臓と同じ系統かどうかわかる。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
@@ -811,11 +811,11 @@ const RAW=[
  ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['inquisitor','審問官','審','atk','R','種類を2つまで指定。相手の手札にあれば全て捨てさせ、1枚引く。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
- ['cryboy','狼少年','嘘','sup','R','1枚引く。このターン、宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
+ ['cryboy','狼少年','嘘','sup','R','2枚引く。このターン、宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。さらに、相手の心臓ではない種類を1つ知る。'],
- ['spy','密偵','密','info','R','相手の伏せカードを見る。伏せがなければ1枚引く。さらに、相手の心臓ではない種類を1つ知る。'],
+ ['spy','密偵','密','info','R','相手の伏せカードを見て、1枚引く。伏せがなければさらに1枚引く。相手の心臓ではない種類を1つ知る。'],
  ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['bastion','籠城','籠','grd','C','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、相手の手札を1枚捨てさせる。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
@@ -826,7 +826,7 @@ const RAW=[
  ['warder','結界師','結','grd','R','1枚引く。次の相手ターン、相手の情報系カードの効果を受けない。共鳴：攻撃系カードの効果も受けず、相手の心臓ではない種類を1つ知る。'],
  ['astrologer','占星術師','星','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：種類を3つ指定し、相手の心臓がその中にあるか判定する。共鳴：コストなし、1枚引く。'],
  ['necro','降霊術師','魂','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓の名前の文字数を知る。'],
- ['assassin','暗殺者','刃','atk','R','種類を1つ宣言してよい。当たれば心臓的中、外れたら手札を2枚捨てる。狩人の効果中でも使える。共鳴：外れても捨てない。'],
+ ['assassin','暗殺者','刃','atk','R','種類を1つ宣言してよい。当たれば心臓的中、外れたら手札を1枚捨てる。狩人の効果中でも使える。共鳴：外れても捨てない。'],
  ['greatdet','名探偵','名','one','L','相手の心臓を含む5種類の候補を知る。',1],
  ['curser','呪術師','蠱','one','L','次の宣言が当たると相手のライフ-2。ただし、外れると自分のライフ-1。',1],
  ['saint','聖女','聖','one','L','条件：自分のライフが1のときだけ使える。コスト：自分の心臓の系統を相手に知られ、このターンは宣言できず、手札をすべて捨てる。効果：ライフを1回復する。',1],
@@ -835,10 +835,10 @@ const RAW=[
  ['whitewolf','白狼','白','one','L','相手の手札をすべて見て、1枚選んで捨てさせる。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['teller','語り部','語','one','L','自分の捨て札にある系統の数（最大5）だけ、相手の心臓ではない種類を知る。'],
  ['timewitch','時の魔女','時','one','L','このターンの後、もう一度自分のターンを行う。'],
- ['mirror','鏡の巫女','鏡','one','L','1枚引く。心臓にしているとき、当てた相手のライフも1減る（相手のライフが1なら無効）。この効果は1試合に1回だけで、一度起きたら鏡の巫女はもう心臓にできない。'],
+ ['mirror','鏡の巫女','鏡','one','L','心臓にしているとき、当てた相手のライフも1減る（相手のライフが1なら無効）。この効果は1試合に1回だけで、一度起きたら鏡の巫女はもう心臓にできない。使ったときは何も起きない。'],
  ['fortune','易者','易','info','C','相手の心臓ではない種類を2つ知る。共鳴：さらに2つ知る。'],
  ['listener','聞き耳','耳','info','C','相手の手札をランダムに3枚見て、1枚引く。さらに、相手の心臓ではない種類を1つ知る。'],
- ['diviner','祈祷師','祷','info','R','系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を2つ知る。'],
+ ['diviner','祈祷師','祷','info','R','系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['tracker','追跡者','跡','info','C','相手の山札の上から5枚を見て、1枚引く。'],
  ['confessor','告解師','告','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓ではない種類を4つ知る。共鳴：コストなし。'],
  ['stargazer','星読み','星','info','C','相手の心臓の名前が偶数文字か奇数文字かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
@@ -853,7 +853,7 @@ const RAW=[
  ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が5枚以上あれば、さらに1枚。共鳴：さらに1枚。襲撃：使ったあと相手の手札が1枚以下なら、相手のライフ-1。'],
  ['knight','騎士','騎','grd','R','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、自分は2枚引く。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['nun','修道女','尼','grd','C','1枚引く。次の相手ターン、相手は宣言を外すと追加で1枚捨てる。相手の心臓ではない種類を1つ知る。'],
- ['watchman','夜警','警','grd','C','【伏せ専用】相手が宣言を外したとき発動。自分は2枚引き、相手の心臓ではない種類を2つ知る。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
+ ['watchman','夜警','警','grd','C','【伏せ専用】相手が宣言を外したとき発動。自分は2枚引き、相手の心臓ではない種類を3つ知る。発動したら、さらに相手の心臓ではない種類を1つ知る（共鳴：さらに1枚引き、もう1つ知る）。伏せずに使うことはできない。'],
  ['shieldbearer','盾持ち','楯','grd','C','2枚引く。次の相手ターン、攻撃系カードの効果を受けない。'],
  ['lookout','物見','見','grd','C','1枚引く。相手の伏せカードを公開して捨て札にする。相手の心臓ではない種類を1つ知る。'],
  ['cleric','癒し手','癒','grd','C','自分の捨て札から防御系カードを1枚選んで手札に戻し、1枚引く。共鳴：もう1枚戻す。'],
@@ -864,7 +864,7 @@ const RAW=[
  ['tactician','参謀','謀','sup','R','1枚引く。このターン、宣言を外しても手札を1枚しか捨てない。相手の心臓ではない種類を1つ知る。'],
  ['innkeeper','宿屋','宿','sup','C','手札が3枚以下なら3枚、4枚以上なら2枚引く。'],
  ['drummer','鼓手','鼓','sup','C','相手の心臓ではない種類を1つ知る。次に使う共鳴つきのカードは必ず共鳴する。'],
- ['gambler','博徒','賭','sup','R','このターン、宣言+1回。そのかわり、次の自分のターンは1枚少なく引く。共鳴：1枚引く。'],
+ ['gambler','博徒','賭','sup','R','このターン、宣言+1回。共鳴：1枚引く。'],
  ['moonqueen','月の女王','月','one','L','相手の心臓の系統を知る。'],
 ];
 // カードの文を「条件／コスト／効果／共鳴／襲撃」ごとに行を分けて、見出しを付ける
@@ -877,7 +877,7 @@ function effHTML(e){
   return out;
 }
 // 属性：同じ属性のカードを続けて使うと共鳴する。属性のないカード（シングル以外）は「通常カード」で、共鳴しないかわりに効果が少し強い
-const ATTR={"seer": "月", "medium": "月", "astrologer": "月", "watchdog": "月", "stargazer": "月", "clairvoy": "月", "diviner": "月", "fortune": "月", "confessor": "月", "gatekeeper": "月", "warder": "月", "drummer": "月", "wolf": "血", "pack": "血", "cursewolf": "血", "berserker": "血", "alpha": "血", "howler": "血", "ghoul": "血", "vampire": "血", "madman": "血", "twins": "血", "villager": "聖", "chief": "聖", "mason": "聖", "priest": "聖", "bodyguard": "聖", "knight": "聖", "cleric": "聖", "exorcist": "聖", "apprentice": "聖", "watchman": "聖", "bastion": "聖", "fox": "影", "decoy": "影", "silencer": "影", "reflect": "影", "witch": "影", "assassin": "影", "poisoner": "影", "gambler": "影", "cryboy": "影", "gravedigger": "影", "alchemist": "影", "bard": "影", "trapper": "影"};
+const ATTR={"seer": "月", "stargazer": "月", "astrologer": "月", "howler": "月", "madman": "月", "witch": "月", "warder": "月", "gatekeeper": "月", "fox": "月", "drummer": "月", "bard": "月", "apprentice": "月", "watchdog": "血", "diviner": "血", "wolf": "血", "pack": "血", "alpha": "血", "bodyguard": "血", "reflect": "血", "trapper": "血", "twins": "血", "cryboy": "血", "alchemist": "血", "medium": "聖", "confessor": "聖", "clairvoy": "聖", "assassin": "聖", "berserker": "聖", "knight": "聖", "cleric": "聖", "exorcist": "聖", "bastion": "聖", "villager": "聖", "chief": "聖", "mason": "聖", "fortune": "影", "cursewolf": "影", "ghoul": "影", "vampire": "影", "poisoner": "影", "decoy": "影", "silencer": "影", "watchman": "影", "gravedigger": "影", "gambler": "影", "priest": "影"};
 const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'};
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 const C={};CARDS.forEach(c=>C[c.k]=c);
@@ -1809,7 +1809,7 @@ async function payCost(p,c,R){
     case 'astrologer':if(!R)giveAway(p,1);break;
     case 'vampire':case 'poisoner':if(!R)giveAway(p,1);break;
     case 'necro':giveAway(p,1);break;
-    case 'detective':giveAway(p,1);break;
+    case 'detective':giveAway(p,2);break;
     case 'cursewolf':if(!R&&p.hand.length){const x=rand(p.hand);toDiscard(p,x);log(`コスト：${p.name}は〈${N(x.type)}〉を捨てた。`,w)}break;
     case 'saint':if(p.life===1){const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));p.f.guesses=0;const hn=p.hand.length;[...p.hand].forEach(x=>toDiscard(p,x));log(`コスト：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。このターンは宣言できず、手札${hn}枚を捨てた。`,w)}break;
     case 'oracle':{const b=cands(o,3);log(`コスト：${p.name}の心臓は ${b.map(x=>'〈'+N(x)+'〉').join('')} のどれかだと知られた。`,whoOf(o));break}
@@ -1864,7 +1864,7 @@ async function playCard0(p,c,copy=false){
       const group=typesOf(o).filter(t=>C[t].cat===ct),yes=C[o.heart.type].cat===ct;
       if(yes)narrow(p,group);else group.forEach(t=>K(p).excluded.add(t));
       log(`霊媒：${o.name}の心臓は「${CAT[ct]}」系統${yes?'である':'ではない'}。`,w);
-      if(R){draw(p,1);learnNot(p,2)}
+      if(R){draw(p,1);learnNot(p,1)}
       break;}
     case 'necro':{const len=N(o.heart.type).length;narrow(p,typesOf(o).filter(t=>N(t).length===len));log(`降霊：${o.name}の心臓の名前は${len}文字。`,w);break}
     case 'detective':{
@@ -1892,7 +1892,8 @@ async function playCard0(p,c,copy=false){
       if(!x||!p.hand.includes(x)){log('化けられるカードがない。',w);break}
       await playCard(p,x,true);break;}
     case 'mason':{draw(p,R?2:1);if(R)learnNot(p,1);const m=p.deck.find(x=>x.type==='mason');if(m){rm(p.deck,m);p.hand.push(m);log('もう1枚の共有者を手札に加えた。',w)}break;}
-    case 'mirror':case 'nekomata':case 'warder':draw(p,1);if((R&&c.type==='warder')||c.type==='nekomata')learnNot(p,1);if(c.type==='warder')p.f.ward=R?'all':'info';break;
+    case 'mirror':break;
+    case 'nekomata':case 'warder':draw(p,1);if((R&&c.type==='warder')||c.type==='nekomata')learnNot(p,1);if(c.type==='warder')p.f.ward=R?'all':'info';break;
     case 'bard':draw(p,3);if(!R)o.f.extraDraw=(o.f.extraDraw||0)+1;break;
     case 'twins':draw(p,R?2:1);if(R)learnNot(p,1);if(p.discard.some(x=>x.type==='twins'&&x!==c)){draw(p,2);log('双子がそろった！さらに2枚引く。',w)}break;
     case 'baker':{
@@ -1912,19 +1913,19 @@ async function playCard0(p,c,copy=false){
       const mx=R?3:2;const xs=p.isCpu?pool.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]).slice(0,mx).map(e=>e[0]):await pickCards(pool,'司祭：手札に戻すカード',`自分の捨て札から${mx}枚まで選びます。`,1,mx);
       xs.forEach(x=>{rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)});break;}
     case 'elder':draw(p,1);if(p.f.blocked)log('狩人の効果で宣言できないままです。');else p.f.guesses=Math.max(p.f.guesses,0)+1;learnNot(p,1,'長老');break;
-    case 'cryboy':draw(p,1);if(!R)p.f.harsh=true;if(!p.f.blocked)p.f.guesses++;break;
+    case 'cryboy':draw(p,2);if(!R)p.f.harsh=true;if(!p.f.blocked)p.f.guesses++;break;
     case 'executioner':p.f.safe=true;learnNot(p,1,'処刑人');break;
     case 'madman':if(R&&o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);if(S.over||S.cur!==p)break;o.f.forceGuess=true;log(`${o.name}は次のターン、必ず宣言しなければならない。`);break;
     case 'assassin':{
       let ty=null;
       if(p.isCpu){const r=ranked(p)[0];if(r[1]>=.3)ty=r[0]}
-      else{const r=await pickTypes(o,1,'暗殺者：心臓を狙う','当たれば心臓的中。外れたら手札を2枚捨てます（共鳴していれば捨てません）。やめることもできます。',true,p);ty=r&&r[0]}
+      else{const r=await pickTypes(o,1,'暗殺者：心臓を狙う','当たれば心臓的中。外れたら手札を1枚捨てます（共鳴していれば捨てません）。やめることもできます。',true,p);ty=r&&r[0]}
       if(!ty){log('暗殺者は様子を見た。',w);break}
       render();await fxCall(N(ty));
       if(hasSet(o,'decoy')){await triggerSet(o);log('影武者が身代わりになった。暗殺は無効（当たり外れは明かされない）。',w);decoyPenalty(p);break}
       if(o.heart.type===ty){await resolveHit(p,o);break}
       K(p).excluded.add(ty);await fxStamp('外れ','miss');
-      if(R)log('暗殺失敗。共鳴により捨てなくてよい。',w);else log('暗殺失敗。手札を2枚捨てる。',w);for(let i=0;i<(R?0:2)&&p.hand.length;i++){const x=rand(p.hand);toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`)}render();
+      if(R)log('暗殺失敗。共鳴により捨てなくてよい。',w);else log('暗殺失敗。手札を1枚捨てる。',w);for(let i=0;i<(R?0:1)&&p.hand.length;i++){const x=rand(p.hand);toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`)}render();
       break;}
     case 'greatdet':{const cand=cands(p,5);log(`名探偵：${o.name}の心臓は ${cand.map(x=>'〈'+N(x)+'〉').join('')} のどれか。`,w);break}
     case 'oracle':{
@@ -1938,8 +1939,8 @@ async function playCard0(p,c,copy=false){
       narrow(p,typesOf(o).filter(t=>hi(t)===isHi));
       log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);learnNot(p,1,'預言者');break;}
     case 'spy':{
-      if(o.setCard){K(p).known.add(o.setCard.id);log(`密偵：${o.name}の伏せカードは〈${N(o.setCard.type)}〉。`,w)}
-      else{draw(p,1);log('相手は伏せていないので、1枚引いた。',w)}
+      draw(p,1);if(o.setCard){K(p).known.add(o.setCard.id);log(`密偵：${o.name}の伏せカードは〈${N(o.setCard.type)}〉。`,w)}
+      else{draw(p,1);log('相手は伏せていないので、さらに1枚引いた。',w)}
       learnNot(p,1,'密偵');break;}
     case 'pack':{const had=o.hand.length;const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=3?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o,had);break}
     case 'poisoner':{o.f.noDraw=true;log(`${o.name}は次のターン、カードを引けない。`,w);await raid(p,o);break}
@@ -1959,7 +1960,7 @@ async function playCard0(p,c,copy=false){
       const group=typesOf(o).filter(t=>pr.includes(C[t].cat)),yes=pr.includes(C[o.heart.type].cat);
       if(yes)narrow(p,group);else group.forEach(t=>K(p).excluded.add(t));
       log(`祈祷：${o.name}の心臓は「${pr.map(y=>CAT[y]).join('・')}」のどちらか${yes?'である':'ではない'}。`,w);
-      if(R){draw(p,1);learnNot(p,2)}break;}
+      if(R){draw(p,1);learnNot(p,1)}break;}
     case 'tracker':reveal(p,o.deck.slice(-5));draw(p,1);break;
     case 'confessor':learnNot(p,4,'告解');break;
     case 'stargazer':{const odd=N(o.heart.type).length%2;narrow(p,typesOf(o).filter(t=>N(t).length%2===odd));log(`星読み：${o.name}の心臓の名前は${odd?'奇数':'偶数'}文字。`,w);if(R)learnNot(p,2);break}
@@ -1983,7 +1984,7 @@ async function playCard0(p,c,copy=false){
     case 'tactician':draw(p,1);p.f.soft=true;log('このターン、宣言を外しても1枚しか捨てない。',w);learnNot(p,1,'参謀');break;
     case 'innkeeper':draw(p,p.hand.length<=3?3:2);break;
     case 'drummer':learnNot(p,1,'鼓手');p.f.forceRes=true;log('次に使う共鳴つきのカードは必ず共鳴する。',w);break;
-    case 'gambler':if(!p.f.blocked)p.f.guesses++;p.f.skipDraw=true;log('このターン、宣言+1回。次の自分のターンは1枚少なく引く。',w);if(R)draw(p,1);break;
+    case 'gambler':if(!p.f.blocked)p.f.guesses++;log('このターン、宣言+1回。',w);if(R)draw(p,1);break;
     case 'moonqueen':{const mc=C[o.heart.type].cat;narrow(p,typesOf(o).filter(t=>C[t].cat===mc));log(`月の女王：${o.name}の心臓は「${CAT[mc]}」系統。`,w);break}
     case 'apprentice':draw(p,1);p.f.forceRes=true;log('次に使う共鳴つきのカードは必ず共鳴する。',w);break;
     case 'whitewolf':{
@@ -2023,11 +2024,11 @@ async function doGuess(p,ty){
   if(o.heart.type===ty)return resolveHit(p,o);
   K(p).excluded.add(ty);await fxStamp('外れ','miss');log('外れ。',w);
   if(p.f.curse){p.f.curse=false;p.life=Math.max(0,p.life-1);S.shake=w;log(`呪術師の反動。${p.name}のライフ-1（残り${p.life}）`,w);render();if(p.life<=0){await gameOver(o);return'over'}}
-  if(hasSet(o,'watchman')){await triggerSet(o);draw(o,2);learnNot(o,2,'夜警');log(`夜警：${o.name}は2枚引いた。`,whoOf(o))}
+  if(hasSet(o,'watchman')){await triggerSet(o);draw(o,2);learnNot(o,3,'夜警');log(`夜警：${o.name}は2枚引いた。`,whoOf(o))}
   if(p.f.safe){p.f.safe=false;log('ペナルティなし。')}
   else{
-    const trap=hasSet(o,'trapper');if(trap){await triggerSet(o);log('罠師の罠！追加で2枚捨てる。')}
-    const n=(p.f.soft?1:2)+(trap?2:0)+(p.f.harsh?1:0)+(p.f.nun?1:0);if(p.f.harsh)log('狼少年の反動で1枚多く捨てる。');if(p.f.nun)log('修道女の戒めで1枚多く捨てる。');if(p.f.soft)log('参謀の策で、捨てる枚数が1枚減る。');
+    const trap=hasSet(o,'trapper');if(trap){await triggerSet(o);log('罠師の罠！追加で3枚捨てる。')}
+    const n=(p.f.soft?1:2)+(trap?3:0)+(p.f.harsh?1:0)+(p.f.nun?1:0);if(p.f.harsh)log('狼少年の反動で1枚多く捨てる。');if(p.f.nun)log('修道女の戒めで1枚多く捨てる。');if(p.f.soft)log('参謀の策で、捨てる枚数が1枚減る。');
     for(let i=0;i<n&&p.hand.length;i++){const x=rand(p.hand);toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`)}
   }
   render();return'miss';
