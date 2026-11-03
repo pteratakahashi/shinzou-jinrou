@@ -3092,7 +3092,7 @@ setInterval(()=>{
   if(el&&S&&S.deadline){const sec=Math.max(0,Math.ceil((S.deadline-Date.now())/1000));el.textContent=S.paused||NET.paused?'一時停止中':`残り${sec}秒`;el.classList.toggle('warn',sec<=15&&!S.paused)}
 },500);
 
-// 通信が切れたとき：対戦中なら3分は再接続を待つ
+// 通信が切れたとき：対戦中なら2分は再接続を待つ
 function netPause(){
   if(NET.paused)return;
   NET.paused=true;NET.pauseAt=Date.now();
