@@ -1543,7 +1543,7 @@ function rulesListHTML(){
   <section class="hw terms"><div class="hwNo">用語</div><div class="hwBody">
     <dl class="hwTerms">
       <dt>系統</dt><dd>カードは5つに分かれます：${chip('info','情報')}${chip('atk','攻撃')}${chip('grd','防御')}${chip('sup','補助')}${chip('one','シングル')}</dd>
-      <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分や、相手のターンに発動した伏せカードも含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>ブラフ</dt><dd>伏せ専用ではないカードも「ブラフ」ボタンで伏せられます（効果は発動しません）。相手が警戒して、次の相手ターンにカードを1枚も使わなかったら<b>ブラフ成功</b>。ただし、自分のデッキに伏せ専用カードが1種も入っていなければ、伏せはすべてブラフだと相手にわかるので、ブラフは成功しません。自分のターンのはじめにそのカードが手札に戻り、そのターンはカードを1枚多く使えます。</dd><dt>引く・見る</dt><dd>「引く」は、いつも<b>自分の山札から</b>自分の手札に加えることです。相手の山札や手札を「見る」効果では、カードは動きません（見たカードは相手のところに残ります）。</dd><dt>通常カード</dt><dd>属性マークのないカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
+      <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分や、相手のターンに発動した伏せカードも含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>ブラフ</dt><dd>伏せ専用ではないカードも「ブラフ」ボタンで伏せられます（効果は発動しません）。相手が警戒して、次の相手ターンにカードを1枚も使わなかったら<b>ブラフ成功</b>。ただし、自分のデッキに伏せ専用カードが1種も入っていなければ、伏せはすべてブラフだと相手にわかるので、ブラフは成功しません。自分のターンのはじめにそのカードが手札に戻り、そのターンはカードを1枚多く使えます。さらに、相手の心臓ではない種類を1つ知ります。</dd><dt>引く・見る</dt><dd>「引く」は、いつも<b>自分の山札から</b>自分の手札に加えることです。相手の山札や手札を「見る」効果では、カードは動きません（見たカードは相手のところに残ります）。</dd><dt>通常カード</dt><dd>属性マークのないカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
       <dt>襲撃</dt><dd>襲撃のある攻撃系カードを使ったあと、相手の手札が0枚なら（もともと0枚でも）、相手の心臓が1つ止まります。相手は心臓はそのままで、手札が5枚になるまで引きます。襲撃した側のターンはそこで終わります。</dd>
@@ -2327,7 +2327,7 @@ async function runTurn(p){
   let bluffWin=false;
   if(p.setCard){const c=p.setCard,o=opp(p);p.setCard=null;K(o).known.add(c.id);
     // ブラフ成功：伏せ専用でないカードを伏せていて、そのあとの相手のターンに相手がカードを1枚も使わなかった
-    if(!C[c.type].set&&typesOf(p).some(t=>C[t].set)&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;act({who:whoOf(p),kind:'bluff'});p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p))}
+    if(!C[c.type].set&&typesOf(p).some(t=>C[t].set)&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;act({who:whoOf(p),kind:'bluff'});p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p));learnNot(p,1,'ブラフ成功')}
     else{p.discard.push(c);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}}
   p.f.blocked=!!p.f.noGuess;p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
   p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;p.f.played=0;
@@ -2426,7 +2426,7 @@ const TUT_STEPS=[
  {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
  {allow:{btns:['skip','end']},when:()=>S.cur===S.me&&!S.busy,done:()=>S.cur!==S.me,sel:'#bSkip,#bEnd',text:'伏せられました。このまま「宣言に進む」→「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu,done:()=>S.cur===S.me&&PH()==='play'&&!S.busy,text:'相手のターンです。あなたの伏せカードを警戒しているようです…。'},
- {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使えます。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
+ {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。さらに、<b>相手の心臓ではない種類を1つ</b>知りました。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類も1つわかります。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
  {when:()=>!S.busy,btn:'チュートリアルを終える',text:'<b>勝ち方は3つ</b>：①宣言で相手の心臓を<b>3回当てる</b>　②攻撃カードの<b>襲撃</b>でライフを削る　③相手の<b>山札が切れる</b>（山札がないのに引くと負け）。ほかに、友達対戦は1ターン90秒の制限時間があり、切断しても2分以内なら「対戦に戻る」で再開できます。ここからは自由に最後まで戦ってみよう！'},
 ];
 function tutAllow(){if(!TUT.on||!S||!S.tut)return null;if(TUT.pickOnly)return{};const st=TUT_STEPS[TUT.i];return st&&TUT.act===TUT.i?st.allow||null:{}}
@@ -2672,7 +2672,7 @@ function render0(){
   ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています…（最大2分）</div>`:''}
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}</div>
-    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」で、効果のある伏せ札のふりをして伏せられます。次の相手ターンに相手がカードを1枚も使わなければブラフ成功（自分のデッキに伏せ専用カードが入っているときだけ）：自分のターンにこのカードが手札に戻り、カードを1枚多く使えます。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
+    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」で、効果のある伏せ札のふりをして伏せられます。次の相手ターンに相手がカードを1枚も使わなければブラフ成功（自分のデッキに伏せ専用カードが入っているときだけ）：自分のターンにこのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類を1つ知ります。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':'使う'}</button>
       <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
@@ -3070,6 +3070,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:36,d:'2026-11-08',t:'ブラフ成功のごほうびを強くしました。カードが手札に戻り、1枚多く使えるのに加えて、相手の心臓ではない種類を1つ知れます。'},
   {id:31,d:'2026-11-04',t:'チュートリアルを、決まった流れにそって進む形にしました。宣言のほかに、襲撃とブラフも実際にやってみながら、勝ち方3つ（宣言・襲撃・山札切れ）を覚えられます。'},
   {id:30,d:'2026-11-04',t:'チュートリアルができました。メニューの「チュートリアル」から、案内にそって1戦しながら、心臓・推理の表・共鳴・伏せ・シングル・宣言の流れを覚えられます。かわりに、試合の観戦はなくしました。'},
   {id:35,d:'2026-11-04',t:'PCで手札のカードを選んだとき、画面が横に広がったり上下にがくっと動いたりしていたのを直しました。'},
