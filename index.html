@@ -228,6 +228,9 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 .dk.in{border-color:var(--candle);background:linear-gradient(90deg,#3a2f2a,var(--panel))}
 .dk.lock{cursor:not-allowed}
 .dk.lock .tcg{filter:grayscale(1) brightness(.6)}
+.newTag{font-size:10px;padding:1px 7px;border-radius:99px;background:var(--good);color:#0f1a14;font-weight:700;margin-left:4px}
+.unown{position:relative}.unown .tcg{filter:grayscale(1) brightness(.55)}.unown::after{content:"未所持";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(10,12,28,.85);border:1px solid var(--muted);border-radius:99px;padding:2px 10px;font-size:11px;color:var(--muted);white-space:nowrap}
+.gotList{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0}.gotList>div{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px}
 .dk>.tcg{align-self:flex-start;flex:none}
 .dk .info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .dk .nm{font-family:var(--display);font-size:16px}
@@ -953,7 +956,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261103182813';
+const APP_VER='20261108192900';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1259,11 +1262,20 @@ let SV;
 try{SV=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
 if(!SV||!SV.coll)SV=defaultSave();
 CARDS.forEach(c=>{if(SV.coll[c.k]==null)SV.coll[c.k]=maxOwn(c.k)});
-// 試作中は全カード所持扱い
-CARDS.forEach(c=>SV.coll[c.k]=maxOwn(c.k));
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}}
 ecoInit();applyFrame();
-const own=k=>SV.coll[k]||0;
+// カードの所持：スタンダードデッキの14種は全員が持っている。それ以外はランクマッチの報酬（サーバーの collection）
+const STD_SINGLE='greatdet';
+const stdDeck=()=>({types:[...STARTER],single:STD_SINGLE});
+const COLL={map:{}};
+if(SV.collCache&&SV.collCache.map)COLL.map={...SV.collCache.map};
+const owns=k=>STARTER.includes(k)||k===STD_SINGLE||(COLL.map[k]||0)>0;
+const own=k=>owns(k)?maxOwn(k):0;
+const ownedCount=()=>CARDS.filter(c=>owns(c.k)).length;
+const isNewCard=k=>(COLL.map[k]||0)>0&&!(SV.collSeen||{})[k];
+function markCollSeen(){SV.collSeen=SV.collSeen||{};let ch=false;for(const k in COLL.map)if(!SV.collSeen[k]){SV.collSeen[k]=1;ch=true}if(ch)save()}
+// 前の「全カード所持」の試作で組んだデッキは、スタンダードデッキに戻す
+if(SV.collV!==1){SV.collV=1;SV.freeDeck=stdDeck();save()}
 function addCard(k){
   const c=C[k];if(own(k)>=maxOwn(k)){SV.shards+=SHARD[c.r];return{type:'dup',txt:`かけら+${SHARD[c.r]}`}}
   SV.coll[k]=maxOwn(k);
@@ -1302,7 +1314,7 @@ function draw_(){
 }
 
 function renderMenu(){
-  const savedG=lsGet(GAME_KEY),savedD=lsGet(DRAFT_KEY);
+  const savedG=lsGet(GAME_KEY),savedD=null;lsDel(DRAFT_KEY);
   const owned=CARDS.filter(c=>own(c.k)>=maxOwn(c.k)).length;
   const iss=deckIssues();
   const fan=['wolf','seer','fox','greatdet','hunter'];
@@ -1317,9 +1329,9 @@ function renderMenu(){
     ${ONL.get()&&!NET.conn?`<button type="button" class="mi main" id="mRejoin"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(ONL.get().opp||'相手')}さんとの対戦の続き（${ago(ONL.get().at)}）</span></button>`:''}
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
-    <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG||savedD?'新しく対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':'7パックを開けて、出たカードでデッキを組んで戦います'}</span></button>
-    <button type="button" class="mi" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>構築済みデッキで対戦</b><span>全カードから自由にデッキを組んで、CPUの強豪デッキに挑みます</span></button>
-    <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'友達との対戦に戻る':'友達と対戦（オンライン）'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'部屋を作ってリンクを送るだけ。おたがい7パック開けてデッキを組みます'}</span></button>
+    <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG?'新しくCPUと対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':deckLegal(freeDeck())?'自分のデッキでCPUと戦います':'デッキに持っていないカードがあります。デッキ編成で直してください'}</span></button>
+    <button type="button" class="mi" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>デッキ編成${CARDS.some(c=>isNewCard(c.k))?'<span class="newTag">NEW</span>':''}</b><span>所持 ${ownedCount()}/${CARDS.length}種。ランクマッチで勝つと2種、負けても1種カードがもらえます</span></button>
+    <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'対戦に戻る':'ランクマッチ・友達と対戦'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'ランクマッチで知らない人と対戦（カードがもらえる）、または部屋を作って友達と対戦'}</span></button>
     <button type="button" class="mi ${!SV.tutDone&&!lsGet(GAME_KEY)?'main':''}" id="mTut"><img class="miArt" src="art/apprentice.png" alt=""><b>チュートリアル</b><span>はじめての人はここから。案内にそって1戦しながらルールを覚えます</span></button>
     ${canInstall()?`<button type="button" class="mi" id="mInstall"><img class="miArt" src="icons/icon-192.png" alt=""><b>アプリとしてホーム画面に追加</b><span>アイコンから全画面で起動できます。CPU戦はオフラインでも遊べます</span></button>`:''}
     <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>はじめての人はここから。勝ち方とターンの流れ</span></button>
@@ -1330,7 +1342,7 @@ function renderMenu(){
   <div class="sndSet"><span class="label">サウンド</span><button type="button" class="b small" id="mBgm">BGM ${bgmOn()?'ON':'OFF'}</button><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="BGMの音量"><button type="button" class="b small" id="mSfx">効果音 ${sndOn()?'ON':'OFF'}</button></div>
   <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>
   ${tabBarHTML('menu')}`;
-  $('#mBattle').onclick=()=>startDraft();
+  $('#mBattle').onclick=()=>startFree();
   const mr=$('#mResume');if(mr)mr.onclick=resumeGame;
   const mrj=$('#mRejoin');if(mrj)mrj.onclick=onlineRejoin;
   const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
@@ -1440,45 +1452,51 @@ function renderDeck(){
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
 const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":60,"types":["lookout","detective","wolf","prophet","pack","knight","sentinel","medium","diviner","twins","villager","tactician","mason"],"single":"mirror"},{"name":"白狼の狩り","wr":58,"types":["lookout","detective","wolf","villager","kidnapper","pack","chief","knight","poisoner","nightmare","mason","diviner","twins"],"single":"whitewolf"},{"name":"呪術師の呪い","wr":54,"types":["lookout","detective","wolf","villager","kidnapper","pack","chief","knight","poisoner","nightmare","mason","diviner","nun"],"single":"curser"}];
 let FF='all';
-const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=FREE_PRESETS[0]?{types:[...FREE_PRESETS[0].types],single:FREE_PRESETS[0].single}:{types:RANK.slice(0,13),single:RANK1[0]};return SV.freeDeck};
+const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=stdDeck();return SV.freeDeck};
+// 持っているカードだけで組めているか
+const deckLegal=d=>freeOk(d)&&d.types.every(owns)&&owns(d.single);
+const myDeck=()=>{const d=freeDeck();return deckLegal(d)?{types:[...d.types],single:d.single}:stdDeck()};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
-const freeCpu=()=>SV.freeCpu||'strong';
+const freeCpu=()=>SV.freeCpu==='pack'||!SV.freeCpu?'std':SV.freeCpu;
 function renderFree(){
-  const d=freeDeck(),n=d.types.length,ok=freeOk(d);
-  const list=NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k)));
-  const cnt=['info','atk','grd','sup'].map(k=>[k,d.types.filter(t=>C[t].cat===k).length]).filter(e=>e[1]);
-  const acnt=['月','血','聖','影'].map(a=>[a,d.types.filter(t=>C[t].attr===a).length]).concat([['通常',d.types.filter(t=>C[t].plain).length]]).filter(e=>e[1]);
-  $('#app').innerHTML=`<div class="top"><h1>構築済みデッキ</h1><button type="button" class="b small" id="back">戻る</button></div>
-  <p class="note" style="margin-top:0">全カードから自由に選べます。カード13種（各3枚）＋シングル1枚＝40枚。同じ属性（月・血・聖・影）を続けて使うと共鳴します。</p>
-  ${FREE_PRESETS.length?`<div class="fpWrap"><span class="label">おすすめ</span><div class="fpList">${FREE_PRESETS.map((x,i)=>`<button type="button" class="chip fp" data-p="${i}">${esc(x.name)}<small>勝率${x.wr}%</small></button>`).join('')}</div></div>`:''}
+  const d=freeDeck(),n=d.types.length,ok=deckLegal(d),bad=d.types.filter(k=>!owns(k)).concat(d.single&&!owns(d.single)?[d.single]:[]);
+  const sortOwn=a=>[...a].sort((x,y)=>(owns(y.k)?1:0)-(owns(x.k)?1:0));
+  const list=sortOwn(NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k)))),sgl=sortOwn(SINGLE);
+  const tag=k=>isNewCard(k)?'<span class="newTag">NEW</span>':'';
+  const row=(c,sg)=>{const inn=sg?d.single===c.k:d.types.includes(c.k),has=owns(c.k);return`<button type="button" class="dk ${sg?'sg':''} ${inn?'in':''} ${has?'':'lock'}" data-k="${c.k}" ${has?'':'aria-disabled="true"'}>${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}${tag(c.k)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${has?'':'<span class="muted">未所持</span>'}${inn?'<span class="inTag">デッキ内</span>':''}${(COLL.map[c.k]||0)>1?`<span class="muted">×${COLL.map[c.k]}</span>`:''}</span></div></button>`};
+  const msg=bad.length?`持っていないカードが入っています（${bad.map(k=>'〈'+N(k)+'〉').join('')}）。外すか、スタンダードデッキに戻してください。`:ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください';
+  $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
+  <p class="note" style="margin-top:0">持っているカードからデッキを組めます（カード13種×3枚＋シングル1枚＝40枚）。所持 <b>${ownedCount()}/${CARDS.length}</b>種。<br>カードは<b>ランクマッチ</b>で、勝つと2種、負けても1種もらえます${LADDER.uid()?'':'（Googleでログインが必要）'}。</p>
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></div>${deckSum(d.types)}
    ${filterBar(FFS,{inDeck:true})}
-   <div class="btns"><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
-  <div class="note" id="fNote">${ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください'}</div>
+   <div class="btns"><button type="button" class="b small" id="fStd">スタンダードデッキに戻す</button><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
+  <div class="note" id="fNote" ${bad.length?'style="color:var(--blood)"':''}>${msg}</div>
   <h3 style="font-size:16px">カード（13種・各3枚）</h3>
-  <div class="dkList">${list.map(c=>{const inn=d.types.includes(c.k);return`<button type="button" class="dk ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
+  <div class="dkList">${list.map(c=>row(c,false)).join('')}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
-  <div class="dkList">${SINGLE.map(c=>{const inn=d.single===c.k;return`<button type="button" class="dk sg ${inn?'in':''}" data-k="${c.k}">${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${inn?'<span class="inTag">デッキ内</span>':''}</span></div></button>`}).join('')}</div>
-  <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['strong','強豪デッキ'],['mirror','同じデッキ'],['pack','パックから']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
-   <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキで対戦</button></div>`;
+  <div class="dkList">${sgl.map(c=>row(c,true)).join('')}</div>
+  <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['std','スタンダード'],['mirror','同じデッキ'],['strong','強豪デッキ']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
+   <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキでCPUと対戦</button></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
-  $('#back').onclick=()=>go('menu');
+  // NEW の印は、この画面を出るときに消す
+  $('#back').onclick=()=>{markCollSeen();go('menu')};
   bindFilter(FFS,()=>{const y=window.scrollY;renderFree();window.scrollTo(0,y)});
   document.querySelectorAll('[data-cpu]').forEach(b=>b.onclick=keep(()=>{SV.freeCpu=b.dataset.cpu}));
-  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=keep(()=>{const x=FREE_PRESETS[+b.dataset.p];SV.freeDeck={types:[...x.types],single:x.single}}));
-  $('#fAuto').onclick=keep(()=>{const x=FREE_PRESETS.length?rand(FREE_PRESETS):null;SV.freeDeck=x?{types:[...x.types],single:x.single}:autoBuild(NORMAL.map(c=>c.k),SINGLE.map(c=>c.k),6)});
+  $('#fStd').onclick=keep(()=>{SV.freeDeck=stdDeck()});
+  $('#fAuto').onclick=keep(()=>{SV.freeDeck=autoBuild(NORMAL.filter(c=>owns(c.k)).map(c=>c.k),SINGLE.filter(c=>owns(c.k)).map(c=>c.k),6)});
   $('#fClear').onclick=keep(()=>{SV.freeDeck={types:[],single:null}});
   document.querySelectorAll('.dk').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.k;
+    const k=b.dataset.k,f=$('#fNote');
+    if(!owns(k)&&!d.types.includes(k)&&d.single!==k){f.textContent=`〈${N(k)}〉はまだ持っていません。ランクマッチで手に入ります。`;f.style.color='var(--blood)';return}
     if(C[k].single)d.single=d.single===k?null:k;
     else if(d.types.includes(k))rm(d.types,k);
-    else{if(d.types.length>=13){const f=$('#fNote');f.textContent='13種まで。先に1種外してください';f.style.color='var(--blood)';return}d.types.push(k)}
+    else{if(d.types.length>=13){f.textContent='13種まで。先に1種外してください';f.style.color='var(--blood)';return}d.types.push(k)}
     keep(()=>{})();
   });
-  $('#fGo').onclick=()=>startFree();
+  $('#fGo').onclick=()=>{markCollSeen();startFree()};
 }
 function startFree(quick){
-  const d=freeDeck();if(!freeOk(d))return go('free');
+  const d=freeDeck();if(!deckLegal(d))return go('free');
   lsDel(GAME_KEY);lsDel(DRAFT_KEY);
   D={...newDraft(),deck:{types:[...d.types],single:d.single},stage:'build',free:true,quick:!!quick};
   startBattle();
@@ -1487,7 +1505,7 @@ function freeCpuDeck(){
   const m=freeCpu(),d=freeDeck();
   if(m==='mirror')return{types:[...d.types],single:d.single};
   if(m==='strong'&&FREE_PRESETS.length){const x=rand(FREE_PRESETS);return{types:[...x.types],single:x.single,name:x.name}}
-  const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);return autoBuild(cd.pool,cd.singles,8);
+  return stdDeck();
 }
 function flash(t){const n=document.querySelector('.note');if(n){n.textContent=t;n.style.color='var(--blood)'}}
 
@@ -1503,7 +1521,8 @@ function rulesListHTML(){
 
   <section class="hw"><div class="hwNo">1</div><div class="hwBody">
     <h3>デッキを作る</h3>
-    <p>対戦のたびに<b>7パック</b>を開けて、出たカードから<b>13種類</b>を選びます。1種類につき3枚ずつ入り、そこに<b>シングルカード</b>（各デッキに1枚だけの特別なカード）を1枚足して、<b>40枚</b>のデッキになります。</p>
+    <p>デッキは<b>13種類</b>のカードが3枚ずつと、<b>シングルカード</b>（各デッキに1枚だけの特別なカード）1枚の、<b>40枚</b>です。最初は全員が同じ<b>スタンダードデッキ</b>で戦います。</p>
+    <p><b>ランクマッチ</b>で勝つと2種類、負けても1種類、ランダムにカードがもらえます（同じカードがかぶることもあります）。手に入れたカードは、ホームの「デッキ編成」でデッキに入れられます。</p>
     <p class="hwTip">相手のデッキに入っている13種類は、最初から公開されています。この中のどれかが相手の心臓です。</p>
   </div></section>
 
@@ -1559,16 +1578,16 @@ function renderHowto(){
   ${rulesListHTML()}
   <div class="btns" style="justify-content:center;margin:8px 0 4px"><button type="button" class="b primary" id="hwPlay">CPUと対戦してみる</button><button type="button" class="b" id="hwCards">カード一覧を見る</button></div>
   ${tabBarHTML('')}`;
-  $('#back').onclick=()=>go('menu');$('#hwPlay').onclick=()=>startDraft();$('#hwCards').onclick=()=>go('cards');bindTabBar();
+  $('#back').onclick=()=>go('menu');$('#hwPlay').onclick=()=>startFree();$('#hwCards').onclick=()=>go('cards');bindTabBar();
 }
 // カード一覧（下のタブの「カード」）
 let CF='all';
 function renderCards(){
   const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['one','シングル']];
   const list=CARDS.filter(c=>fMatch(CFS,c,false));
-  $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">全${CARDS.length}種</span></div>
+  $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">所持 ${ownedCount()}/${CARDS.length}種</span></div>
   ${filterBar(CFS,{single:true})}
-  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div>${cardHTML(c.k,'p')}</div>`).join('')}</div>
+  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div class="${owns(c.k)?'':'unown'}">${cardHTML(c.k,'p')}</div>`).join('')}</div>
   ${tabBarHTML('cards')}`;
   bindFilter(CFS,()=>{const y=window.scrollY;renderCards();window.scrollTo(0,y)});bindTabBar();
 }
@@ -1609,7 +1628,8 @@ function autoBuild(pool,singles,noise=0){
   const single=[...singles].map(k=>[k,RANK1.indexOf(k)+Math.random()*noise/4]).sort((a,b)=>a[1]-b[1])[0][0];
   return{types,single};
 }
-function startDraft(){lsDel(GAME_KEY);D=newDraft();VIEW='draft';window.scrollTo(0,0);renderDraft()}
+// 7パックで組むモードはなくした。古い呼び出しが残っていても、自分のデッキでの対戦に回す
+function startDraft(){startFree()}
 function openPack(d){
   const ks=d.packs[d.i];d.cur=ks.map(k=>{const arr=C[k].single?d.singles:d.pool;const dup=arr.includes(k);addPulls(d,[k]);return{k,on:false,res:dup?{type:'dup',txt:'重複'}:{type:'new',txt:C[k].single?'シングル':'NEW ×3'}}});d.i++;
 }
@@ -1701,7 +1721,7 @@ function resumeGame(){
   runTurn(g.next==='me'?S.me:S.cpu);
 }
 function saveDraft(){if(D)lsSet(DRAFT_KEY,{at:Date.now(),D})}
-function resumeDraft(){const x=lsGet(DRAFT_KEY);if(!x||!x.D)return startDraft();D=x.D;D.cur=null;VIEW='draft';window.scrollTo(0,0);renderDraft()}
+function resumeDraft(){lsDel(DRAFT_KEY);startFree()}
 function ago(t){const m=Math.round((Date.now()-t)/60000);return m<1?'たった今':m<60?`${m}分前`:m<1440?`${Math.round(m/60)}時間前`:`${Math.round(m/1440)}日前`}
 
 /* ================= battle engine ================= */
@@ -2363,24 +2383,32 @@ async function gameOver(w){
   if(S.tut){SV.tutDone=true;TUT.on=false;tutHide()}
   else if(on){if(win)SV.ow=(SV.ow||0)+1;else SV.ol=(SV.ol||0)+1}else if(win)SV.wins++;else SV.losses++;
   save();
-  const msn=S.tut?'<p>チュートリアルはこれで終わりです。次は「CPUと対戦」や「構築済みデッキで対戦」で遊んでみよう。</p>':missionsAfterGame(win);
+  const msn=S.tut?'<p>チュートリアルはこれで終わりです。次は「CPUと対戦」や「ランクマッチ」で遊んでみよう。</p>':missionsAfterGame(win);
   const oh=S.cpu.heart&&S.cpu.heart.type;
-  const btns=on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">新しく7パック開けて再戦</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
+  // ランクマッチは同じ相手との再戦はなし。次は新しい相手を探す
+  const btns=on&&NET.ranked?`<button type="button" class="b primary" id="rRank">もう一度ランクマッチ</button><button type="button" class="b" id="rMenu">メニューへ</button>`
+    :on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを選び直す</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :S.tut?`<button type="button" class="b primary" id="rMenu">メニューへ</button><button type="button" class="b" id="rSame">もう一度チュートリアル</button>`
-    :S.free?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを組み直す</button><button type="button" class="b" id="rMenu">メニューへ</button>`
-    :`<button type="button" class="b primary" id="rNew">新しく7パック開けて対戦</button><button type="button" class="b" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
+    :`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを編成する</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
   await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
-      el.innerHTML=st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。'});
-    [['#rNew','new'],['#rSame','same'],['#rMenu','menu']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
+      el.innerHTML=(st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。')+gotHTML(d)});
+    [['#rNew','new'],['#rSame','same'],['#rMenu','menu'],['#rRank','rank']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
-    if(on){if(!NET.conn)return go('menu');if(v==='new')startDraft();else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
+    if(on){if(v==='rank'){netLeave();setTimeout(()=>mmStart(),450);return}if(!NET.conn)return go('menu');if(v==='new'){NET.ready.me=null;go('online')}else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
     if(S.tut){if(v==='same')startTutorial();else go('menu');return}
-    if(S.free){if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu');return}
-    if(v==='new')startDraft();else if(v==='same'){if(D)D.quick=true;startBattle()}else go('menu')});
+    if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu')});
+}
+// ランクマッチの報酬（結果画面）
+function gotHTML(d){
+  if(!d||!d.ranked)return'';
+  if(d.status==='pending')return'<br><span class="note">もらえるカードは、相手の結果報告のあとで届きます（デッキ編成で確認できます）。</span>';
+  if(d.status!=='done'||!Array.isArray(d.got)||!d.got.length)return'';
+  const was=k=>STARTER.includes(k)||k===STD_SINGLE||(COLL.map[k]||0)>0;
+  return`<br><b>カードをもらいました</b><div class="gotList">${d.got.filter(k=>C[k]).map(k=>`<div>${cardHTML(k,'s')}<span>${N(k)}</span><span class="${was(k)?'muted':'newTag'}">${was(k)?'かぶり':'NEW'}</span></div>`).join('')}</div>`;
 }
 async function startBattle(){
-  if(!D||D.deck.types.length!==13||!D.deck.single)return startDraft();
+  if(!D||D.deck.types.length!==13||!D.deck.single)return go('free');
   if(NET.conn)return netDeck({types:[...D.deck.types],single:D.deck.single});
   lsDel(DRAFT_KEY);
   VIEW='battle';window.scrollTo(0,0);
@@ -2927,7 +2955,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     try{
       await LADDER.lib();
       LADDER.sb=window.supabase.createClient(RANK_CFG.url,RANK_CFG.key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
-      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
+      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
       const {data}=await LADDER.sb.auth.getSession();
       LADDER.user=data&&data.session&&data.session.user||null;
       try{const u=new URL(location.href);if(u.searchParams.has('code')){u.searchParams.delete('code');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
@@ -2938,11 +2966,21 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     if(!LADDER.sb||!LADDER.user)return;
     const {data,error}=await LADDER.sb.rpc('my_profile',{p_name:netName()});
     if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in';if(data&&data.name&&data.name!==SV.nick){SV.nick=data.name;save()}}
+    await LADDER.loadColl();
     LADDER.redraw();
   },
-  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline()},
+  // 持っているカード。読めないとき（サーバーのSQLが古いなど）は前回の控えを使う
+  async loadColl(){
+    const me=LADDER.uid();if(!LADDER.sb||!me)return;
+    if(SV.collCache&&SV.collCache.uid===me&&!Object.keys(COLL.map).length)COLL.map={...SV.collCache.map};
+    const {data,error}=await LADDER.sb.rpc('my_collection');
+    if(error){console.error(error);return}
+    if(LADDER.uid()!==me)return;
+    COLL.map=data&&typeof data==='object'?data:{};SV.collCache={uid:me,map:COLL.map};save();
+  },
+  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
   login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
-  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;LADDER.state='out';LADDER.redraw()},
+  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
   async startMatch(mid){if(!LADDER.rated()||!mid)return;const {error}=await LADDER.sb.rpc('start_match',{p_match:mid,p_opp:NET.oppUid});if(error)console.error(error)},
   async report(mid,won,reason,opp=NET.oppUid){
     const me=LADDER.uid();
@@ -3070,6 +3108,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:37,d:'2026-11-09',t:'カードを集める形に変わりました。最初は全員スタンダードデッキで戦い、ランクマッチで勝つと2種、負けても1種のカードがランダムにもらえます（かぶることもあります）。手に入れたカードはホームの「デッキ編成」で入れられます。7パック開けて組むモードと、全カードを使える試作の状態はなくしました。ランクマッチの後は、同じ相手との再戦ではなく次の相手を探します。部屋を作る友達対戦では、カードはもらえません。'},
   {id:36,d:'2026-11-08',t:'ブラフ成功のごほうびを強くしました。カードが手札に戻り、1枚多く使えるのに加えて、相手の心臓ではない種類を1つ知れます。'},
   {id:31,d:'2026-11-04',t:'チュートリアルを、決まった流れにそって進む形にしました。宣言のほかに、襲撃とブラフも実際にやってみながら、勝ち方3つ（宣言・襲撃・山札切れ）を覚えられます。'},
   {id:30,d:'2026-11-04',t:'チュートリアルができました。メニューの「チュートリアル」から、案内にそって1戦しながら、心臓・推理の表・共鳴・伏せ・シングル・宣言の流れを覚えられます。かわりに、試合の観戦はなくしました。'},
@@ -3606,9 +3645,8 @@ function renderOnline(){
       ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:LADDER.uid()?`${esc(NET.opp||'相手')}さんがログインしていないので、ランクに関係しない対戦になります。`:'あなたがログインしていないので、ランクに関係しない対戦になります（メニューからGoogleでログインできます）。'}</p>`:''}
       ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p>`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
-          <button type="button" class="mi main" id="oDraft"><b>7パック開けてデッキを作る</b><span>いつもの対戦と同じく、出たカードでデッキを組みます</span></button>
-          <button type="button" class="mi" id="oQuick"><b>おまかせデッキですぐ対戦</b><span>パックを自動で開けて、デッキも自動で組みます</span></button>
-          ${!LADDER.rated()&&freeOk(freeDeck())?`<button type="button" class="mi" id="oFree"><b>構築済みデッキで対戦</b><span>${catSummary(freeDeck().types)}・シングル〈${N(freeDeck().single)}〉（メニューの「構築済みデッキで対戦」で編集）</span></button>`:''}
+          ${deckLegal(freeDeck())?`<button type="button" class="mi main" id="oMine"><b>自分のデッキで対戦</b><span>${catSummary(freeDeck().types)}・シングル〈${N(freeDeck().single)}〉（ホームの「デッキ編成」で編集）</span></button>`:''}
+          <button type="button" class="mi ${deckLegal(freeDeck())?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
   }else if(st==='opening'||st==='joining'){
     body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div></div>`
@@ -3643,9 +3681,8 @@ function renderOnline(){
   const j=$('#oJoin');if(j){const ci=$('#oCode');j.onclick=()=>netJoin(ci.value);ci.onkeydown=e=>{if(e.key==='Enter')netJoin(ci.value)}}
   const cp=$('#oCopy');if(cp)cp.onclick=async()=>{const li=$('#oLink');try{await navigator.clipboard.writeText(li.value);cp.textContent='コピーしました'}catch(e){li.select();try{document.execCommand('copy');cp.textContent='コピーしました'}catch(_){cp.textContent='上の文字を長押ししてコピー'}}};
   const sh=$('#oShare');if(sh)sh.onclick=()=>{navigator.share({title:'心臓人狼',text:'心臓人狼で対戦しよう！',url:roomLink()}).catch(()=>{})};
-  const od=$('#oDraft');if(od)od.onclick=()=>{NET.err='';startDraft()};
-  const oq=$('#oQuick');if(oq)oq.onclick=()=>{NET.err='';const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);netDeck(autoBuild(cd.pool,cd.singles,3))};
-  const of=$('#oFree');if(of)of.onclick=()=>{NET.err='';const d=freeDeck();netDeck({types:[...d.types],single:d.single})};
+  const om2=$('#oMine');if(om2)om2.onclick=()=>{NET.err='';netDeck(myDeck())};
+  const ost=$('#oStd');if(ost)ost.onclick=()=>{NET.err='';netDeck(stdDeck())};
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
 }
 
