@@ -2949,13 +2949,21 @@ function renderShop(){
    部屋を作った人（ホスト）のブラウザがゲームを進める。参加した人（ゲスト）には
    盤面（ゲストから見えてはいけないカードは伏せる）と演出を送り、ゲストの操作と選択を受け取る。
    ホストから見た me / cpu を、ゲスト側では入れ替えて「自分＝me」として描く。 */
+// つなぎ役（PeerJS のシグナリング）と TURN は自前の VPS（~/shinzou-jinrou/peer）。TURN の一時パスワードは /turn から（24時間有効、12時間ごとに取り直す）
+const PEER_HOST='peer.shinzoujinro.com',ICE_FALLBACK=[{urls:'stun:stun.l.google.com:19302'}];
+let ICE=null,ICE_AT=0;
+async function netIce(){
+  if(ICE&&Date.now()-ICE_AT<12*3600e3)return;
+  try{const ac=new AbortController(),t=setTimeout(()=>ac.abort(),4000);const r=await fetch('https://'+PEER_HOST+'/turn',{signal:ac.signal,cache:'no-store'});clearTimeout(t);const j=await r.json();ICE=[...j.iceServers,...ICE_FALLBACK];ICE_AT=Date.now()}catch(e){if(!ICE)ICE=ICE_FALLBACK}
+}
+function mkPeer(id){const o={host:PEER_HOST,port:443,path:'/sj',secure:true,config:{iceServers:ICE||ICE_FALLBACK}};return id?new Peer(id,o):new Peer(o)}
 const ROOM_PREFIX='shinzoujinrou-v1-',CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const NET={peer:null,conn:null,host:false,state:'idle',code:'',err:'',opp:null,ready:{me:null,cpu:null},lastDeck:null,asks:{},askQ:{},askN:0,sentQ:0,lastSnap:'',fxq:Promise.resolve(),leaving:false,joinTimer:0,
   specs:[],spec:false,wconn:null,specQ:0,lastSpec:'',watchNames:null,
   send(o){try{if(NET.conn&&NET.conn.open)NET.conn.send(o)}catch(e){}},
   // 観戦している人全員に送る
   cast(o){for(const c of NET.specs)try{if(c.open)c.send(o)}catch(e){}},
-  lib(){return window.Peer?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc)})},
+  lib(){const L=window.Peer?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc)});return Promise.all([L,netIce()])},
   ask(q){NET.sync(true);return new Promise(res=>{const id=++NET.askN;NET.asks[id]=res;NET.askQ[id]={t:'ask',id,...q};NET.send(NET.askQ[id])})},
   sync(force){
     if(!NET.conn||!S||!S.online||S.guest)return;
@@ -3266,7 +3274,7 @@ async function netHost(){
   try{await NET.lib()}catch(e){return netFail('通信の部品を読み込めませんでした。ネットにつながっているか確かめてください。')}
   const code=Array.from({length:5},()=>CODE_CH[Math.floor(Math.random()*CODE_CH.length)]).join('');
   NET.code=code;
-  const peer=NET.peer=new Peer(ROOM_PREFIX+code);
+  const peer=NET.peer=mkPeer(ROOM_PREFIX+code);
   peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';if(VIEW==='online')renderOnline();if(MM.on)mmTick()});
   peer.on('connection',c=>hostConn(peer,c));
   peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
@@ -3277,7 +3285,7 @@ async function netJoin(code){
   if(code.length!==5){NET.err='部屋コードは5文字です。';return renderOnline()}
   netReset();NET.err='';NET.host=false;NET.code=code;NET.state='joining';renderOnline();
   try{await NET.lib()}catch(e){return netFail('通信の部品を読み込めませんでした。ネットにつながっているか確かめてください。')}
-  const peer=NET.peer=new Peer();
+  const peer=NET.peer=mkPeer();
   peer.on('open',()=>{if(NET.peer!==peer)return;netBind(peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json'}))});
   peer.on('error',e=>{if(NET.peer!==peer||NET.paused)return;if(NET.conn&&NET.conn.open)return;netFail(netErr(e))});
   NET.joinTimer=setTimeout(()=>{if(NET.peer===peer&&NET.state==='joining')netFail('部屋につながりませんでした。コードを確かめて、もう一度試してください。')},25000);
@@ -3405,7 +3413,7 @@ async function guestRetry(){
   try{await NET.lib()}catch(e){NET.retryT=setTimeout(guestRetry,4000);return}
   const o=ONL.get();const gid=(S&&S.gid)||(o&&o.gid);
   let peer=NET.peer;
-  if(!peer||peer.destroyed){peer=NET.peer=new Peer();peer.on('error',()=>{});await new Promise(r=>{peer.on('open',r);setTimeout(r,8000)})}
+  if(!peer||peer.destroyed){peer=NET.peer=mkPeer();peer.on('error',()=>{});await new Promise(r=>{peer.on('open',r);setTimeout(r,8000)})}
   else if(peer.disconnected){try{peer.reconnect()}catch(e){}}
   if(!NET.paused)return;
   try{const c=peer.connect(ROOM_PREFIX+NET.code,{reliable:true,serialization:'json',metadata:{rejoin:gid}});netBind(c,true)}catch(e){}
@@ -3430,7 +3438,7 @@ async function onlineRejoin(){
   clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},REJOIN_MS);
   try{await NET.lib()}catch(e){return}
   let tries=0;
-  const open=()=>{const peer=NET.peer=new Peer(ROOM_PREFIX+NET.code);
+  const open=()=>{const peer=NET.peer=mkPeer(ROOM_PREFIX+NET.code);
     peer.on('open',()=>{if(NET.peer!==peer)return;NET.state='waiting';liveStart()});
     peer.on('connection',c=>hostConn(peer,c));
     peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed)try{peer.reconnect()}catch(e){}});
@@ -3605,7 +3613,7 @@ async function watchStart(again){
 async function netWatch(code){
   netReset();NET.spec=true;NET.code=code;WATCH.state='joining';VIEW='watch';renderWatch();
   try{await NET.lib()}catch(e){return watchFail('通信の部品を読み込めませんでした。ネットにつながっているか確かめてください。')}
-  const peer=NET.peer=new Peer();
+  const peer=NET.peer=mkPeer();
   peer.on('open',()=>{
     if(NET.peer!==peer)return;
     const c=NET.wconn=peer.connect(ROOM_PREFIX+code,{reliable:true,serialization:'json',metadata:{watch:1}});
