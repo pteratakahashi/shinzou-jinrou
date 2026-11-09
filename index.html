@@ -26,7 +26,7 @@
 <meta name="apple-mobile-web-app-title" content="心臓人狼">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;700&family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
 <style>
 /* Layout: a night-time card table. Opponent across the top, the deduction board in the middle, your hand fanned at the bottom. Single dark look by choice. */
 :root{
@@ -919,6 +919,85 @@ body:has(#app>.bt) .bt{width:100%}
   .bt .btMid{position:sticky;top:8px;align-self:start;max-height:calc(100dvh - 16px)}
   .bt .btAct{position:sticky;bottom:0;z-index:6;background:linear-gradient(to top,var(--bg,#0b0e22) 75%,transparent);padding:8px 0 max(8px,env(safe-area-inset-bottom,0px))}
 }
+
+/* ================= APP SKIN（2026-11-09）=================
+   ソシャゲのアプリ画面寄りに：赤い月夜＋金の縁取り。太いゲーム文字（Dela Gothic One）、丸ゴシック本文（M PLUS Rounded 1c）、
+   つやのある立体ボタン（押すと沈む）、金縁のパネル、上のステータスバー、真ん中が大きい下タブ。ここより上の指定を上書きする */
+:root{
+  --game:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;
+  --body:"M PLUS Rounded 1c","Zen Kaku Gothic New","Hiragino Sans",sans-serif;
+  --gold:#f6cf6a;--gold-hi:#fff2bf;--gold-lo:#9a6416;--crim:#e23a55;--crim-lo:#7c1024;--navy:#0b0e26;--navy2:#171c46;
+  --frame:linear-gradient(180deg,#fff0b8 0%,#d9a23c 30%,#8a5512 52%,#e9b851 70%,#fff0b8 100%);
+}
+html,body{background:#070918}
+body{font-family:var(--body);font-weight:500;background:
+  radial-gradient(120% 60% at 50% -10%,rgba(226,58,85,.28),transparent 60%),
+  radial-gradient(90% 50% at 50% 110%,rgba(80,60,180,.25),transparent 60%),
+  repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 2px,transparent 2px 14px),
+  linear-gradient(180deg,#0d1030,#070918)!important;background-attachment:fixed!important}
+h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;color:#fff7e2;text-shadow:0 2px 0 #2a0d18,0 0 1px #000,0 0 14px rgba(246,207,106,.25)}
+/* --- ボタン --- */
+.b{font-family:var(--game);font-weight:400;letter-spacing:.06em;border-radius:12px;padding:11px 20px;border:2px solid #6f7ab8;color:#f4f2ff;
+  background:linear-gradient(180deg,#4b58a8 0%,#2c3577 48%,#1f2660 52%,#2a3378 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.25),0 4px 0 #0c1035,0 6px 14px rgba(0,0,0,.45);
+  text-shadow:0 1px 0 rgba(0,0,0,.6);transition:transform .08s,box-shadow .08s,filter .15s}
+.b:not(:disabled):hover{filter:brightness(1.12)}
+.b:not(:disabled):active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 0 #0c1035,0 2px 6px rgba(0,0,0,.4)}
+.b.primary{color:#3a1c00;border-color:#fff0b8;text-shadow:0 1px 0 rgba(255,255,255,.6);
+  background:linear-gradient(180deg,#fff6c8 0%,#ffd45e 40%,#f0a92a 52%,#ffcb4a 100%);
+  box-shadow:inset 0 1px 0 #fff,inset 0 -3px 0 rgba(150,80,0,.35),0 4px 0 #8a4f0c,0 6px 16px rgba(240,170,40,.35)}
+.b.primary:not(:disabled):active{box-shadow:inset 0 1px 0 #fff,0 1px 0 #8a4f0c}
+.b.danger{color:#fff;border-color:#ffb3bf;background:linear-gradient(180deg,#ff7a8c 0%,#e23a55 48%,#b4203a 52%,#d93049 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 0 #5e0a1a,0 6px 14px rgba(0,0,0,.4)}
+.b.small{padding:7px 13px;font-size:12px;border-radius:10px;font-family:var(--body);font-weight:800;letter-spacing:.02em}
+.b:disabled{filter:grayscale(.7) brightness(.7);opacity:.75}
+/* --- 金縁パネル --- */
+.prof,.zone,.rankCard,.msnBox,.updBox,.ocStage,.sheet,.onCard,.shopIt,.altIt,.ocOpt,.ttOpt,.mi{
+  border:2px solid transparent!important;border-radius:14px;
+  background:linear-gradient(180deg,rgba(38,44,98,.96),rgba(16,19,48,.97)) padding-box,var(--frame) border-box!important;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.1),0 5px 0 rgba(0,0,0,.35),0 10px 26px rgba(0,0,0,.45)}
+.sheet{background:linear-gradient(180deg,#262c62,#11143a) padding-box,var(--frame) border-box!important}
+.label{font-family:var(--body);font-weight:800;letter-spacing:.1em;color:var(--gold)}
+/* --- メニューのタイル --- */
+.mi{padding:16px;min-height:104px}
+.mi b{font-family:var(--game);font-size:22px;color:#fff;text-shadow:0 0 1px #000,2px 2px 0 #1a0d24,-1px -1px 0 #1a0d24,1px -1px 0 #1a0d24,-1px 1px 0 #1a0d24,0 0 12px rgba(0,0,0,.6)}
+.mi span{color:#d7dcff;font-weight:700}
+.mi.main{background:linear-gradient(135deg,rgba(124,16,36,.95),rgba(48,22,84,.96)) padding-box,var(--frame) border-box!important}
+.mi.rank{background:radial-gradient(120% 120% at 0% 0%,rgba(255,200,90,.35),transparent 50%),linear-gradient(135deg,#9a1830,#4a0f3a 55%,#1b1544) padding-box,var(--frame) border-box!important;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 0 0 1px rgba(255,214,110,.4),0 0 28px rgba(255,90,110,.35),0 6px 0 rgba(0,0,0,.35)!important}
+.mi.big b{font-size:clamp(30px,7vw,44px)}
+.mi:not(:disabled):active{transform:translateY(2px)}
+.miTag{position:absolute;top:10px;right:10px;z-index:2;font-family:var(--game);font-style:normal;font-size:11px;letter-spacing:.06em;color:#3a1c00;background:linear-gradient(180deg,#fff6c8,#ffc94a);border:1px solid #fff;border-radius:6px;padding:2px 8px;box-shadow:0 2px 0 #8a4f0c;transform:rotate(3deg)}
+/* --- 上のステータスバー（ホーム） --- */
+.prof.hud{position:sticky;top:max(6px,env(safe-area-inset-top,0px));z-index:15;padding:6px 10px;gap:8px;margin:0 0 -4px;border-radius:14px}
+.prof.hud .avatar{width:46px;height:46px}.prof.hud .pOcto{width:44px;height:44px}
+.prof.hud .menuName b{font-family:var(--game);font-weight:400;font-size:16px}
+.prof.hud .statline{display:none}
+.coin{font-family:var(--game);font-weight:400;border:2px solid #c9cfe6;background:linear-gradient(180deg,#2a2f62,#12153a);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 0 rgba(0,0,0,.4)}
+.ptitle{font-family:var(--game);font-weight:400;letter-spacing:.04em}
+.prank{font-family:var(--game);font-weight:400;background:rgba(0,0,0,.35)}
+/* --- 見出し（リボン） --- */
+.shopH{font-size:17px;display:inline-block;margin:18px 0 10px;padding:6px 26px;color:#3a1c00;text-shadow:0 1px 0 rgba(255,255,255,.5);
+  background:linear-gradient(180deg,#fff2bf,#f2b93f);clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%)}
+/* --- フィルターのチップ --- */
+.chip{font-family:var(--body);font-weight:800;border-width:2px}
+/* --- 下のタブ --- */
+.tabBar{background:linear-gradient(180deg,#1c2154,#090b22)!important;border-top:2px solid transparent!important;border-image:linear-gradient(90deg,transparent,#f6cf6a 20%,#fff2bf 50%,#f6cf6a 80%,transparent) 1!important;box-shadow:0 -6px 20px rgba(0,0,0,.55);padding-top:6px!important;overflow:visible}
+.tabBar button{font-family:var(--body);font-weight:800;font-size:11px;letter-spacing:.06em;color:#8f97c9;position:relative}
+.tabBar button svg{width:28px;height:28px}
+.tabBar button.on{color:var(--gold)}
+.tabBar button.on::before{content:"";position:absolute;top:-2px;left:50%;width:44px;height:44px;translate:-50% 0;border-radius:50%;background:radial-gradient(circle,rgba(246,207,106,.35),transparent 70%);z-index:-1}
+.tabBar .tbBattle{flex:none;width:84px;max-width:84px;margin-top:-26px;padding:0;color:#fff;gap:0}
+.tabBar .tbBattle i{display:grid;place-items:center;width:68px;height:68px;margin:0 auto;border-radius:50%;font-style:normal;font-family:var(--game);font-size:15px;letter-spacing:.04em;line-height:1;
+  background:radial-gradient(circle at 50% 30%,#ff8a9b,#e23a55 45%,#8a0f27);border:3px solid #fff0b8;box-shadow:0 0 0 2px #8a5512,0 0 22px rgba(255,80,100,.65),0 5px 0 #3a0610;text-shadow:0 2px 0 #4a0614;animation:tbPulse 2.2s ease-in-out infinite}
+.tabBar .tbBattle span{margin-top:3px;color:#ffd6dc}
+@keyframes tbPulse{50%{box-shadow:0 0 0 2px #8a5512,0 0 34px rgba(255,80,100,.9),0 5px 0 #3a0610}}
+@media (prefers-reduced-motion:reduce){.tabBar .tbBattle i{animation:none}}
+/* --- 対戦を選ぶシート --- */
+.battleSel{display:grid;gap:10px}
+.battleSel .mi{min-height:84px}.battleSel .mi.big b{font-size:clamp(26px,6.5vw,34px);white-space:nowrap}.battleSel .mi.big{min-height:110px;padding-right:40%}
+/* --- お知らせ・ミッション --- */
+.msnBar{background:rgba(0,0,0,.45);border:1px solid #4a3a18}
+.msnBar i{background:linear-gradient(90deg,#ffd45e,#ff9a3c)!important}
 </style>
 
 <div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1039,7 +1118,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109074949';
+const APP_VER='20261109080126';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1424,12 +1503,10 @@ function renderMenu(){
   const iss=deckIssues();
   const fan=['wolf','seer','fox','greatdet','hunter'];
   $('#app').innerHTML=`
+  ${profileHTML().replace('class="prof"','class="prof hud"')}
   <div class="homeArt"><img class="haImg" src="scenes/home_a.png" alt="夜の村の広場。井戸の上にタコ、占い師と狩人、物陰に人狼"><div class="haFog"></div><div class="haFog b"></div>
     <div class="haTitle"><div class="haSub">― 3つの心臓を守りぬけ ―</div><h1>心臓<span>人狼</span></h1></div></div>
-  <div class="hero">
-    <p>デッキの40枚のうち1枚が、あなたの心臓。カードを使うほど正体は透けていく。相手の心臓を3回射抜いた方の勝ち。</p>
-  </div>
-  ${profileHTML()}
+
   <div class="menu home">
     ${LADDER.uid()&&LADDER.packs>0?`<button type="button" class="mi main packMi" id="mPacks"><img class="miArt" src="scenes/pack.png" alt=""><b>パックを開ける <span class="pkCount">×${LADDER.packs}</span></b><span>1パック5枚。4枚目はシルバー以上、5枚目はゴールド以上</span></button>`:''}
     ${LADDER.on()&&!LADDER.uid()&&LADDER.state!=='loading'?`<button type="button" class="mi main packMi" id="mGift"><img class="miArt" src="scenes/pack.png" alt=""><b>ログインで5パック プレゼント</b><span>Googleでログインすると、はじめてのログインで5パック、はじめてのランクマッチでさらに5パック</span></button>`:''}
@@ -1437,7 +1514,7 @@ function renderMenu(){
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
     ${NET.conn?`<button type="button" class="mi main big" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(NET.opp||'相手')}さんとつながっています</span></button>`
-      :`<button type="button" class="mi main big rank" id="mRank"><img class="miArt" src="art/greatwolf.png" alt=""><b>ランクマッチ</b><span>${LADDER.uid()?'知らない人と自動でマッチングして対戦。勝つと2種、負けても1種カードがもらえます':'Googleでログインすると遊べます。勝つと2種、負けても1種カードがもらえます'}</span></button>`}
+      :`<button type="button" class="mi main big rank" id="mRank"><img class="miArt" src="art/greatwolf.png" alt=""><i class="miTag">カードがもらえる</i><b>ランクマッチ</b><span>${LADDER.uid()?'知らない人と自動でマッチングして対戦。勝つと2種、負けても1種カードがもらえます':'Googleでログインすると遊べます。勝つと2種、負けても1種カードがもらえます'}</span></button>`}
     <button type="button" class="mi main" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>デッキ編成${CARDS.some(c=>isNewCard(c.k))?'<span class="newTag">NEW</span>':''}</b><span>所持 ${ownedCount()}/${CARDS.length}種。持っているカードでデッキを組みます</span></button>
     <button type="button" class="mi main" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG?'新しくCPUと対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':deckLegal(freeDeck())?'自分のデッキでCPUと戦います':'デッキに持っていないカードがあります。デッキ編成で直してください'}</span></button>
   </div>
@@ -3073,11 +3150,27 @@ function pickAvatar(){
 function tabBarHTML(cur){
   const T=[['menu','ホーム','home'],['cards','カード','cards'],['shop','ショップ','shop'],['rank','ランキング','rank']];
   const ic={home:'<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',cards:'<rect x="4" y="3" width="11" height="15" rx="2"/><rect x="9" y="6" width="11" height="15" rx="2"/>',shop:'<path d="M4 8h16l-1.5 12h-13zM8 8V6a4 4 0 0 1 8 0v2"/>',rank:'<path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/>'};
-  return`<nav class="tabBar" aria-label="メニュー">${T.map(([v,l,i])=>`<button type="button" class="${v===cur?'on':''}" data-tab="${v}" ${v===cur?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic[i]}</svg><span>${l}</span></button>`).join('')}</nav>`;
+  const bt=`<button type="button" class="tbBattle" data-tab="battle"><i>対戦</i><span>バトル</span></button>`;
+  return`<nav class="tabBar" aria-label="メニュー">${T.map(([v,l,i],n)=>(n===2?bt:'')+`<button type="button" class="${v===cur?'on':''}" data-tab="${v}" ${v===cur?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic[i]}</svg><span>${l}</span></button>`).join('')}</nav>`;
+}
+// 下タブ真ん中の「対戦」：ランクマッチ・CPU・友達を選ぶ
+function battleSheet(){
+  modal(`<div class="mHead"><h2>対戦する</h2><button type="button" class="xBtn" id="bsX" aria-label="閉じる">×</button></div>
+    <div class="battleSel">
+      <button type="button" class="mi main big rank" id="bsRank"><img class="miArt" src="art/greatwolf.png" alt=""><i class="miTag">カードがもらえる</i><b>ランクマッチ</b><span>${LADDER.uid()?'知らない人と自動でマッチング':'Googleでログインすると遊べます'}</span></button>
+      <button type="button" class="mi main" id="bsCpu"><img class="miArt" src="art/wolf.png" alt=""><b>CPUと対戦</b><span>自分のデッキでCPUと戦う</span></button>
+      <button type="button" class="mi" id="bsFriend"><img class="miArt" src="art/twins.png" alt=""><b>友達と対戦</b><span>部屋を作ってリンクを送る</span></button>
+    </div>`,(m,done)=>{
+    m.querySelector('#bsX').onclick=()=>done();m.onclick=e=>{if(e.target===m)done()};
+    m.querySelector('#bsRank').onclick=()=>{done();NET.err='';mmStart()};
+    m.querySelector('#bsCpu').onclick=()=>{done();startFree()};
+    m.querySelector('#bsFriend').onclick=()=>{done();go('online')};
+  });
 }
 function bindTabBar(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
     const v=b.dataset.tab;
+    if(v==='battle')return battleSheet();
     if(v==='rank'){if(LADDER.uid()&&LADDER.prof)return showBoard();return modal(`<div class="info"><div class="infoText"><h2>ランキング</h2><p>ランキングは、Googleでログインすると見られます。ホームの「対人ランク」からログインしてください。</p><div class="btns"><button type="button" class="b" id="rkC">閉じる</button></div></div></div>`,(m,done)=>{m.querySelector('#rkC').onclick=()=>done()})}
     go(v);
   });
@@ -3374,6 +3467,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:45,d:'2026-11-09',t:'画面のデザインを新しくしました。金の縁取りのパネル、押すと沈むボタン、上のステータスバー、下のまんなかの大きな「対戦」ボタン（ランクマッチ・CPU・友達対戦をすぐ選べます）。'},
   {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。全身が映る特別なイラスト（持ち物が光ります）と、虹色に光る枠になります。ショップで銀貨と交換すると使えます（カードの説明から、いつもの絵と切りかえられます）。'},
   {id:43,d:'2026-11-09',t:'称号とタコのページができました。プロフィールのタコか称号を押すと開けます。いつものタコのほかに、ポーズのちがうタコが10体。「はじめて勝つ」「対人戦で10勝」「ランクがゴールドになる」「全部のカードを集める」などの実績で、称号とタコが開放されていきます。選んだタコは対戦中のライフに出て、友達対戦・ランクマッチでは相手にも見えます。ショップの称号は、こちらにまとめました（交換ずみの称号はそのまま使えます）。'},
   {id:42,d:'2026-11-09',t:'新しい系統「呪い」のカード8種を追加しました（封印師・牙抜き・沈黙僧・言霊師・鎖使い・渇き巫女・目隠し鬼・解呪師）。「お互い攻撃系を使えない」「相手は次のターン宣言できない」など、しばらく効き続ける呪いを場に置きます（場に置ける呪いは1つだけ）。あわせて、1枚で一気に決まりやすかった〈探偵〉を「6種類を選んで山札を見る＋1枚引く」に、強すぎた〈祈祷師〉〈占い師〉〈霊媒師〉を少し弱くしました。レアリティも新しいシミュレーションの結果で付け直し、レジェンドは効果が派手なカードにしています。'},
