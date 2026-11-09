@@ -1006,7 +1006,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109020952';
+const APP_VER='20261109021345';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1372,7 +1372,7 @@ function renderMenu(){
   </div>
   ${profileHTML()}
   <div class="menu home">
-    ${LADDER.uid()&&LADDER.packs>0?`<button type="button" class="mi main packMi" id="mPacks"><img class="miArt" src="scenes/pack.png" alt=""><b>パックを開ける <span class="pkCount">×${LADDER.packs}</span></b><span>1パック5枚。持っていないカードが出やすくなっています</span></button>`:''}
+    ${LADDER.uid()&&LADDER.packs>0?`<button type="button" class="mi main packMi" id="mPacks"><img class="miArt" src="scenes/pack.png" alt=""><b>パックを開ける <span class="pkCount">×${LADDER.packs}</span></b><span>1パック5枚。4枚目はシルバー以上、5枚目はゴールド以上</span></button>`:''}
     ${LADDER.on()&&!LADDER.uid()&&LADDER.state!=='loading'?`<button type="button" class="mi main packMi" id="mGift"><img class="miArt" src="scenes/pack.png" alt=""><b>ログインで5パック プレゼント</b><span>Googleでログインすると、はじめてのログインで5パック、はじめてのランクマッチでさらに5パック</span></button>`:''}
     ${ONL.get()&&!NET.conn?`<button type="button" class="mi main" id="mRejoin"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(ONL.get().opp||'相手')}さんとの対戦の続き（${ago(ONL.get().at)}）</span></button>`:''}
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
@@ -1434,7 +1434,7 @@ function renderPacks(){
     body=`<div class="packStage">
       <button type="button" class="pack" id="packBtn" ${n?'':'disabled'} aria-label="パックを開ける"><span class="pk2">BOOSTER</span><span class="pkh">心</span><span class="pk1">心臓人狼</span><span class="pk2">5 CARDS</span></button>
       <div class="muted" id="pkMsg">${n?'パックをタップして開封':'パックがありません'}</div>
-      <div class="note">1パック5枚。4枚目はシルバー以上、5枚目はゴールド以上（20%でレジェンド）。まだ持っていないカードが出やすくなっています。</div>
+      <div class="note">1パック5枚。4枚目はシルバー以上、5枚目はゴールド以上（20%でレジェンド）。</div>
     </div>`;
   }else{
     const all=P.cards.every(c=>c.on);
@@ -1468,7 +1468,7 @@ function showGifts(){
   if(!LADDER.gifts||!LADDER.gifts.length||VIEW!=='menu'||!$('#modal').hidden)return;
   const g=LADDER.gifts;LADDER.gifts=[];
   const txt={login:'はじめてのログイン ありがとう！',ranked:'はじめてのランクマッチ おつかれさま！'};
-  modal(`<div class="info giftBox"><div class="infoText" style="width:100%;text-align:center"><div class="giftPk">${g.map(()=>`<div class="pack mini" aria-hidden="true"><span class="pkh">心</span><span class="pk2">×5</span></div>`).join('')}</div><h2>プレゼント</h2>${g.map(k=>`<p>${txt[k]||''}<br><b>パック5つ</b>をプレゼントします</p>`).join('')}<p class="note">1パック5枚入り。持っていないカードが出やすくなっています。</p><div class="btns" style="justify-content:center"><button type="button" class="b primary" id="gOpen">今すぐ開ける</button><button type="button" class="b" id="gLater">あとで</button></div></div></div>`,(m,done)=>{
+  modal(`<div class="info giftBox"><div class="infoText" style="width:100%;text-align:center"><div class="giftPk">${g.map(()=>`<div class="pack mini" aria-hidden="true"><span class="pkh">心</span><span class="pk2">×5</span></div>`).join('')}</div><h2>プレゼント</h2>${g.map(k=>`<p>${txt[k]||''}<br><b>パック5つ</b>をプレゼントします</p>`).join('')}<p class="note">1パック5枚入り。5枚目はゴールド以上です。</p><div class="btns" style="justify-content:center"><button type="button" class="b primary" id="gOpen">今すぐ開ける</button><button type="button" class="b" id="gLater">あとで</button></div></div></div>`,(m,done)=>{
     try{SFX.legend()}catch(e){}
     m.querySelector('#gOpen').onclick=()=>{done();P=null;go('packs')};
     m.querySelector('#gLater').onclick=()=>{done();renderMenu()};
@@ -3208,7 +3208,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:41,d:'2026-11-09',t:'パックができました。Googleで<b>はじめてログインすると5パック</b>、<b>はじめてのランクマッチで5パック</b>プレゼント（1パック5枚、持っていないカードが出やすい）。そのあとは今までどおり、ランクマッチで勝つと2種・負けても1種もらえます。'},
+  {id:41,d:'2026-11-09',t:'パックができました。Googleで<b>はじめてログインすると5パック</b>、<b>はじめてのランクマッチで5パック</b>プレゼント（1パック5枚、5枚目はゴールド以上）。そのあとは今までどおり、ランクマッチで勝つと2種・負けても1種もらえます。'},
   {id:40,d:'2026-11-09',t:'心臓人狼のアドレスが <b>shinzoujinro.com</b> になりました。前のアドレスを開いても自動でこちらに移り、銀貨・プロフィール・デッキなどの保存もそのまま引き継がれます。あわせて、友達対戦・ランクマッチの通信を専用のサーバーに移し、学校や会社などの回線でもつながりやすくしました。'},
   {id:39,d:'2026-11-09',t:'カードにレアリティ（ブロンズ・シルバー・ゴールド・レジェンド）をつけました。シミュレーションの勝率が高いカードほど上（占い師や霊媒師などおなじみの役はゴールドまで）で、カードの右上の印と枠の色でわかります。〈預言者〉は「ゴールド以上か、シルバー以下か」を知る効果になりました（判定されるカードは今までのレア以上と同じです）。'},
   {id:38,d:'2026-11-09',t:'ホーム画面を見やすくしました。いちばん上に大きく「ランクマッチ」、その下に「デッキ編成」と「CPUと対戦」。チュートリアルは「遊び方」の中に移しました。'},

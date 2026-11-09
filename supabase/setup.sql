@@ -567,7 +567,7 @@ begin
 end $$;
 
 -- パックを1つ開ける。5枚：1〜3枚目 ブロンズ70%/シルバー30%、4枚目 シルバー70%/ゴールド30%、5枚目 ゴールド80%/レジェンド20%。
--- 同じレアリティの中では、まだ持っていないカードを優先し、1パックの中では同じカードを出さない
+-- 同じレアリティの中から完全にランダム（持っているカードも出る）。1パックの中では同じカードを出さない
 create or replace function public.open_pack()
 returns json language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); left_n integer; tiers text[]; t text; ck text; had boolean; res json[] := '{}'; picked text[] := '{}'; i integer; x float;
@@ -582,7 +582,7 @@ begin
               else (case when x < 0.8 then 'G' else 'L' end) end;
     select c.k into ck from cards c
       where c.tier = t and not (c.k = any(picked))
-      order by (c.starter or exists (select 1 from collection co where co.uid = me and co.k = c.k)), random() limit 1;
+      order by random() limit 1;
     if ck is null then continue; end if;
     had := (select starter from cards where k = ck) or exists (select 1 from collection co where co.uid = me and co.k = ck);
     insert into collection as co (uid, k) values (me, ck)
