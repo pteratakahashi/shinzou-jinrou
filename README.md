@@ -43,6 +43,7 @@
   - カードを足したり、勝率順（`RANK`）・レジェンド（`LEGEND_N`）を変えたら `python3 supabase/gen_cards_sql.py` で setup.sql のカード表を作り直し、Supabase で流し直す
   - 勝率順は CPU どうしのシミュレーション（ランダムデッキ）で取る。ページの中で `S.sim` を立てると待ち時間なしで回せる（2026-11-09 は12,000試合）
   - 遊ぶ人に見える変更をしたら、`index.html` の `UPDATES`（トップ画面のアップデート情報）の先頭に1行足す（id は1つ増やす）
+- `octo/` … 選べるタコの絵（`OCTO_SKINS`。作り方は ~/shinzou-jinrou/octo の gen_octo.py → proc_octo.py。心臓の位置 h は32マスの座標）
 - `art/` … カードのドット絵（背景は透過。系統の色はゲーム側で敷く）
 - `supabase/` … レート用のデータベース設定と手順
 
