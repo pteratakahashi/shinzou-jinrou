@@ -982,7 +982,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109005254';
+const APP_VER='20261109005734';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1643,9 +1643,12 @@ function showRulesOverlay(){
 // おまかせ構築とCPU用の優先順（シミュレーションの勝率順）
 const RANK=['diviner', 'seer', 'berserker', 'detective', 'medium', 'cursewolf', 'alpha', 'madman', 'pack', 'stargazer', 'astrologer', 'howler', 'wolf', 'fox', 'nekomata', 'prophet', 'silencer', 'witch', 'clairvoy', 'mason', 'kidnapper', 'villager', 'vampire', 'phantom', 'nightmare', 'hunter', 'twins', 'warder', 'chief', 'watchdog', 'ghoul', 'knight', 'executioner', 'inquisitor', 'gatekeeper', 'bard', 'bodyguard', 'messenger', 'priest', 'elder', 'tactician', 'baker', 'bastion', 'decoy', 'necro', 'sage', 'nun', 'reflect', 'apprentice', 'cryboy', 'poisoner', 'shieldbearer', 'innkeeper', 'alchemist', 'cleric', 'lookout', 'sentinel', 'gravedigger', 'spy', 'listener', 'banker', 'peddler', 'drummer', 'tracker', 'watchman', 'wererat', 'trapper', 'exorcist', 'confessor', 'assassin', 'gambler', 'fortune'];
 const RANK1=['moonqueen', 'greatwolf', 'greatdet', 'oracle', 'teller', 'mirror', 'curser', 'timewitch', 'whitewolf', 'saint'];
-// レアリティ（シミュレーションの勝率順 RANK で決める）：上位6種＝レジェンド、7〜25位＝ゴールド、26〜48位＝シルバー、残り＝ブロンズ。シングルは全部レジェンド
+// レアリティ（シミュレーションの勝率順 RANK で決める）：上位25種＝ゴールド以上（うち BASIC_ROLES 以外の上位6種がレジェンド）、26〜48位＝シルバー、残り＝ブロンズ。シングルは全部レジェンド
 // 預言者の「ゴールド以上」は c.r（R＝ゴールド以上の通常カード、L＝シングル）で判定する
-CARDS.forEach(c=>{if(c.single){c.t='L';return}const i=RANK.indexOf(c.k);c.t=i<0?'B':i<6?'L':i<25?'G':i<48?'S':'B';c.r=(c.t==='L'||c.t==='G')?'R':(c.r==='S'?'S':'C')});
+// 人狼ゲームでおなじみの役（占い師・霊媒師など）はレジェンドにしない（強くてもゴールドまで）。レジェンドは、それ以外で勝率の高い6種
+const BASIC_ROLES=['villager','seer','medium','wolf','madman','hunter','mason','fox','detective','twins','chief','knight'];
+const LEGEND_N=RANK.filter(k=>!BASIC_ROLES.includes(k)).slice(0,6);
+CARDS.forEach(c=>{if(c.single){c.t='L';return}const i=RANK.indexOf(c.k);c.t=i<0?'B':i<25?(LEGEND_N.includes(c.k)?'L':'G'):i<48?'S':'B';c.r=(c.t==='L'||c.t==='G')?'R':(c.r==='S'?'S':'C')});
 let D=null,DF2='all';
 function genDraftPack(single){
   const Cp=NORMAL.filter(c=>c.r==='S'||c.r==='C'),Rp=NORMAL.filter(c=>c.r==='R');
@@ -3142,7 +3145,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:39,d:'2026-11-09',t:'カードにレアリティ（ブロンズ・シルバー・ゴールド・レジェンド）をつけました。シミュレーションの勝率が高いカードほど上で、カードの右上の印と枠の色でわかります。〈預言者〉は「ゴールド以上か、シルバー以下か」を知る効果になりました（判定されるカードは今までのレア以上と同じです）。'},
+  {id:39,d:'2026-11-09',t:'カードにレアリティ（ブロンズ・シルバー・ゴールド・レジェンド）をつけました。シミュレーションの勝率が高いカードほど上（占い師や霊媒師などおなじみの役はゴールドまで）で、カードの右上の印と枠の色でわかります。〈預言者〉は「ゴールド以上か、シルバー以下か」を知る効果になりました（判定されるカードは今までのレア以上と同じです）。'},
   {id:38,d:'2026-11-09',t:'ホーム画面を見やすくしました。いちばん上に大きく「ランクマッチ」、その下に「デッキ編成」と「CPUと対戦」。チュートリアルは「遊び方」の中に移しました。'},
   {id:37,d:'2026-11-09',t:'カードを集める形に変わりました。最初は全員スタンダードデッキで戦い、ランクマッチで勝つと2種、負けても1種のカードがランダムにもらえます（かぶることもあります）。手に入れたカードはホームの「デッキ編成」で入れられます。7パック開けて組むモードと、全カードを使える試作の状態はなくしました。ランクマッチの後は、同じ相手との再戦ではなく次の相手を探します。部屋を作る友達対戦では、カードはもらえません。'},
   {id:36,d:'2026-11-08',t:'ブラフ成功のごほうびを強くしました。カードが手札に戻り、1枚多く使えるのに加えて、相手の心臓ではない種類を1つ知れます。'},
