@@ -623,6 +623,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .haSub{font-family:var(--display);font-size:14px;letter-spacing:.3em;color:#e8c98a;text-shadow:0 2px 0 #000}
 .mi{position:relative;overflow:hidden;min-height:96px;padding-right:118px;justify-content:center}
 .mi>b,.mi>span{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.mi.big{grid-column:1/-1;min-height:150px;padding:20px 45% 20px 24px}
+.mi.big b{font-size:34px}.mi.big span{font-size:14px}
+.mi.big .miArt{width:55%;aspect-ratio:auto;object-position:50% 20%}
+.mi.rank{background:linear-gradient(135deg,#6a2a1e,#3a1630 60%,#1f1838);border-color:#e9a64c;box-shadow:0 0 0 1px rgba(233,166,76,.35),0 6px 24px rgba(233,166,76,.18)}
+.menu.home{grid-template-columns:1fr 1fr}.menu.home>.mi:not(#mFree):not(#mBattle){grid-column:1/-1}
+@media(max-width:520px){.menu.home{grid-template-columns:1fr}}
+.menu.sub{margin-top:10px}.menu.sub .mi{min-height:80px}.menu.sub .mi b{font-size:17px}
+.mi.hl{border-color:var(--blood)}
+@media(max-width:520px){.mi.big{min-height:130px;padding-right:40%}.mi.big b{font-size:28px}}
 .miArt{position:absolute;right:0;top:0;height:100%;aspect-ratio:1;object-fit:cover;object-position:50% 15%;image-rendering:pixelated;-webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);mask-image:linear-gradient(90deg,transparent,#000 55%);opacity:.92;transition:transform .25s}
 .mi:hover .miArt,.mi:focus-visible .miArt{transform:scale(1.08)}
 .resArt{width:100%;border-radius:10px;image-rendering:pixelated;border:1px solid var(--line);animation:resIn .6s ease-out both}
@@ -956,7 +965,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261108192900';
+const APP_VER='20261109004209';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1325,16 +1334,19 @@ function renderMenu(){
     <p>デッキの40枚のうち1枚が、あなたの心臓。カードを使うほど正体は透けていく。相手の心臓を3回射抜いた方の勝ち。</p>
   </div>
   ${profileHTML()}
-  <div class="menu">
+  <div class="menu home">
     ${ONL.get()&&!NET.conn?`<button type="button" class="mi main" id="mRejoin"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(ONL.get().opp||'相手')}さんとの対戦の続き（${ago(ONL.get().at)}）</span></button>`:''}
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
-    <button type="button" class="mi ${savedG||savedD?'':'main'}" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG?'新しくCPUと対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':deckLegal(freeDeck())?'自分のデッキでCPUと戦います':'デッキに持っていないカードがあります。デッキ編成で直してください'}</span></button>
-    <button type="button" class="mi" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>デッキ編成${CARDS.some(c=>isNewCard(c.k))?'<span class="newTag">NEW</span>':''}</b><span>所持 ${ownedCount()}/${CARDS.length}種。ランクマッチで勝つと2種、負けても1種カードがもらえます</span></button>
-    <button type="button" class="mi ${NET.conn?'main':''}" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>${NET.conn?'対戦に戻る':'ランクマッチ・友達と対戦'}</b><span>${NET.conn?`${esc(NET.opp||'相手')}さんとつながっています`:'ランクマッチで知らない人と対戦（カードがもらえる）、または部屋を作って友達と対戦'}</span></button>
-    <button type="button" class="mi ${!SV.tutDone&&!lsGet(GAME_KEY)?'main':''}" id="mTut"><img class="miArt" src="art/apprentice.png" alt=""><b>チュートリアル</b><span>はじめての人はここから。案内にそって1戦しながらルールを覚えます</span></button>
+    ${NET.conn?`<button type="button" class="mi main big" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(NET.opp||'相手')}さんとつながっています</span></button>`
+      :`<button type="button" class="mi main big rank" id="mRank"><img class="miArt" src="art/greatwolf.png" alt=""><b>ランクマッチ</b><span>${LADDER.uid()?'知らない人と自動でマッチングして対戦。勝つと2種、負けても1種カードがもらえます':'Googleでログインすると遊べます。勝つと2種、負けても1種カードがもらえます'}</span></button>`}
+    <button type="button" class="mi main" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>デッキ編成${CARDS.some(c=>isNewCard(c.k))?'<span class="newTag">NEW</span>':''}</b><span>所持 ${ownedCount()}/${CARDS.length}種。持っているカードでデッキを組みます</span></button>
+    <button type="button" class="mi main" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG?'新しくCPUと対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':deckLegal(freeDeck())?'自分のデッキでCPUと戦います':'デッキに持っていないカードがあります。デッキ編成で直してください'}</span></button>
+  </div>
+  <div class="menu sub">
+    ${NET.conn?'':`<button type="button" class="mi" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>友達と対戦</b><span>部屋を作ってリンクを送る（カードはもらえません）</span></button>`}
+    <button type="button" class="mi ${!SV.tutDone&&!lsGet(GAME_KEY)?'hl':''}" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>${SV.tutDone?'勝ち方とターンの流れ。チュートリアルもここから':'はじめての人はここから。チュートリアルで1戦しながら覚えられます'}</span></button>
     ${canInstall()?`<button type="button" class="mi" id="mInstall"><img class="miArt" src="icons/icon-192.png" alt=""><b>アプリとしてホーム画面に追加</b><span>アイコンから全画面で起動できます。CPU戦はオフラインでも遊べます</span></button>`:''}
-    <button type="button" class="mi" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>はじめての人はここから。勝ち方とターンの流れ</span></button>
   </div>
   ${missionsHTML()}
   ${updatesHTML()}
@@ -1350,7 +1362,7 @@ function renderMenu(){
   $('#mFree').onclick=()=>go('free');
   const mi=$('#mInstall');if(mi)mi.onclick=installApp;
   $('#mOnline').onclick=()=>go('online');
-  $('#mTut').onclick=()=>startTutorial();
+  const mrk=$('#mRank');if(mrk)mrk.onclick=()=>{NET.err='';mmStart()};
   bindRankCard();
   $('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');renderMenu()};
   $('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
@@ -1575,10 +1587,11 @@ function renderRules(){renderCards()}
 // 遊び方だけの画面（ホームの「遊び方」）
 function renderHowto(){
   $('#app').innerHTML=`<div class="top"><h1>遊び方</h1><button type="button" class="b small" id="back">ホームへ</button></div>
+  <div class="menu"><button type="button" class="mi main big" id="hwTut"><img class="miArt" src="art/apprentice.png" alt=""><b>チュートリアルをプレイ</b><span>${SV.tutDone?'もう一度、案内にそって1戦しながらルールをおさらいできます':'はじめての人はここから。案内にそって1戦しながらルールを覚えます'}</span></button></div>
   ${rulesListHTML()}
   <div class="btns" style="justify-content:center;margin:8px 0 4px"><button type="button" class="b primary" id="hwPlay">CPUと対戦してみる</button><button type="button" class="b" id="hwCards">カード一覧を見る</button></div>
   ${tabBarHTML('')}`;
-  $('#back').onclick=()=>go('menu');$('#hwPlay').onclick=()=>startFree();$('#hwCards').onclick=()=>go('cards');bindTabBar();
+  $('#back').onclick=()=>go('menu');$('#hwTut').onclick=()=>startTutorial();$('#hwPlay').onclick=()=>startFree();$('#hwCards').onclick=()=>go('cards');bindTabBar();
 }
 // カード一覧（下のタブの「カード」）
 let CF='all';
@@ -3108,6 +3121,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:38,d:'2026-11-09',t:'ホーム画面を見やすくしました。いちばん上に大きく「ランクマッチ」、その下に「デッキ編成」と「CPUと対戦」。チュートリアルは「遊び方」の中に移しました。'},
   {id:37,d:'2026-11-09',t:'カードを集める形に変わりました。最初は全員スタンダードデッキで戦い、ランクマッチで勝つと2種、負けても1種のカードがランダムにもらえます（かぶることもあります）。手に入れたカードはホームの「デッキ編成」で入れられます。7パック開けて組むモードと、全カードを使える試作の状態はなくしました。ランクマッチの後は、同じ相手との再戦ではなく次の相手を探します。部屋を作る友達対戦では、カードはもらえません。'},
   {id:36,d:'2026-11-08',t:'ブラフ成功のごほうびを強くしました。カードが手札に戻り、1枚多く使えるのに加えて、相手の心臓ではない種類を1つ知れます。'},
   {id:31,d:'2026-11-04',t:'チュートリアルを、決まった流れにそって進む形にしました。宣言のほかに、襲撃とブラフも実際にやってみながら、勝ち方3つ（宣言・襲撃・山札切れ）を覚えられます。'},
