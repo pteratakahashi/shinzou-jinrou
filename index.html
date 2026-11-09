@@ -929,20 +929,20 @@ body:has(#app>.bt) .bt{width:100%}
   --gold:#f6cf6a;--gold-hi:#fff2bf;--gold-lo:#9a6416;--crim:#e23a55;--crim-lo:#7c1024;--navy:#0b0e26;--navy2:#171c46;
   --frame:linear-gradient(180deg,#fff0b8 0%,#d9a23c 30%,#8a5512 52%,#e9b851 70%,#fff0b8 100%);
 }
-html,body{background:#070918}
+html,body{background:#0a0406}
 body{font-family:var(--body);font-weight:500;background:
-  radial-gradient(120% 60% at 50% -10%,rgba(226,58,85,.28),transparent 60%),
-  radial-gradient(90% 50% at 50% 110%,rgba(80,60,180,.25),transparent 60%),
-  repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 2px,transparent 2px 14px),
-  linear-gradient(180deg,#0d1030,#070918)!important;background-attachment:fixed!important}
+  radial-gradient(120% 60% at 50% -10%,rgba(200,40,60,.32),transparent 60%),
+  radial-gradient(90% 50% at 50% 110%,rgba(120,30,60,.3),transparent 60%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .85 0 0 0 0 .7 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+  linear-gradient(180deg,#1a070c,#0a0406)!important;background-attachment:fixed!important}
 h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;color:#fff7e2;text-shadow:0 2px 0 #2a0d18,0 0 1px #000,0 0 14px rgba(246,207,106,.25)}
 /* --- ボタン --- */
-.b{font-family:var(--game);font-weight:400;letter-spacing:.06em;border-radius:12px;padding:11px 20px;border:2px solid #6f7ab8;color:#f4f2ff;
-  background:linear-gradient(180deg,#4b58a8 0%,#2c3577 48%,#1f2660 52%,#2a3378 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.25),0 4px 0 #0c1035,0 6px 14px rgba(0,0,0,.45);
+.b{font-family:var(--game);font-weight:400;letter-spacing:.06em;border-radius:12px;padding:11px 20px;border:2px solid #c9984a;color:#fff1d6;
+  background:linear-gradient(180deg,#5a2230 0%,#3a1018 48%,#2a0910 52%,#3d1219 100%);
+  box-shadow:inset 0 1px 0 rgba(255,220,180,.35),inset 0 -3px 0 rgba(0,0,0,.3),0 4px 0 #1a0508,0 6px 14px rgba(0,0,0,.5);
   text-shadow:0 1px 0 rgba(0,0,0,.6);transition:transform .08s,box-shadow .08s,filter .15s}
 .b:not(:disabled):hover{filter:brightness(1.12)}
-.b:not(:disabled):active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 0 #0c1035,0 2px 6px rgba(0,0,0,.4)}
+.b:not(:disabled):active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 0 #1a0508,0 2px 6px rgba(0,0,0,.4)}
 .b.primary{color:#3a1c00;border-color:#fff0b8;text-shadow:0 1px 0 rgba(255,255,255,.6);
   background:linear-gradient(180deg,#fff6c8 0%,#ffd45e 40%,#f0a92a 52%,#ffcb4a 100%);
   box-shadow:inset 0 1px 0 #fff,inset 0 -3px 0 rgba(150,80,0,.35),0 4px 0 #8a4f0c,0 6px 16px rgba(240,170,40,.35)}
@@ -953,9 +953,9 @@ h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;co
 /* --- 金縁パネル --- */
 .prof,.zone,.rankCard,.msnBox,.updBox,.ocStage,.sheet,.onCard,.shopIt,.altIt,.ocOpt,.ttOpt,.mi{
   border:2px solid transparent!important;border-radius:14px;
-  background:linear-gradient(180deg,rgba(38,44,98,.96),rgba(16,19,48,.97)) padding-box,var(--frame) border-box!important;
+  background:radial-gradient(130% 90% at 50% -20%,rgba(190,40,60,.28),transparent 60%) padding-box,linear-gradient(180deg,#2a0f18,#12060b 70%,#0c0407) padding-box,var(--frame) border-box!important;
   box-shadow:inset 0 0 0 1px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.1),0 5px 0 rgba(0,0,0,.35),0 10px 26px rgba(0,0,0,.45)}
-.sheet{background:linear-gradient(180deg,#262c62,#11143a) padding-box,var(--frame) border-box!important}
+.sheet{background:radial-gradient(120% 60% at 50% 0%,rgba(190,40,60,.3),transparent 60%) padding-box,linear-gradient(180deg,#2a0f18,#0e0508) padding-box,var(--frame) border-box!important}
 .label{font-family:var(--body);font-weight:800;letter-spacing:.1em;color:var(--gold)}
 /* --- メニューのタイル --- */
 .mi{padding:16px;min-height:104px}
@@ -972,7 +972,7 @@ h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;co
 .prof.hud .avatar{width:46px;height:46px}.prof.hud .pOcto{width:44px;height:44px}
 .prof.hud .menuName b{font-family:var(--game);font-weight:400;font-size:16px}
 .prof.hud .statline{display:none}
-.coin{font-family:var(--game);font-weight:400;border:2px solid #c9cfe6;background:linear-gradient(180deg,#2a2f62,#12153a);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 0 rgba(0,0,0,.4)}
+.coin{font-family:var(--game);font-weight:400;border:2px solid #e8c37a;background:linear-gradient(180deg,#3a1420,#140509);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 0 rgba(0,0,0,.4)}
 .ptitle{font-family:var(--game);font-weight:400;letter-spacing:.04em}
 .prank{font-family:var(--game);font-weight:400;background:rgba(0,0,0,.35)}
 /* --- 見出し（リボン） --- */
@@ -981,8 +981,8 @@ h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;co
 /* --- フィルターのチップ --- */
 .chip{font-family:var(--body);font-weight:800;border-width:2px}
 /* --- 下のタブ --- */
-.tabBar{background:linear-gradient(180deg,#1c2154,#090b22)!important;border-top:2px solid transparent!important;border-image:linear-gradient(90deg,transparent,#f6cf6a 20%,#fff2bf 50%,#f6cf6a 80%,transparent) 1!important;box-shadow:0 -6px 20px rgba(0,0,0,.55);padding-top:6px!important;overflow:visible}
-.tabBar button{font-family:var(--body);font-weight:800;font-size:11px;letter-spacing:.06em;color:#8f97c9;position:relative}
+.tabBar{background:linear-gradient(180deg,#2a0d14,#0b0306)!important;border-top:2px solid transparent!important;border-image:linear-gradient(90deg,transparent,#f6cf6a 20%,#fff2bf 50%,#f6cf6a 80%,transparent) 1!important;box-shadow:0 -6px 20px rgba(0,0,0,.55);padding-top:6px!important;overflow:visible}
+.tabBar button{font-family:var(--body);font-weight:800;font-size:11px;letter-spacing:.06em;color:#b99a86;position:relative}
 .tabBar button svg{width:28px;height:28px}
 .tabBar button.on{color:var(--gold)}
 .tabBar button.on::before{content:"";position:absolute;top:-2px;left:50%;width:44px;height:44px;translate:-50% 0;border-radius:50%;background:radial-gradient(circle,rgba(246,207,106,.35),transparent 70%);z-index:-1}
@@ -998,6 +998,71 @@ h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;co
 /* --- お知らせ・ミッション --- */
 .msnBar{background:rgba(0,0,0,.45);border:1px solid #4a3a18}
 .msnBar i{background:linear-gradient(90deg,#ffd45e,#ff9a3c)!important}
+
+/* ---- ホーム（1枚の絵の上にボタンを置く。スクロールしない） ---- */
+body.onHome{overflow:hidden}
+.hm{position:fixed;inset:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;overflow:hidden;isolation:isolate;
+  padding:max(8px,env(safe-area-inset-top,0px)) 10px 10px}
+@media (min-width:600px){.hm{border-left:2px solid #6b3a14;border-right:2px solid #6b3a14;box-shadow:0 0 60px rgba(0,0,0,.8)}}
+.hmBg{position:absolute;inset:0;z-index:-2}
+.hmBg img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;image-rendering:pixelated;animation:hmPan 30s ease-in-out infinite alternate;transform-origin:50% 40%}
+@keyframes hmPan{from{transform:scale(1.04) translateX(-1.5%)}to{transform:scale(1.1) translateX(1.5%)}}
+.hm::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(10,3,6,.7) 0,transparent 16%,transparent 52%,rgba(10,3,6,.65) 72%,rgba(10,3,6,.95) 100%)}
+.hm .haFog{display:none}
+.hmTop{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 5px;border-radius:40px 14px 14px 40px;
+  background:linear-gradient(180deg,rgba(42,15,24,.92),rgba(14,5,9,.92)) padding-box,var(--frame) border-box;border:2px solid transparent;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.hmAv{flex:none;width:46px;height:46px;border-radius:50%;padding:0;overflow:hidden;border:2px solid #fff0b8;background:radial-gradient(circle at 50% 35%,#5a2230,#1a0508);cursor:pointer;box-shadow:0 0 0 2px #8a5512}
+.hmAv img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;image-rendering:pixelated;transform:scale(1.25) translateY(8%)}
+.hmId{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hmId b{font-family:var(--game);font-weight:400;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 0 #000}
+.hmId span{display:flex;gap:4px;flex-wrap:wrap}.hmId em{font-style:normal;font-size:10px;padding:0 7px;cursor:pointer}
+.hmGear{flex:none;width:38px;height:38px;border-radius:10px;border:2px solid #c9984a;background:linear-gradient(180deg,#5a2230,#2a0910);color:#ffe7b0;padding:7px;cursor:pointer;box-shadow:0 3px 0 #1a0508}
+.hmGear svg,.hmIc svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hmEvt{position:absolute;left:10px;top:76px;width:min(58%,300px);text-align:left;display:flex;flex-direction:column;gap:1px;padding:7px 10px 8px;border-radius:4px 14px 14px 4px;cursor:pointer;color:#fff;
+  background:linear-gradient(90deg,rgba(150,20,40,.92),rgba(60,8,20,.8) 70%,transparent);border-left:4px solid #ffd45e;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.hmEvt b{font-family:var(--game);font-weight:400;font-size:12px;color:#ffd45e;letter-spacing:.1em}
+.hmEvt span{font-size:11px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 2px #000}
+.hmEvt .bdg{position:absolute;right:6px;top:-7px}
+.hmSide{position:absolute;right:8px;top:76px;display:flex;flex-direction:column;gap:9px}
+.hmIc{position:relative;width:58px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;border:0;background:none;cursor:pointer;color:#fff}
+.hmIc i{display:block;width:46px;height:46px;padding:10px;border-radius:50%;color:#ffe7b0;
+  background:radial-gradient(circle at 50% 30%,#6a2434,#2a0910 70%) padding-box,var(--frame) border-box;border:2px solid transparent;box-shadow:0 3px 0 rgba(0,0,0,.5),inset 0 2px 0 rgba(255,220,180,.25)}
+.hmIc span{font-family:var(--body);font-weight:800;font-size:10px;text-shadow:0 1px 0 #000,0 0 4px #000;white-space:nowrap}
+.hmIc.glow i{animation:icGlow 1.6s ease-in-out infinite}
+@keyframes icGlow{50%{box-shadow:0 3px 0 rgba(0,0,0,.5),0 0 18px rgba(255,212,94,.9)}}
+.hmIc:active i{transform:translateY(2px)}
+.bdg{position:absolute;top:-4px;right:2px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;font-style:normal;font-family:var(--game);font-weight:400;font-size:11px;line-height:17px;text-align:center;color:#fff;background:linear-gradient(180deg,#ff6a7e,#d81e3c);border:2px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.bdg.n{font-size:9px;letter-spacing:.04em}
+.hmLogo{position:absolute;left:0;right:72px;top:46%;text-align:center;pointer-events:none}
+.hmLogo small{display:block;font-family:var(--game);font-size:11px;letter-spacing:.3em;color:#ffd9a0;text-shadow:0 2px 0 #000}
+.hmLogo h1{font-size:clamp(46px,14vw,70px);line-height:1;color:#fff4dc;-webkit-text-stroke:2px #2a0610;paint-order:stroke fill;text-shadow:0 4px 0 #2a0610,0 0 26px rgba(255,80,100,.6)}
+.hmLogo h1 span{color:#ff4561;animation:haBeat 2.4s ease-in-out infinite;display:inline-block}
+.hmMascot{position:absolute;left:12px;bottom:228px;width:96px;height:96px;padding:0;border:0;background:none;cursor:pointer;animation:hmBob 2.6s ease-in-out infinite}
+.hmMascot .octo{width:100%;height:100%;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6))}
+@keyframes hmBob{50%{transform:translateY(-6px)}}
+.hmSay{position:absolute;left:84px;bottom:52px;width:max-content;max-width:min(230px,52vw);text-align:left;font-size:11px;font-weight:800;line-height:1.4;color:#2a1405;background:#fff7e2;border:2px solid #2a1405;border-radius:12px;padding:6px 9px;box-shadow:0 3px 0 rgba(0,0,0,.4)}
+.hmSay::before{content:"";position:absolute;left:-9px;bottom:12px;border:7px solid transparent;border-right-color:#2a1405;border-left:0}
+.hmDock{position:absolute;left:10px;right:10px;bottom:34px;display:flex;flex-direction:column;gap:8px}
+.hmResume{align-self:stretch;text-align:left;font-family:var(--game);font-size:14px;color:#3a1c00;padding:8px 14px;border-radius:10px;border:2px solid #fff;cursor:pointer;background:linear-gradient(180deg,#fff6c8,#ffc94a);box-shadow:0 3px 0 #8a4f0c}
+.hmResume small{font-family:var(--body);font-weight:800;font-size:11px;margin-left:6px}
+.hmBtns{display:grid;grid-template-columns:1fr 1.35fr;gap:8px}
+.hmSub{display:grid;gap:8px}
+.hmB,.hmMain{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left;cursor:pointer;color:#fff;border:2px solid transparent;border-radius:14px;padding:8px 12px;
+  background:linear-gradient(180deg,#5a2230,#2a0910) padding-box,var(--frame) border-box;box-shadow:0 4px 0 rgba(0,0,0,.5),inset 0 1px 0 rgba(255,220,180,.3)}
+.hmB{height:62px}.hmMain{height:132px;background:radial-gradient(120% 100% at 0% 0%,rgba(255,200,90,.4),transparent 55%) padding-box,linear-gradient(160deg,#c21f3d,#5a0a20 60%,#2a0612) padding-box,var(--frame) border-box;box-shadow:0 5px 0 #2a0408,0 0 26px rgba(255,70,90,.45)}
+.hmB img,.hmMain img{position:absolute;right:-6px;bottom:0;height:120%;width:auto;image-rendering:pixelated;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%);opacity:.95;pointer-events:none}
+.hmMain img{height:110%;right:-10px}
+.hmB b,.hmMain b{position:relative;font-family:var(--game);font-weight:400;font-size:17px;letter-spacing:.04em;-webkit-text-stroke:3px #1a0508;paint-order:stroke fill;text-shadow:0 2px 0 #1a0508}
+.hmMain b{font-size:clamp(24px,6.6vw,32px);line-height:1.1}
+.hmMain span{position:relative;font-size:11px;font-weight:800;color:#ffd9a0;text-shadow:0 1px 2px #000}
+.hmMain .miTag{top:8px;left:10px;right:auto}
+.hmB .bdg{right:6px;top:6px}
+.hmB:active,.hmMain:active{transform:translateY(3px)}
+.hmMain::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.28) 48%,transparent 60%);background-size:260% 100%;animation:shine 3s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.hmBg img,.hmMascot,.hmMain::after,.hmIc.glow i{animation:none}}
+@media (max-height:700px){.hmMascot{display:none}.hmLogo{top:40%}}
+.stRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.xBtn{background:linear-gradient(180deg,#5a2230,#2a0910)!important;border:2px solid #c9984a!important;color:#ffe7b0!important;box-shadow:0 3px 0 #1a0508}
 </style>
 
 <div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1118,7 +1183,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109080126';
+const APP_VER='20261109080832';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1479,6 +1544,7 @@ function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
+  document.body.classList.toggle('onHome',VIEW==='menu');
   if(VIEW!=='battle')BGM.set('menu');
   if(VIEW!=='menu')guardHist();
   if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='free'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto'||VIEW==='octo')setBg(null);
@@ -1498,60 +1564,87 @@ function draw_(){
 }
 
 function renderMenu(){
-  const savedG=lsGet(GAME_KEY),savedD=null;lsDel(DRAFT_KEY);
-  const owned=CARDS.filter(c=>own(c.k)>=maxOwn(c.k)).length;
-  const iss=deckIssues();
-  const fan=['wolf','seer','fox','greatdet','hunter'];
-  $('#app').innerHTML=`
-  ${profileHTML().replace('class="prof"','class="prof hud"')}
-  <div class="homeArt"><img class="haImg" src="scenes/home_a.png" alt="夜の村の広場。井戸の上にタコ、占い師と狩人、物陰に人狼"><div class="haFog"></div><div class="haFog b"></div>
-    <div class="haTitle"><div class="haSub">― 3つの心臓を守りぬけ ―</div><h1>心臓<span>人狼</span></h1></div></div>
-
-  <div class="menu home">
-    ${LADDER.uid()&&LADDER.packs>0?`<button type="button" class="mi main packMi" id="mPacks"><img class="miArt" src="scenes/pack.png" alt=""><b>パックを開ける <span class="pkCount">×${LADDER.packs}</span></b><span>1パック5枚。4枚目はシルバー以上、5枚目はゴールド以上</span></button>`:''}
-    ${LADDER.on()&&!LADDER.uid()&&LADDER.state!=='loading'?`<button type="button" class="mi main packMi" id="mGift"><img class="miArt" src="scenes/pack.png" alt=""><b>ログインで5パック プレゼント</b><span>Googleでログインすると、はじめてのログインで5パック、はじめてのランクマッチでさらに5パック</span></button>`:''}
-    ${ONL.get()&&!NET.conn?`<button type="button" class="mi main" id="mRejoin"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(ONL.get().opp||'相手')}さんとの対戦の続き（${ago(ONL.get().at)}）</span></button>`:''}
-    ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
-    ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
-    ${NET.conn?`<button type="button" class="mi main big" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(NET.opp||'相手')}さんとつながっています</span></button>`
-      :`<button type="button" class="mi main big rank" id="mRank"><img class="miArt" src="art/greatwolf.png" alt=""><i class="miTag">カードがもらえる</i><b>ランクマッチ</b><span>${LADDER.uid()?'知らない人と自動でマッチングして対戦。勝つと2種、負けても1種カードがもらえます':'Googleでログインすると遊べます。勝つと2種、負けても1種カードがもらえます'}</span></button>`}
-    <button type="button" class="mi main" id="mFree"><img class="miArt" src="art/greatdet.png" alt=""><b>デッキ編成${CARDS.some(c=>isNewCard(c.k))?'<span class="newTag">NEW</span>':''}</b><span>所持 ${ownedCount()}/${CARDS.length}種。持っているカードでデッキを組みます</span></button>
-    <button type="button" class="mi main" id="mBattle"><img class="miArt" src="art/wolf.png" alt=""><b>${savedG?'新しくCPUと対戦':'CPUと対戦'}</b><span>${savedG?'今の対戦は破棄されます':deckLegal(freeDeck())?'自分のデッキでCPUと戦います':'デッキに持っていないカードがあります。デッキ編成で直してください'}</span></button>
+  const savedG=lsGet(GAME_KEY);lsDel(DRAFT_KEY);
+  const inn=!!LADDER.uid(),rk=LADDER.prof?rankOf(LADDER.prof.rp):null,t=SV.equip.title?titleName(SV.equip.title):'';
+  const msOk=dailyMissions().filter(m=>m.prog>=m.n&&!m.claimed).length,updNew=UPDATES.length&&(SV.updSeen||0)<UPDATES[0].id;
+  const tips=['相手の捨て札をよく見て、心臓の種類をしぼりこもう','呪いは場に1つだけ。上書きして解くこともできる','伏せたカードはブラフにも使える','襲撃は、相手の手札を0枚にしてからが勝負','ランクマッチで勝つと、カードが2種類もらえる'];
+  const side=(id,ic,l,badge,cls='')=>`<button type="button" class="hmIc ${cls}" id="${id}"><i>${ic}</i><span>${l}</span>${badge?`<b class="bdg">${badge}</b>`:''}</button>`;
+  const IC={msn:'<svg viewBox="0 0 24 24"><path d="M5 3h14v18l-7-4-7 4z"/><path d="M9 9l2 2 4-4"/></svg>',gift:'<svg viewBox="0 0 24 24"><path d="M3 9h18v4H3zM5 13h14v8H5zM12 9v12M12 9c-2-4-6-4-6-1s4 1 6 1c2 0 6 2 6-1s-4-3-6 1"/></svg>',
+    octo:'<svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0v2H5z"/><path d="M6 14c-1 3-2 5-3 6M10 14c0 3-1 5-2 7M14 14c0 3 1 5 2 7M18 14c1 3 2 5 3 6"/><circle cx="9.5" cy="10" r="1"/><circle cx="14.5" cy="10" r="1"/></svg>',
+    book:'<svg viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-5a3 3 0 0 0-3 3"/><path d="M20 4v14h-6"/></svg>',
+    bell:'<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+    gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+    app:'<svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>'};
+  const resume=NET.conn?'':ONL.get()?`<button type="button" class="hmResume" id="mRejoin">▶ 対戦に戻る <small>${esc(ONL.get().opp||'相手')}さん・${ago(ONL.get().at)}</small></button>`:savedG?`<button type="button" class="hmResume" id="mResume">▶ 対戦の続きから <small>${savedG.turnNo+1}ターン目・あなた${savedG.me.life}／CPU${savedG.cpu.life}</small></button>`:'';
+  $('#app').innerHTML=`<div class="hm">
+    <div class="hmBg"><img src="scenes/home_a.png" alt=""></div>
+    <header class="hmTop">
+      <button type="button" class="hmAv" id="pAvatar" aria-label="アイコンを変える"><img src="art/${SV.equip.avatar}.png" alt=""></button>
+      <div class="hmId"><b>${esc(netName())}</b><span>${rk?`<em class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</em>`:''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div>
+      ${coinsHTML()}
+      <button type="button" class="hmGear" id="hmSet" aria-label="設定">${IC.gear}</button>
+    </header>
+    <button type="button" class="hmEvt" id="updAll">${updNew?'<i class="bdg n">NEW</i>':''}<b>お知らせ</b><span>${UPDATES.length?esc(String(UPDATES[0].t).replace(/<[^>]+>/g,'')):''}</span></button>
+    <nav class="hmSide">
+      ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
+      ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):LADDER.on()&&!inn&&LADDER.state!=='loading'?side('mGift',IC.gift,'プレゼント','5','glow'):''}
+      ${side('hmOcto',IC.octo,'称号・タコ','')}
+      ${side('mRules',IC.book,'遊び方',!SV.tutDone?'!':'',!SV.tutDone?'glow':'')}
+      ${canInstall()?side('mInstall',IC.app,'アプリ',''):''}
+    </nav>
+    <div class="hmLogo"><small>― 3つの心臓を守りぬけ ―</small><h1>心臓<span>人狼</span></h1></div>
+    <button type="button" class="hmMascot" id="pOcto" aria-label="タコをえらぶ">${octoSVG(3,3,'',0,SV.equip.octo||'')}<span class="hmSay">${tips[Math.floor(Date.now()/60000)%tips.length]}</span></button>
+    <div class="hmDock">
+      ${resume}
+      <div class="hmBtns">
+        <div class="hmSub">
+          <button type="button" class="hmB" id="mFree"><img src="art/greatdet.png" alt=""><b>デッキ編成</b>${CARDS.some(c=>isNewCard(c.k))?'<i class="bdg n">NEW</i>':''}</button>
+          <button type="button" class="hmB" id="mBattle"><img src="art/wolf.png" alt=""><b>${savedG?'新しくCPU戦':'CPU対戦'}</b></button>
+        </div>
+        ${NET.conn?`<button type="button" class="hmMain" id="mOnline"><img src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(NET.opp||'相手')}さん</span></button>`
+          :`<button type="button" class="hmMain" id="mRank"><img src="art/greatwolf.png" alt=""><i class="miTag">カードがもらえる</i><b>ランクマッチ</b><span>${inn?'対人戦':'Googleでログイン'}</span></button>`}
+      </div>
+    </div>
   </div>
-  <div class="menu sub">
-    ${NET.conn?'':`<button type="button" class="mi" id="mOnline"><img class="miArt" src="art/twins.png" alt=""><b>友達と対戦</b><span>部屋を作ってリンクを送る（カードはもらえません）</span></button>`}
-    <button type="button" class="mi ${!SV.tutDone&&!lsGet(GAME_KEY)?'hl':''}" id="mRules"><img class="miArt" src="art/teller.png" alt=""><b>遊び方</b><span>${SV.tutDone?'勝ち方とターンの流れ。チュートリアルもここから':'はじめての人はここから。チュートリアルで1戦しながら覚えられます'}</span></button>
-    ${canInstall()?`<button type="button" class="mi" id="mInstall"><img class="miArt" src="icons/icon-192.png" alt=""><b>アプリとしてホーム画面に追加</b><span>アイコンから全画面で起動できます。CPU戦はオフラインでも遊べます</span></button>`:''}
-  </div>
-  ${missionsHTML()}
-  ${updatesHTML()}
-  ${rankCardHTML()}
-  <div class="sndSet"><span class="label">サウンド</span><button type="button" class="b small" id="mBgm">BGM ${bgmOn()?'ON':'OFF'}</button><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="BGMの音量"><button type="button" class="b small" id="mSfx">効果音 ${sndOn()?'ON':'OFF'}</button></div>
-  <div class="btns" style="margin-top:6px"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>
   ${tabBarHTML('menu')}`;
-  $('#mBattle').onclick=()=>startFree();
-  const mr=$('#mResume');if(mr)mr.onclick=resumeGame;
-  const mrj=$('#mRejoin');if(mrj)mrj.onclick=onlineRejoin;
-  const md=$('#mResumeD');if(md)md.onclick=resumeDraft;
-  $('#mRules').onclick=()=>go('howto');
-  $('#mFree').onclick=()=>go('free');
-  const mi=$('#mInstall');if(mi)mi.onclick=installApp;
-  $('#mOnline').onclick=()=>go('online');
-  const mpk=$('#mPacks');if(mpk)mpk.onclick=()=>{P=null;go('packs')};
-  const mgf=$('#mGift');if(mgf)mgf.onclick=()=>{P=null;go('packs')};
+  document.body.classList.add('onHome');
+  const on=(id,f)=>{const e=$('#'+id);if(e)e.onclick=f};
+  on('mBattle',()=>startFree());on('mResume',resumeGame);on('mRejoin',onlineRejoin);
+  on('mRules',()=>go('howto'));on('mFree',()=>go('free'));on('mInstall',installApp);on('mOnline',()=>go('online'));
+  on('mPacks',()=>{P=null;go('packs')});on('mGift',()=>{P=null;go('packs')});
+  on('mRank',()=>{NET.err='';mmStart()});
+  on('updAll',showUpdates);on('pAvatar',pickAvatar);
+  on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});on('hmTitle',()=>{OCTO_PV=null;go('octo')});
+  on('hmMsn',showMissions);on('hmSet',showSettings);
+  bindTabBar();
   setTimeout(showGifts,300);setTimeout(showUnlocks,700);
-  const mrk=$('#mRank');if(mrk)mrk.onclick=()=>{NET.err='';mmStart()};
-  bindRankCard();
-  $('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');renderMenu()};
-  $('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
-  $('#mSfx').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.ui();renderMenu()};
-  bindNameEd('mName',renderMenu);
-  const ua=$('#updAll');if(ua)ua.onclick=showUpdates;
-  $('#pAvatar').onclick=pickAvatar;$('#pOcto').onclick=()=>{OCTO_PV=null;go('octo')};{const pt=document.querySelector('.prof .ptitle');if(pt){pt.style.cursor='pointer';pt.onclick=()=>{OCTO_PV=null;go('octo')}}}bindMissions();bindTabBar();
   setTimeout(()=>{if(VIEW==='menu'&&$('#modal').hidden)loginBonus()},400);
   if(UPDATES.length&&(SV.updSeen||0)<UPDATES[0].id){updPrev();SV.updSeen=UPDATES[0].id;save()}
+}
+// ホームのミッション（右のアイコンから）
+function showMissions(){
+  modal(`<div class="mHead"><h2>デイリーミッション</h2><button type="button" class="xBtn" id="msX" aria-label="閉じる">×</button></div><p class="note">毎日0時に入れ替わります</p>${missionsHTML()}`,(m,done)=>{
+    m.querySelector('#msX').onclick=()=>{done();if(VIEW==='menu')renderMenu()};m.onclick=e=>{if(e.target===m){done();if(VIEW==='menu')renderMenu()}};bindMissions();
+  });
+}
+// 設定（名前・ログインとランク・サウンド）
+function showSettings(){
   let armed=false;
-  $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();renderMenu()};
+  const html=()=>`<div class="mHead"><h2>設定</h2><button type="button" class="xBtn" id="stX" aria-label="閉じる">×</button></div>
+    <div class="stRow"><span class="label">名前</span>${nameEdHTML('mName')}</div>
+    ${rankCardHTML()}
+    <div class="sndSet"><span class="label">サウンド</span><button type="button" class="b small" id="mBgm">BGM ${bgmOn()?'ON':'OFF'}</button><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="BGMの音量"><button type="button" class="b small" id="mSfx">効果音 ${sndOn()?'ON':'OFF'}</button></div>
+    <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
+  modal(html(),(m,done)=>{
+    const bind=()=>{
+      m.querySelector('#stX').onclick=()=>{done();if(VIEW==='menu')renderMenu()};
+      bindRankCard();bindNameEd('mName',()=>{m.querySelector('.sheet').innerHTML=html();bind()});
+      m.querySelector('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');m.querySelector('.sheet').innerHTML=html();bind()};
+      m.querySelector('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
+      m.querySelector('#mSfx').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.ui();m.querySelector('.sheet').innerHTML=html();bind()};
+      m.querySelector('#tReset').onclick=()=>{if(!armed){armed=true;m.querySelector('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();done();renderMenu()};
+    };bind();
+  });
 }
 
 /* ---- packs ----
@@ -3467,7 +3560,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:45,d:'2026-11-09',t:'画面のデザインを新しくしました。金の縁取りのパネル、押すと沈むボタン、上のステータスバー、下のまんなかの大きな「対戦」ボタン（ランクマッチ・CPU・友達対戦をすぐ選べます）。'},
+  {id:45,d:'2026-11-09',t:'画面のデザインを新しくしました。ホームは1枚の絵の上に、右にミッション・プレゼント・称号とタコ・遊び方、下にランクマッチとデッキ編成を並べました。下のまんなかの「対戦」ボタンから、ランクマッチ・CPU・友達対戦をすぐ選べます。名前やサウンド、ログインは右上の歯車から。'},
   {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。全身が映る特別なイラスト（持ち物が光ります）と、虹色に光る枠になります。ショップで銀貨と交換すると使えます（カードの説明から、いつもの絵と切りかえられます）。'},
   {id:43,d:'2026-11-09',t:'称号とタコのページができました。プロフィールのタコか称号を押すと開けます。いつものタコのほかに、ポーズのちがうタコが10体。「はじめて勝つ」「対人戦で10勝」「ランクがゴールドになる」「全部のカードを集める」などの実績で、称号とタコが開放されていきます。選んだタコは対戦中のライフに出て、友達対戦・ランクマッチでは相手にも見えます。ショップの称号は、こちらにまとめました（交換ずみの称号はそのまま使えます）。'},
   {id:42,d:'2026-11-09',t:'新しい系統「呪い」のカード8種を追加しました（封印師・牙抜き・沈黙僧・言霊師・鎖使い・渇き巫女・目隠し鬼・解呪師）。「お互い攻撃系を使えない」「相手は次のターン宣言できない」など、しばらく効き続ける呪いを場に置きます（場に置ける呪いは1つだけ）。あわせて、1枚で一気に決まりやすかった〈探偵〉を「6種類を選んで山札を見る＋1枚引く」に、強すぎた〈祈祷師〉〈占い師〉〈霊媒師〉を少し弱くしました。レアリティも新しいシミュレーションの結果で付け直し、レジェンドは効果が派手なカードにしています。'},
