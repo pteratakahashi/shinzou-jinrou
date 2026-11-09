@@ -667,6 +667,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media(max-width:520px){.menu.home{grid-template-columns:1fr}}
 .menu.sub{margin-top:10px}.menu.sub .mi{min-height:80px}.menu.sub .mi b{font-size:17px}
 .mi.hl{border-color:var(--blood)}
+.tcg.altArt .tart{background:#0b0d1c}.tcg.altArt .tart img{object-position:50% 22%;-webkit-mask-image:none;mask-image:none}
+.tcg.altArt{border:.3em solid transparent;background:linear-gradient(170deg,#2c1640,#120a24) padding-box,conic-gradient(from var(--la),#ffd36b,#ff7ad9,#7af0ff,#9dffb0,#ffd36b) border-box;animation:legRot 4s linear infinite;box-shadow:0 0 1em rgba(255,122,217,.45),0 .35em .9em rgba(0,0,0,.5)}
+.tcg.altArt::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.32) 45%,transparent 60%);background-size:250% 100%;animation:shine 2.6s linear infinite;pointer-events:none;mix-blend-mode:screen}
+@media (prefers-reduced-motion:reduce){.tcg.altArt,.tcg.altArt::after{animation:none}}
+.altGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.altIt{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
+.altIt b{font-size:13px}.altPrev{width:100%;font-size:9px}.altIt:not(.own) .altPrev .tcg{filter:saturate(.9)}
 .ocStage{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0 12px}
 .ocBig .octo{width:min(220px,46vw);height:auto;aspect-ratio:1}
 .ocInfo{display:flex;flex-direction:column;gap:6px}.ocInfo b{font-family:var(--display);font-weight:400;font-size:22px}
@@ -1030,13 +1037,18 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109073023';
+const APP_VER='20261109073619';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
 const byCat=(a,b)=>CIDX[a]-CIDX[b];
 const C={};CARDS.forEach(c=>C[c.k]=c);
 const NORMAL=CARDS.filter(c=>!c.single),SINGLE=CARDS.filter(c=>c.single);
+/* 絵違い（2026-11-09）：レジェンドの特別なイラスト art/alt/KEY.webp（作り方 ~/shinzou-jinrou/alt/gen_alt.py）。
+   持っている（SV.owned に 'alt_KEY'）かつ SV.altOff に入っていなければ、この端末ではその絵で表示する */
+const ALT_KEYS=['detective','fox','silencer','nekomata','nightmare','phantom','moonqueen','greatwolf','greatdet','oracle','teller','mirror','curser','timewitch','whitewolf','saint'],ALT_PRICE=3000;
+const altOwned=k=>!!(typeof SV!=='undefined'&&SV&&SV.owned&&SV.owned.includes('alt_'+k));
+const altOn=k=>ALT_KEYS.includes(k)&&altOwned(k)&&!(SV.altOff||[]).includes(k);
 const TIER_N={B:'ブロンズ',S:'シルバー',G:'ゴールド',L:'レジェンド'},TIER_ORD={L:0,G:1,S:2,B:3};
 const tierCls=c=>c.single?'L':c.t==='L'?'L lg':(c.t||'B');
 const STARTER=CARDS.filter(c=>c.r==='S').map(c=>c.k);
@@ -1342,7 +1354,8 @@ function catSummary(types){return ['info','atk','grd','sup','cur'].map(ct=>[ct,t
 function cardHTML(k,size='m',extra=''){
   const c=C[k];
   const text=(size==='l'||size==='p')?`<div class="ttext">${effHTML(c.e)}</div>`:'';
-  return `<div class="tcg ${size} cat-${c.cat} r-${tierCls(c)} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:''}<span class="gem" title="${TIER_N[c.t]||''}">${c.t||'B'}</span></div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${k}.png" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}</div>`;
+  const alt=altOn(k);
+  return `<div class="tcg ${size} cat-${c.cat} r-${tierCls(c)} ${alt?'altArt':''} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:''}<span class="gem" title="${TIER_N[c.t]||''}">${c.t||'B'}</span></div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${alt?'alt/'+k+'.webp':k+'.png'}" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}</div>`;
 }
 const backHTML=(size='s',label='')=>`<div class="tcg back ${size}"><span class="bk">心</span>${label?`<span class="bl">${label}</span>`:''}</div>`;
 
@@ -2797,8 +2810,9 @@ function showCardInfo(k){
   if(S&&VIEW==='battle'){const a=S.hist.filter(h=>h.k===k&&h.who==='cpu').length,b=S.hist.filter(h=>h.k===k&&h.who==='me').length;usage=`<p>この対戦で使われた回数：${OPN()} ${a}回／${MYN()} ${b}回</p>`}
   modal(`<div class="mHead"><h2>${c.n}${atTag(c)}</h2><button type="button" class="xBtn" id="iX" aria-label="閉じる">×</button></div>
     <div class="info2"><div class="i2Art">${cardHTML(k,'m')}</div><div class="infoText"><p class="note" style="margin:0">${CAT[c.cat]}系統・${rn}${c.set?'・伏せ専用':''}${c.plain?'・通常カード（共鳴なし）':''}</p><div class="eff">${effHTML(c.e)}</div>${usage}</div></div>
-    <div class="btns"><button type="button" class="b" id="iClose">閉じる</button></div>`,(m,done)=>{
-    m.querySelector('#iClose').onclick=()=>{m.onclick=null;done()};m.querySelector('#iX').onclick=()=>{m.onclick=null;done()};
+    <div class="btns">${ALT_KEYS.includes(k)&&altOwned(k)?`<button type="button" class="b small" id="iAlt">${altOn(k)?'いつもの絵にする':'絵違いにする'}</button>`:''}<button type="button" class="b" id="iClose">閉じる</button></div>`,(m,done)=>{
+    m.querySelector('#iClose').onclick=()=>{m.onclick=null;done()};
+    const ia=m.querySelector('#iAlt');if(ia)ia.onclick=()=>{SV.altOff=SV.altOff||[];if(altOn(k))SV.altOff.push(k);else SV.altOff=SV.altOff.filter(x=>x!==k);save();m.onclick=null;done();showCardInfo(k);if(VIEW==='battle')render()};m.querySelector('#iX').onclick=()=>{m.onclick=null;done()};
     m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
   });
 }
@@ -3128,9 +3142,12 @@ function renderShop(){
   $('#app').innerHTML=`<div class="top"><h1>ショップ</h1>${coinsHTML()}</div>
     <p class="note">銀貨は、毎日のログインボーナスとデイリーミッションでたまります。交換できるのは見た目だけで、強さは変わりません。</p>
     <button type="button" class="ocLink" id="toOcto">${octoSVG(3,3,'',0,SV.equip.octo||'')}<span><b>称号とタコ</b><span class="note">対戦や実績で開放される称号とタコは、こちらから選べます</span></span></button>
+    <h2 class="shopH">レジェンドの絵違い</h2><p class="note" style="margin-top:0">特別なイラストと光る枠になります。交換したあとは、カードを押して出る説明から、いつもの絵と切りかえられます。</p>
+    <div class="altGrid">${ALT_KEYS.map(k=>{const own=altOwned(k);return`<div class="altIt ${own?'own':''}"><div class="altPrev">${own?cardHTML(k,'m'):`<div class="tcg m cat-${C[k].cat} r-L ${C[k].single?'':'lg'} altArt"><div class="tname"><span class="nm">${C[k].n}</span></div><div class="tart"><img src="art/alt/${k}.webp" alt="" loading="lazy"></div></div>`}</div><b>${C[k].n}</b>${own?`<span class="note">${altOn(k)?'使用中':'いつもの絵'}</span>`:`<button type="button" class="b small" data-alt="${k}" ${SV.coins<ALT_PRICE?'disabled':''}>${coinsMini(ALT_PRICE)}で交換</button>`}</div>`}).join('')}</div>
     <h2 class="shopH">カードの縁</h2><div class="shopGrid">${SHOP.filter(x=>x.kind==='frame').map(card).join('')}</div>
     ${tabBarHTML('shop')}`;
   $('#toOcto').onclick=()=>{OCTO_PV=null;go('octo')};
+  document.querySelectorAll('[data-alt]').forEach(b=>b.onclick=()=>{const k=b.dataset.alt;if(altOwned(k)||SV.coins<ALT_PRICE)return;SV.coins-=ALT_PRICE;SV.owned.push('alt_'+k);SV.altOff=(SV.altOff||[]).filter(x=>x!==k);save();try{SFX.legend();screenFlash('gold')}catch(e){}const y=window.scrollY;renderShop();window.scrollTo(0,y)});
   document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.buy);if(!it||SV.owned.includes(it.id)||SV.coins<it.p)return;SV.coins-=it.p;SV.owned.push(it.id);if(it.kind==='frame')SV.equip.frame=it.id;else SV.equip.title=it.id;save();applyFrame();SFX.res&&SFX.res();const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top);renderShop()});
   document.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.eq);if(!it)return;const k=it.kind==='frame'?'frame':'title';SV.equip[k]=SV.equip[k]===it.id?'':it.id;save();applyFrame();renderShop()});
   bindTabBar();
@@ -3355,6 +3372,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。ショップで銀貨と交換すると、そのカードが特別なイラストと光る枠になります（カードの説明から、いつもの絵と切りかえられます）。'},
   {id:43,d:'2026-11-09',t:'称号とタコのページができました。プロフィールのタコか称号を押すと開けます。いつものタコのほかに、ポーズのちがうタコが10体。「はじめて勝つ」「対人戦で10勝」「ランクがゴールドになる」「全部のカードを集める」などの実績で、称号とタコが開放されていきます。選んだタコは対戦中のライフに出て、友達対戦・ランクマッチでは相手にも見えます。ショップの称号は、こちらにまとめました（交換ずみの称号はそのまま使えます）。'},
   {id:42,d:'2026-11-09',t:'新しい系統「呪い」のカード8種を追加しました（封印師・牙抜き・沈黙僧・言霊師・鎖使い・渇き巫女・目隠し鬼・解呪師）。「お互い攻撃系を使えない」「相手は次のターン宣言できない」など、しばらく効き続ける呪いを場に置きます（場に置ける呪いは1つだけ）。あわせて、1枚で一気に決まりやすかった〈探偵〉を「6種類を選んで山札を見る＋1枚引く」に、強すぎた〈祈祷師〉〈占い師〉〈霊媒師〉を少し弱くしました。レアリティも新しいシミュレーションの結果で付け直し、レジェンドは効果が派手なカードにしています。'},
   {id:41,d:'2026-11-09',t:'パックができました。Googleではじめてログインすると5パック、はじめてのランクマッチで5パックプレゼント（1パック5枚、5枚目はゴールド以上）。そのあとは今までどおり、ランクマッチで勝つと2種・負けても1種もらえます。'},
