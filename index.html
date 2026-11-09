@@ -1,5 +1,21 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>心臓人狼</title>
+<script>
+/* 引っ越し（pteratakahashi.github.io/shinzou-jinrou → shinzoujinro.com）。
+   端末内の保存は旧アドレス側にあるので、はじめて新アドレスを開いた人だけ一度 pteratakahashi.github.io/sj-move/ に寄って保存を受け取る。
+   sj-move は旧アドレスと同じ場所（pteratakahashi.github.io）にあるので、旧アドレスの保存を読める。保存は #sjmig= で返ってくる */
+(function(){try{
+  const h=location.hash,LS=localStorage;
+  if(h.startsWith('#sjmig=')){
+    const v=h.slice(7);
+    if(v&&v!=='none'){const b=atob(v.replace(/-/g,'+').replace(/_/g,'/')),d=JSON.parse(new TextDecoder().decode(Uint8Array.from(b,c=>c.charCodeAt(0))));for(const k in d)if(/^hw2_|^sb-evxljdiiyzynvhcznpou-/.test(k))LS.setItem(k,d[k])}
+    LS.setItem('sj_mig','1');history.replaceState(null,'',location.pathname+location.search);return;
+  }
+  if(/^(www\.)?shinzoujinro\.com$/.test(location.hostname)&&!LS.getItem('sj_mig')&&!LS.getItem('hw2_save')){
+    LS.setItem('sj_mig','1');location.replace('https://pteratakahashi.github.io/sj-move/?r='+encodeURIComponent(location.href));window.SJ_MOVING=1;
+  }
+}catch(e){}})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#11152a">
 <link rel="icon" type="image/png" href="icons/favicon-96.png">
@@ -982,7 +998,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109005734';
+const APP_VER='20261109014043';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2949,8 +2965,8 @@ function renderShop(){
    部屋を作った人（ホスト）のブラウザがゲームを進める。参加した人（ゲスト）には
    盤面（ゲストから見えてはいけないカードは伏せる）と演出を送り、ゲストの操作と選択を受け取る。
    ホストから見た me / cpu を、ゲスト側では入れ替えて「自分＝me」として描く。 */
-// つなぎ役（PeerJS のシグナリング）と TURN は自前の VPS（~/shinzou-jinrou/peer）。TURN の一時パスワードは /turn から（24時間有効、12時間ごとに取り直す）
-const PEER_HOST='peer.shinzoujinro.com',ICE_FALLBACK=[{urls:'stun:stun.l.google.com:19302'}];
+// つなぎ役（PeerJS のシグナリング）と TURN は自前の VPS（~/shinzou-jinrou/peer）。peer.shinzoujinro.com の証明書が取れたらそちらに替える（同じサーバーなので混ざっても問題なし）。TURN の一時パスワードは /turn から（24時間有効、12時間ごとに取り直す）
+const PEER_HOST='sjpeer.162-43-6-41.sslip.io',ICE_FALLBACK=[{urls:'stun:stun.l.google.com:19302'}];
 let ICE=null,ICE_AT=0;
 async function netIce(){
   if(ICE&&Date.now()-ICE_AT<12*3600e3)return;
@@ -3153,6 +3169,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:40,d:'2026-11-09',t:'心臓人狼のアドレスが <b>shinzoujinro.com</b> になりました。前のアドレスを開いても自動でこちらに移り、銀貨・プロフィール・デッキなどの保存もそのまま引き継がれます。あわせて、友達対戦・ランクマッチの通信を専用のサーバーに移し、学校や会社などの回線でもつながりやすくしました。'},
   {id:39,d:'2026-11-09',t:'カードにレアリティ（ブロンズ・シルバー・ゴールド・レジェンド）をつけました。シミュレーションの勝率が高いカードほど上（占い師や霊媒師などおなじみの役はゴールドまで）で、カードの右上の印と枠の色でわかります。〈預言者〉は「ゴールド以上か、シルバー以下か」を知る効果になりました（判定されるカードは今までのレア以上と同じです）。'},
   {id:38,d:'2026-11-09',t:'ホーム画面を見やすくしました。いちばん上に大きく「ランクマッチ」、その下に「デッキ編成」と「CPUと対戦」。チュートリアルは「遊び方」の中に移しました。'},
   {id:37,d:'2026-11-09',t:'カードを集める形に変わりました。最初は全員スタンダードデッキで戦い、ランクマッチで勝つと2種、負けても1種のカードがランダムにもらえます（かぶることもあります）。手に入れたカードはホームの「デッキ編成」で入れられます。7パック開けて組むモードと、全カードを使える試作の状態はなくしました。ランクマッチの後は、同じ相手との再戦ではなく次の相手を探します。部屋を作る友達対戦では、カードはもらえません。'},
