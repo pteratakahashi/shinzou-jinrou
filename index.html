@@ -667,7 +667,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media(max-width:520px){.menu.home{grid-template-columns:1fr}}
 .menu.sub{margin-top:10px}.menu.sub .mi{min-height:80px}.menu.sub .mi b{font-size:17px}
 .mi.hl{border-color:var(--blood)}
-.tcg.altArt .tart{background:#0b0d1c}.tcg.altArt .tart img{object-position:50% 22%;-webkit-mask-image:none;mask-image:none}
+.tcg.altArt .tart{background:#0b0d1c}.tcg.altArt .tart img{object-position:50% 45%;-webkit-mask-image:none;mask-image:none}
 .tcg.altArt{border:.3em solid transparent;background:linear-gradient(170deg,#2c1640,#120a24) padding-box,conic-gradient(from var(--la),#ffd36b,#ff7ad9,#7af0ff,#9dffb0,#ffd36b) border-box;animation:legRot 4s linear infinite;box-shadow:0 0 1em rgba(255,122,217,.45),0 .35em .9em rgba(0,0,0,.5)}
 .tcg.altArt::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.32) 45%,transparent 60%);background-size:250% 100%;animation:shine 2.6s linear infinite;pointer-events:none;mix-blend-mode:screen}
 @media (prefers-reduced-motion:reduce){.tcg.altArt,.tcg.altArt::after{animation:none}}
@@ -1037,7 +1037,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109073619';
+const APP_VER='20261109074145';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3372,7 +3372,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。ショップで銀貨と交換すると、そのカードが特別なイラストと光る枠になります（カードの説明から、いつもの絵と切りかえられます）。'},
+  {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。全身が映る特別なイラスト（持ち物が光ります）と、虹色に光る枠になります。ショップで銀貨と交換すると使えます（カードの説明から、いつもの絵と切りかえられます）。'},
   {id:43,d:'2026-11-09',t:'称号とタコのページができました。プロフィールのタコか称号を押すと開けます。いつものタコのほかに、ポーズのちがうタコが10体。「はじめて勝つ」「対人戦で10勝」「ランクがゴールドになる」「全部のカードを集める」などの実績で、称号とタコが開放されていきます。選んだタコは対戦中のライフに出て、友達対戦・ランクマッチでは相手にも見えます。ショップの称号は、こちらにまとめました（交換ずみの称号はそのまま使えます）。'},
   {id:42,d:'2026-11-09',t:'新しい系統「呪い」のカード8種を追加しました（封印師・牙抜き・沈黙僧・言霊師・鎖使い・渇き巫女・目隠し鬼・解呪師）。「お互い攻撃系を使えない」「相手は次のターン宣言できない」など、しばらく効き続ける呪いを場に置きます（場に置ける呪いは1つだけ）。あわせて、1枚で一気に決まりやすかった〈探偵〉を「6種類を選んで山札を見る＋1枚引く」に、強すぎた〈祈祷師〉〈占い師〉〈霊媒師〉を少し弱くしました。レアリティも新しいシミュレーションの結果で付け直し、レジェンドは効果が派手なカードにしています。'},
   {id:41,d:'2026-11-09',t:'パックができました。Googleではじめてログインすると5パック、はじめてのランクマッチで5パックプレゼント（1パック5枚、5枚目はゴールド以上）。そのあとは今までどおり、ランクマッチで勝つと2種・負けても1種もらえます。'},
