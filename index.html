@@ -998,7 +998,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109014043';
+const APP_VER='20261109014151';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2965,8 +2965,8 @@ function renderShop(){
    部屋を作った人（ホスト）のブラウザがゲームを進める。参加した人（ゲスト）には
    盤面（ゲストから見えてはいけないカードは伏せる）と演出を送り、ゲストの操作と選択を受け取る。
    ホストから見た me / cpu を、ゲスト側では入れ替えて「自分＝me」として描く。 */
-// つなぎ役（PeerJS のシグナリング）と TURN は自前の VPS（~/shinzou-jinrou/peer）。peer.shinzoujinro.com の証明書が取れたらそちらに替える（同じサーバーなので混ざっても問題なし）。TURN の一時パスワードは /turn から（24時間有効、12時間ごとに取り直す）
-const PEER_HOST='sjpeer.162-43-6-41.sslip.io',ICE_FALLBACK=[{urls:'stun:stun.l.google.com:19302'}];
+// つなぎ役（PeerJS のシグナリング）と TURN は自前の VPS（~/shinzou-jinrou/peer）。仮アドレス sjpeer.162-43-6-41.sslip.io も同じサーバーにつながる（古い画面のため Caddy に残している）。TURN の一時パスワードは /turn から（24時間有効、12時間ごとに取り直す）
+const PEER_HOST='peer.shinzoujinro.com',ICE_FALLBACK=[{urls:'stun:stun.l.google.com:19302'}];
 let ICE=null,ICE_AT=0;
 async function netIce(){
   if(ICE&&Date.now()-ICE_AT<12*3600e3)return;
