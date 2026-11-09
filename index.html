@@ -1006,7 +1006,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109021345';
+const APP_VER='20261109021617';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1439,13 +1439,12 @@ function renderPacks(){
   }else{
     const all=P.cards.every(c=>c.on);
     body=`<div class="reveal">${P.cards.map((c,i)=>`<button type="button" class="flip rr-${tierRR(c.k)} ${c.on?'on':''}" data-i="${i}" style="animation-delay:${i*90}ms" aria-label="${c.on?N(c.k):'カードをめくる'}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(c.k,'p')}</div></div><div class="res ${c.res.type}">${c.res.txt}</div></button>`).join('')}</div>
-    <div class="btns" style="justify-content:center">${all?(n?`<button type="button" class="b primary" id="again">次のパック（残り${n}）</button><button type="button" class="b" id="toDeck">デッキ編成へ</button>`:`<button type="button" class="b primary" id="toDeck">デッキ編成へ</button><button type="button" class="b" id="toHome">ホームへ</button>`):`<button type="button" class="b primary" id="flipAll">すべてめくる</button>`}</div>`;
+    <div class="btns" id="pkBtns" style="justify-content:center">${pkBtnsHTML(all,n)}</div>`;
   }
   $('#app').innerHTML=`<div class="top"><h1>パック開封</h1><div class="btns">${inn?`<span class="muted">残り ${n}パック</span>`:''}<button type="button" class="b small" id="back">戻る</button></div></div>${body}${tabBarHTML('')}`;
   $('#back').onclick=()=>{P=null;go('menu')};bindTabBar();
   const lg=$('#pkLogin');if(lg)lg.onclick=()=>LADDER.login();gsiRender();
-  const td=$('#toDeck');if(td)td.onclick=()=>{P=null;go('free')};
-  const th=$('#toHome');if(th)th.onclick=()=>{P=null;go('menu')};
+  bindPkBtns();
   const pb=$('#packBtn');
   if(pb)pb.onclick=async()=>{
     if(!LADDER.packs||pb.disabled)return;pb.disabled=true;
@@ -1459,8 +1458,16 @@ function renderPacks(){
     await LADDER.loadColl();
     renderPacks();
   };
-  document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=P.cards[+b.dataset.i];if(c.on)return;c.on=true;b.classList.add('on');{const rr=tierRR(c.k),r=b.getBoundingClientRect();if(rr==='L'){setTimeout(()=>{FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2);SFX.legend();screenFlash('gold');quake()},350)}else if(rr==='R')setTimeout(()=>{FXC.burst('#ffd36b',35,6,r.left+r.width/2,r.top+r.height/2);SFX.rare();screenFlash('gold')},350);else SFX.flip()}b.style.animation='none';if(P.cards.every(x=>x.on))setTimeout(renderPacks,RM?0:600)});
-  const fa=$('#flipAll');if(fa)fa.onclick=async()=>{for(const b of document.querySelectorAll('.flip:not(.on)')){b.click();await sleep(180)}};
+  document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=P.cards[+b.dataset.i];if(c.on)return;c.on=true;b.classList.add('on');{const rr=tierRR(c.k),r=b.getBoundingClientRect();if(rr==='L'){setTimeout(()=>{FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2);SFX.legend();screenFlash('gold');quake()},350)}else if(rr==='R')setTimeout(()=>{FXC.burst('#ffd36b',35,6,r.left+r.width/2,r.top+r.height/2);SFX.rare();screenFlash('gold')},350);else SFX.flip()}b.style.animation='none';if(P.cards.every(x=>x.on))setTimeout(()=>{const bx=$('#pkBtns');if(bx){bx.innerHTML=pkBtnsHTML(true,LADDER.packs||0);bindPkBtns()}},RM?0:600)});
+}
+// 開封後のボタン。全部めくったらボタンだけ差し替える（画面ごと描き直すとカードが配られる演出がもう一度出てしまう）
+function pkBtnsHTML(all,n){
+  return all?(n?`<button type="button" class="b primary" id="again">次のパック（残り${n}）</button><button type="button" class="b" id="toDeck">デッキ編成へ</button>`:`<button type="button" class="b primary" id="toDeck">デッキ編成へ</button><button type="button" class="b" id="toHome">ホームへ</button>`):`<button type="button" class="b primary" id="flipAll">すべてめくる</button>`;
+}
+function bindPkBtns(){
+  const td=$('#toDeck');if(td)td.onclick=()=>{P=null;go('free')};
+  const th=$('#toHome');if(th)th.onclick=()=>{P=null;go('menu')};
+  const fa=$('#flipAll');if(fa)fa.onclick=async()=>{fa.disabled=true;for(const b of document.querySelectorAll('.flip:not(.on)')){b.click();await sleep(180)}};
   const ag=$('#again');if(ag)ag.onclick=()=>{P=null;renderPacks();setTimeout(()=>{const b=$('#packBtn');if(b)b.click()},50)};
 }
 // プレゼント（はじめてのログイン・はじめてのランクマッチ）のお知らせ。対戦中は出さず、ホームに戻ったときに出す
