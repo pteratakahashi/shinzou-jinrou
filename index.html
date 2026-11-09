@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="ja"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>心臓人狼</title>
 <script>
 /* 引っ越し（pteratakahashi.github.io/shinzou-jinrou → shinzoujinro.com）。
@@ -167,7 +167,9 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .hero{display:flex;flex-direction:column;gap:14px;align-items:flex-start;padding:8px 0}
 .hero h1{font-size:clamp(34px,9vw,52px);line-height:1.05}
 .hero h1 span{color:var(--blood)}
-.hero p{margin:0;max-width:52ch;color:var(--muted)}
+.hero p{margin:0;max-width:none;color:var(--muted);text-wrap:balance}
+/* 日本語は文節の切れ目で折り返す（Chrome・Edge）。行末に1〜2文字だけ残るのも避ける。PCでもスマホでも同じ文で自然に折れる */
+body{word-break:auto-phrase;text-wrap:pretty}
 .fan{display:flex;padding:8px 0 6px 20px}
 .fan .tcg{margin-left:-20px;transform-origin:50% 120%}
 .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
@@ -1037,7 +1039,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109074145';
+const APP_VER='20261109074949';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
