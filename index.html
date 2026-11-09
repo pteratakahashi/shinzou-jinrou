@@ -79,7 +79,19 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .atTag{display:inline-block;font-size:11px;font-weight:700;padding:0 .5em;margin-left:.4em;border-radius:99px;background:var(--ac);color:#140c1c;vertical-align:middle}
 .atTag.pl{background:rgba(255,255,255,.2);color:#fff}
 .gem{font-family:var(--body);font-weight:700;font-size:.62em;padding:.05em .45em;border-radius:99px;background:rgba(255,255,255,.14);flex:none}
-.r-R .gem{background:#b9c7e8;color:#1a2140}
+.r-B .gem{background:linear-gradient(90deg,#d79a6a,#9a5f36);color:#24110a}
+.r-S .gem{background:linear-gradient(90deg,#eef3ff,#a9b7d8);color:#1a2140}
+.r-G .gem{background:linear-gradient(90deg,#fff0a8,#e9b23c);color:#2a1a00;box-shadow:0 0 .4em rgba(255,210,90,.7)}
+.r-B{box-shadow:0 0 0 .08em #b07a50 inset,0 .35em .9em rgba(0,0,0,.45)}
+.r-S{box-shadow:0 0 0 .1em #d5e0fa inset,0 0 .6em rgba(200,220,255,.25),0 .35em .9em rgba(0,0,0,.45)}
+.r-G{box-shadow:0 0 0 .12em #ffd36b inset,0 0 .25em .12em rgba(255,200,80,.55) inset,0 0 1em rgba(255,200,80,.4),0 .35em .9em rgba(0,0,0,.45)}
+.r-S .tname{background:linear-gradient(90deg,rgba(60,70,98,.92),rgba(128,142,178,.92) 50%,rgba(60,70,98,.92));color:#f2f6ff}
+.r-B .tname{background:linear-gradient(90deg,rgba(70,36,16,.9),rgba(120,70,38,.9) 50%,rgba(70,36,16,.9));color:#ffe9d8}
+.tcg .gem{font-size:.72em;min-width:1.3em;text-align:center}
+.r-G .tname{background:linear-gradient(90deg,rgba(90,60,0,.85),rgba(150,110,20,.85) 50%,rgba(90,60,0,.85));color:#fff4cc}
+.r-S::after,.r-G::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(200,220,255,.18) 48%,transparent 60%);background-size:250% 100%;animation:shine 4.5s linear infinite;pointer-events:none}
+.r-G::after{background-image:linear-gradient(115deg,transparent 33%,rgba(255,230,150,.3) 47%,transparent 60%);animation-duration:3.6s}
+.tierTx{white-space:nowrap;padding:0 .45em;border-radius:99px;font-size:.95em}.tierTx.t-B{background:#9a5f36;color:#ffe2cc}.tierTx.t-S{background:#a9b7d8;color:#1a2140}.tierTx.t-G{background:#e9b23c;color:#2a1a00}.tierTx.t-L{background:linear-gradient(90deg,#ffd36b,#ff7ad9,#7af0ff);color:#2a1400}
 .r-L .gem{background:linear-gradient(90deg,#f3cf6d,#e9a64c);color:#2a1a00}
 .tart{flex:1;min-height:0;border-radius:.4em;overflow:hidden;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--cc) 85%,#fff 15%),color-mix(in srgb,var(--cc) 30%,#0a0d1c) 78%);display:flex;align-items:center;justify-content:center;position:relative}
 .glyph{font-family:var(--display);font-size:3.3em;line-height:1;color:rgba(255,255,255,.94);text-shadow:0 .06em .25em rgba(0,0,0,.55)}
@@ -91,7 +103,6 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
 .el{display:block}.el+.el{margin-top:.15em}
 .ek{display:inline-block;font-size:.78em;font-weight:700;line-height:1.3;padding:0 .4em;margin-right:.35em;border-radius:.3em;vertical-align:.05em;background:rgba(255,255,255,.14);color:var(--ink)}
 .ek-cost{background:#7a2230;color:#ffd9dd}.ek-eff{background:#2b3f73;color:#dbe6ff}.ek-res{background:#6b4c12;color:#ffe7b0}.ek-raid{background:#5a1a1a;color:#ffc2c2}.ek-cond{background:#3d3d55;color:#e2e2f5}
-.r-R{box-shadow:0 0 0 .08em #c9d6f5 inset,0 .35em .9em rgba(0,0,0,.45)}
 /* シングル（レジェンダリー）：虹色に回る枠、星の散る黒紫の地、金の名札 */
 @property --la{syntax:'<angle>';inherits:false;initial-value:0deg}
 .r-L{border:.36em solid transparent;outline:.06em solid rgba(255,211,107,.85);outline-offset:-.42em;background:
@@ -422,7 +433,13 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .vsMid{font-family:var(--display);font-size:clamp(40px,12vw,72px);color:var(--candle);text-shadow:0 0 20px rgba(233,166,76,.8);animation:vsPop .5s .35s cubic-bezier(.3,1.8,.5,1) both}
 @keyframes vsPop{from{transform:scale(3);opacity:0}}
 .hc .tcg{transition:transform .12s ease-out}
-.r-R::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(200,220,255,.18) 48%,transparent 60%);background-size:250% 100%;animation:shine 4.5s linear infinite;pointer-events:none}
+.r-L.lg{background:
+  radial-gradient(circle at 20% 15%,rgba(255,240,180,.2) 0 .08em,transparent .1em) 0 0/1.6em 1.6em padding-box,
+  linear-gradient(165deg,#3a1a08,#1a0c06 60%,#2a1206) padding-box,
+  conic-gradient(from var(--la),#fff2b0,#ffb84a,#ff5a3c,#ffd36b,#fff2b0) border-box;
+  box-shadow:0 0 1.2em rgba(255,150,60,.4),0 .35em .9em rgba(0,0,0,.5)}
+.r-L.lg .tart{background:radial-gradient(circle at 50% 38%,#fff6d6 0%,#ffc56b 25%,#b8461e 52%,#2a0c06 84%)}
+.r-L.lg .ttext{background:rgba(36,14,6,.75)}
 .lives .lost{display:inline-block;animation:lifeLost .8s ease-out}
 @keyframes lifeLost{0%{transform:scale(2.2);color:#fff;text-shadow:0 0 12px var(--blood)}100%{transform:none}}
 .side.active::before{content:"";position:absolute;inset:-1px;border-radius:12px;pointer-events:none;box-shadow:0 0 22px rgba(233,166,76,.25);animation:breathe 2.4s ease-in-out infinite}
@@ -897,7 +914,7 @@ const RAW=[
  ['cryboy','狼少年','嘘','sup','R','自分は2枚引く。このターン、自分の宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
- ['prophet','預言者','予','info','C','相手の心臓がコモンか、レア以上（レア・シングル）かを知る。さらに、相手の心臓ではない種類を1つ知る。'],
+ ['prophet','預言者','予','info','C','相手の心臓が、ゴールド以上（ゴールド・レジェンド）か、シルバー以下かを知る。さらに、相手の心臓ではない種類を1つ知る。'],
  ['spy','密偵','密','info','R','相手の伏せカードを見る。そのあと自分は1枚引く（相手が伏せていなければ2枚）。さらに、相手の心臓ではない種類を1つ知る。'],
  ['pack','群狼','群','atk','C','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が3枚以上あれば、さらに1枚捨てさせる。共鳴：さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['poisoner','毒師','毒','atk','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：次の相手ターン、相手はカードを一切引けない（通常のドローも、カードの効果で引くのも不可）。共鳴：コストなし。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
@@ -965,13 +982,15 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109004209';
+const APP_VER='20261109005254';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
 const byCat=(a,b)=>CIDX[a]-CIDX[b];
 const C={};CARDS.forEach(c=>C[c.k]=c);
 const NORMAL=CARDS.filter(c=>!c.single),SINGLE=CARDS.filter(c=>c.single);
+const TIER_N={B:'ブロンズ',S:'シルバー',G:'ゴールド',L:'レジェンド'},TIER_ORD={L:0,G:1,S:2,B:3};
+const tierCls=c=>c.single?'L':c.t==='L'?'L lg':(c.t||'B');
 const STARTER=CARDS.filter(c=>c.r==='S').map(c=>c.k);
 const N=k=>C[k].n;
 const maxOwn=k=>C[k].single?1:3;
@@ -1255,9 +1274,9 @@ function catSummary(types){return ['info','atk','grd','sup'].map(ct=>`${CAT[ct]}
 
 
 function cardHTML(k,size='m',extra=''){
-  const c=C[k];const r=c.r==='S'?'C':c.r;
+  const c=C[k];
   const text=(size==='l'||size==='p')?`<div class="ttext">${effHTML(c.e)}</div>`:'';
-  return `<div class="tcg ${size} cat-${c.cat} r-${r} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:''}<span class="gem">${r}</span></div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${k}.png" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}</div>`;
+  return `<div class="tcg ${size} cat-${c.cat} r-${tierCls(c)} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:''}<span class="gem" title="${TIER_N[c.t]||''}">${c.t||'B'}</span></div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${k}.png" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}</div>`;
 }
 const backHTML=(size='s',label='')=>`<div class="tcg back ${size}"><span class="bk">心</span>${label?`<span class="bl">${label}</span>`:''}</div>`;
 
@@ -1599,6 +1618,7 @@ function renderCards(){
   const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['one','シングル']];
   const list=CARDS.filter(c=>fMatch(CFS,c,false));
   $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">所持 ${ownedCount()}/${CARDS.length}種</span></div>
+  <p class="note tierLeg">レアリティ：<b class="tierTx t-B">ブロンズ</b> → <b class="tierTx t-S">シルバー</b> → <b class="tierTx t-G">ゴールド</b> → <b class="tierTx t-L">レジェンド</b>　CPUどうしで対戦させたシミュレーションで、勝率が高いカードほど上です（シングルはすべてレジェンド）。</p>
   ${filterBar(CFS,{single:true})}
   <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div class="${owns(c.k)?'':'unown'}">${cardHTML(c.k,'p')}</div>`).join('')}</div>
   ${tabBarHTML('cards')}`;
@@ -1623,8 +1643,9 @@ function showRulesOverlay(){
 // おまかせ構築とCPU用の優先順（シミュレーションの勝率順）
 const RANK=['diviner', 'seer', 'berserker', 'detective', 'medium', 'cursewolf', 'alpha', 'madman', 'pack', 'stargazer', 'astrologer', 'howler', 'wolf', 'fox', 'nekomata', 'prophet', 'silencer', 'witch', 'clairvoy', 'mason', 'kidnapper', 'villager', 'vampire', 'phantom', 'nightmare', 'hunter', 'twins', 'warder', 'chief', 'watchdog', 'ghoul', 'knight', 'executioner', 'inquisitor', 'gatekeeper', 'bard', 'bodyguard', 'messenger', 'priest', 'elder', 'tactician', 'baker', 'bastion', 'decoy', 'necro', 'sage', 'nun', 'reflect', 'apprentice', 'cryboy', 'poisoner', 'shieldbearer', 'innkeeper', 'alchemist', 'cleric', 'lookout', 'sentinel', 'gravedigger', 'spy', 'listener', 'banker', 'peddler', 'drummer', 'tracker', 'watchman', 'wererat', 'trapper', 'exorcist', 'confessor', 'assassin', 'gambler', 'fortune'];
 const RANK1=['moonqueen', 'greatwolf', 'greatdet', 'oracle', 'teller', 'mirror', 'curser', 'timewitch', 'whitewolf', 'saint'];
-// レア＝勝率上位15種（シングルはレジェンド）
-CARDS.forEach(c=>{if(!c.single){const i=RANK.indexOf(c.k);c.r=i>=0&&i<Math.round(NORMAL.length*.35)?'R':(c.r==='S'?'S':'C')}});
+// レアリティ（シミュレーションの勝率順 RANK で決める）：上位6種＝レジェンド、7〜25位＝ゴールド、26〜48位＝シルバー、残り＝ブロンズ。シングルは全部レジェンド
+// 預言者の「ゴールド以上」は c.r（R＝ゴールド以上の通常カード、L＝シングル）で判定する
+CARDS.forEach(c=>{if(c.single){c.t='L';return}const i=RANK.indexOf(c.k);c.t=i<0?'B':i<6?'L':i<25?'G':i<48?'S':'B';c.r=(c.t==='L'||c.t==='G')?'R':(c.r==='S'?'S':'C')});
 let D=null,DF2='all';
 function genDraftPack(single){
   const Cp=NORMAL.filter(c=>c.r==='S'||c.r==='C'),Rp=NORMAL.filter(c=>c.r==='R');
@@ -1900,7 +1921,7 @@ function pickOption(title,sub,opts){
 }
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
-  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type],rr=d.r==='S'?'C':d.r;return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]+'・'+{C:'コモン',R:'レア'}[rr]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
+  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type];return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]}・${TIER_N[d.t]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
   return modal(html,(m,done)=>{
     const sel=[];const ok=m.querySelector('#mOk');
     if(TUT.on&&S&&S.tut&&TUT.pickOnly)m.querySelectorAll('.cardPick button').forEach(b=>{if(cards[+b.dataset.i].type!==TUT.pickOnly){b.disabled=true;b.classList.add('tutDim')}});
@@ -2112,7 +2133,7 @@ async function playCard0(p,c,copy=false){
     case 'prophet':{
       const hi=t=>{const r=C[t].r;return r==='R'||r==='L'};const isHi=hi(o.heart.type);
       narrow(p,typesOf(o).filter(t=>hi(t)===isHi));
-      log(`預言：${o.name}の心臓は${isHi?'レア以上':'コモン'}。`,w);learnNot(p,1,'預言者');break;}
+      log(`預言：${o.name}の心臓は${isHi?'ゴールド以上':'シルバー以下'}。`,w);learnNot(p,1,'預言者');break;}
     case 'spy':{
       draw(p,1);if(o.setCard){K(p).known.add(o.setCard.id);log(`密偵：${o.name}の伏せカードは〈${N(o.setCard.type)}〉。`,w)}
       else{draw(p,1);log('相手は伏せていないので、さらに1枚引いた。',w)}
@@ -2631,8 +2652,8 @@ function histRow(who,label){
   return`<div class="hrow"><span class="who" style="font-size:14px">${label}</span><div class="hlist">${items.map(h=>`<button type="button" class="cardBtn hi" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る"><span class="ht">${h.turn}T</span>${cardHTML(h.k,'s')}</button>`).join('')||'<span class="note">まだありません</span>'}</div></div>`;
 }
 function showCardInfo(k){
-  const c=C[k];const r=c.r==='S'?'C':c.r;
-  const rn={C:'コモン',R:'レア',L:'シングル'}[r];
+  const c=C[k];
+  const rn=`<b class="tierTx t-${c.t}">${TIER_N[c.t]}</b>${c.single?'・シングル':''}`;
   let usage='';
   if(S&&VIEW==='battle'){const a=S.hist.filter(h=>h.k===k&&h.who==='cpu').length,b=S.hist.filter(h=>h.k===k&&h.who==='me').length;usage=`<p>この対戦で使われた回数：${OPN()} ${a}回／${MYN()} ${b}回</p>`}
   modal(`<div class="mHead"><h2>${c.n}${atTag(c)}</h2><button type="button" class="xBtn" id="iX" aria-label="閉じる">×</button></div>
@@ -3121,6 +3142,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:39,d:'2026-11-09',t:'カードにレアリティ（ブロンズ・シルバー・ゴールド・レジェンド）をつけました。シミュレーションの勝率が高いカードほど上で、カードの右上の印と枠の色でわかります。〈預言者〉は「ゴールド以上か、シルバー以下か」を知る効果になりました（判定されるカードは今までのレア以上と同じです）。'},
   {id:38,d:'2026-11-09',t:'ホーム画面を見やすくしました。いちばん上に大きく「ランクマッチ」、その下に「デッキ編成」と「CPUと対戦」。チュートリアルは「遊び方」の中に移しました。'},
   {id:37,d:'2026-11-09',t:'カードを集める形に変わりました。最初は全員スタンダードデッキで戦い、ランクマッチで勝つと2種、負けても1種のカードがランダムにもらえます（かぶることもあります）。手に入れたカードはホームの「デッキ編成」で入れられます。7パック開けて組むモードと、全カードを使える試作の状態はなくしました。ランクマッチの後は、同じ相手との再戦ではなく次の相手を探します。部屋を作る友達対戦では、カードはもらえません。'},
   {id:36,d:'2026-11-08',t:'ブラフ成功のごほうびを強くしました。カードが手札に戻り、1枚多く使えるのに加えて、相手の心臓ではない種類を1つ知れます。'},
