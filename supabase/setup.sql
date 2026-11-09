@@ -442,3 +442,155 @@ grant execute on function public.my_collection() to authenticated;
 grant execute on function public.mm_poll(text) to authenticated;
 grant execute on function public.start_match(text, uuid) to authenticated;
 grant execute on function public.report_result(text, uuid, uuid, text) to authenticated;
+
+-- ===== パック（2026-11-09）=====
+-- はじめてのログインで5パック、はじめてのランクマッチ（決着した試合）で5パック。1パック5枚。
+-- カードのレアリティ（B ブロンズ / S シルバー / G ゴールド / L レジェンド）。index.html の RANK・BASIC_ROLES から作った値。
+-- ゲームのレアリティを変えたら、ここも作り直すこと（README 参照）
+alter table public.cards add column if not exists tier text not null default 'B';
+update public.cards c set tier = v.t from (values
+  ('villager','G'),
+  ('chief','S'),
+  ('seer','G'),
+  ('medium','G'),
+  ('hunter','S'),
+  ('wolf','G'),
+  ('fox','G'),
+  ('mason','G'),
+  ('baker','S'),
+  ('detective','G'),
+  ('elder','S'),
+  ('trapper','B'),
+  ('executioner','S'),
+  ('madman','G'),
+  ('watchdog','S'),
+  ('vampire','G'),
+  ('priest','S'),
+  ('phantom','G'),
+  ('alchemist','B'),
+  ('twins','S'),
+  ('sage','S'),
+  ('bard','S'),
+  ('nekomata','G'),
+  ('bodyguard','S'),
+  ('decoy','S'),
+  ('inquisitor','S'),
+  ('cursewolf','L'),
+  ('cryboy','B'),
+  ('silencer','G'),
+  ('reflect','S'),
+  ('prophet','G'),
+  ('spy','B'),
+  ('pack','L'),
+  ('poisoner','B'),
+  ('bastion','S'),
+  ('sentinel','B'),
+  ('peddler','B'),
+  ('apprentice','B'),
+  ('gatekeeper','S'),
+  ('warder','S'),
+  ('astrologer','G'),
+  ('necro','S'),
+  ('assassin','B'),
+  ('greatdet','L'),
+  ('curser','L'),
+  ('saint','L'),
+  ('oracle','L'),
+  ('greatwolf','L'),
+  ('whitewolf','L'),
+  ('teller','L'),
+  ('timewitch','L'),
+  ('mirror','L'),
+  ('fortune','B'),
+  ('listener','B'),
+  ('diviner','L'),
+  ('tracker','B'),
+  ('confessor','B'),
+  ('stargazer','L'),
+  ('clairvoy','G'),
+  ('berserker','L'),
+  ('ghoul','S'),
+  ('kidnapper','G'),
+  ('howler','G'),
+  ('nightmare','G'),
+  ('wererat','B'),
+  ('witch','G'),
+  ('alpha','L'),
+  ('knight','S'),
+  ('nun','S'),
+  ('watchman','B'),
+  ('shieldbearer','B'),
+  ('lookout','B'),
+  ('cleric','B'),
+  ('exorcist','B'),
+  ('banker','B'),
+  ('gravedigger','B'),
+  ('messenger','S'),
+  ('tactician','S'),
+  ('innkeeper','B'),
+  ('drummer','B'),
+  ('gambler','B'),
+  ('moonqueen','L')
+) as v(k, t) where c.k = v.k;
+
+-- スタンダードデッキのカード（全員が最初から持っている扱い。パックではかぶり扱い）
+alter table public.cards add column if not exists starter boolean not null default false;
+update public.cards set starter = (k in ('villager','seer','medium','hunter','wolf','fox','mason','baker','detective','elder','trapper','executioner','madman','greatdet'));
+
+create table if not exists public.packs (
+  uid uuid primary key references public.players(id) on delete cascade,
+  n integer not null default 0,              -- 開けていないパックの数
+  login_bonus boolean not null default false,
+  ranked_bonus boolean not null default false,
+  opened integer not null default 0
+);
+alter table public.packs enable row level security;
+revoke all on public.packs from anon, authenticated;
+
+-- 自分のパックの数。まだもらっていないプレゼントがあればここで渡す（got に 'login' / 'ranked'）
+create or replace function public.pack_state()
+returns json language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); p public.packs; got text[] := '{}';
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  insert into players(id) values (me) on conflict (id) do nothing;
+  insert into packs(uid) values (me) on conflict (uid) do nothing;
+  select * into p from packs where uid = me for update;
+  if not p.login_bonus then
+    update packs set n = n + 5, login_bonus = true where uid = me; got := got || 'login'::text;
+  end if;
+  if not p.ranked_bonus and exists (select 1 from matches m where m.ranked and m.status = 'done' and me in (m.p1, m.p2)) then
+    update packs set n = n + 5, ranked_bonus = true where uid = me; got := got || 'ranked'::text;
+  end if;
+  return json_build_object('n', (select n from packs where uid = me), 'got', to_json(got),
+    'ranked_bonus', (select ranked_bonus from packs where uid = me));
+end $$;
+
+-- パックを1つ開ける。5枚：1〜3枚目 ブロンズ70%/シルバー30%、4枚目 シルバー70%/ゴールド30%、5枚目 ゴールド80%/レジェンド20%。
+-- 同じレアリティの中では、まだ持っていないカードを優先し、1パックの中では同じカードを出さない
+create or replace function public.open_pack()
+returns json language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); left_n integer; tiers text[]; t text; ck text; had boolean; res json[] := '{}'; picked text[] := '{}'; i integer; x float;
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  update packs set n = n - 1, opened = opened + 1 where uid = me and n > 0 returning n into left_n;
+  if not found then raise exception 'no packs'; end if;
+  for i in 1..5 loop
+    x := random();
+    t := case when i <= 3 then (case when x < 0.7 then 'B' else 'S' end)
+              when i = 4 then (case when x < 0.7 then 'S' else 'G' end)
+              else (case when x < 0.8 then 'G' else 'L' end) end;
+    select c.k into ck from cards c
+      where c.tier = t and not (c.k = any(picked))
+      order by (c.starter or exists (select 1 from collection co where co.uid = me and co.k = c.k)), random() limit 1;
+    if ck is null then continue; end if;
+    had := (select starter from cards where k = ck) or exists (select 1 from collection co where co.uid = me and co.k = ck);
+    insert into collection as co (uid, k) values (me, ck)
+      on conflict on constraint collection_pkey do update set n = co.n + 1, got_at = now();
+    picked := picked || ck;
+    res := res || json_build_object('k', ck, 'new', not had);
+  end loop;
+  return json_build_object('cards', to_json(res), 'n', left_n);
+end $$;
+grant execute on function public.pack_state() to authenticated;
+grant execute on function public.open_pack() to authenticated;

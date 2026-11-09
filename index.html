@@ -214,6 +214,8 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 @keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
 @keyframes tear{to{transform:scale(1.25) translateY(-30px);opacity:0}}
 .reveal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:100%}
+.reveal .flip{position:relative;z-index:0}.reveal .res{position:relative;z-index:3;margin-top:3px}
+@media (max-width:560px){.reveal{row-gap:22px}}
 @media (max-width:560px){.reveal{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .reveal.reveal6{grid-template-columns:repeat(6,minmax(0,1fr))}
 @media (max-width:640px){.reveal.reveal6{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -664,6 +666,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media(max-width:520px){.menu.home{grid-template-columns:1fr}}
 .menu.sub{margin-top:10px}.menu.sub .mi{min-height:80px}.menu.sub .mi b{font-size:17px}
 .mi.hl{border-color:var(--blood)}
+.mi.packMi{background:linear-gradient(135deg,#5a3a0a,#3a1a3a 60%,#1f1838);border-color:#ffd36b;box-shadow:0 0 0 1px rgba(255,211,107,.35),0 0 18px rgba(255,200,90,.25);animation:pkGlow 2.4s ease-in-out infinite}
+@keyframes pkGlow{50%{box-shadow:0 0 0 1px rgba(255,211,107,.6),0 0 28px rgba(255,200,90,.45)}}
+@media (prefers-reduced-motion:reduce){.mi.packMi{animation:none}}
+.pkCount{font-family:var(--body);font-weight:700;font-size:.7em;background:#ffd36b;color:#2a1a00;border-radius:99px;padding:0 .5em;vertical-align:.15em}
+.giftPk{display:flex;justify-content:center;gap:10px;margin:4px 0 6px}
+.pack.mini{width:64px;height:auto;pointer-events:none;animation:none;justify-content:center;gap:2px}.pack.mini .pkh{font-size:30px;line-height:1}.pack.mini .pk2{font-size:13px;color:#ffd36b;letter-spacing:0}
 @media(max-width:520px){.mi.big{min-height:130px;padding-right:40%}.mi.big b{font-size:28px}}
 .miArt{position:absolute;right:0;top:0;height:100%;aspect-ratio:1;object-fit:cover;object-position:50% 15%;image-rendering:pixelated;-webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);mask-image:linear-gradient(90deg,transparent,#000 55%);opacity:.92;transition:transform .25s}
 .mi:hover .miArt,.mi:focus-visible .miArt{transform:scale(1.08)}
@@ -998,7 +1006,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109014151';
+const APP_VER='20261109020952';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,one:4};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1010,7 +1018,6 @@ const tierCls=c=>c.single?'L':c.t==='L'?'L lg':(c.t||'B');
 const STARTER=CARDS.filter(c=>c.r==='S').map(c=>c.k);
 const N=k=>C[k].n;
 const maxOwn=k=>C[k].single?1:3;
-const SHARD={S:1,C:1,R:3,L:10},PACK_COST=10;
 
 /* ================= utils ================= */
 const $=s=>document.querySelector(s);
@@ -1300,7 +1307,7 @@ const backHTML=(size='s',label='')=>`<div class="tcg back ${size}"><span class="
 const SAVE_KEY='hw2_save';
 function defaultSave(){
   const coll={};CARDS.forEach(c=>coll[c.k]=maxOwn(c.k));
-  return{coll,packs:5,shards:0,deck:{types:[...STARTER],single:'greatdet'},wins:0,losses:0,showP:false};
+  return{coll,deck:{types:[...STARTER],single:'greatdet'},wins:0,losses:0,showP:false};
 }
 let SV;
 try{SV=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
@@ -1320,11 +1327,6 @@ const isNewCard=k=>(COLL.map[k]||0)>0&&!(SV.collSeen||{})[k];
 function markCollSeen(){SV.collSeen=SV.collSeen||{};let ch=false;for(const k in COLL.map)if(!SV.collSeen[k]){SV.collSeen[k]=1;ch=true}if(ch)save()}
 // 前の「全カード所持」の試作で組んだデッキは、スタンダードデッキに戻す
 if(SV.collV!==1){SV.collV=1;SV.freeDeck=stdDeck();save()}
-function addCard(k){
-  const c=C[k];if(own(k)>=maxOwn(k)){SV.shards+=SHARD[c.r];return{type:'dup',txt:`かけら+${SHARD[c.r]}`}}
-  SV.coll[k]=maxOwn(k);
-  return{type:'new',txt:c.single?'NEW':'NEW ×3'};
-}
 function deckIssues(){
   const d=SV.deck,iss=[];
   if(d.types.length!==13)iss.push(`シングル以外のカードを13種選んでください（今${d.types.length}種）`);
@@ -1370,6 +1372,8 @@ function renderMenu(){
   </div>
   ${profileHTML()}
   <div class="menu home">
+    ${LADDER.uid()&&LADDER.packs>0?`<button type="button" class="mi main packMi" id="mPacks"><img class="miArt" src="scenes/pack.png" alt=""><b>パックを開ける <span class="pkCount">×${LADDER.packs}</span></b><span>1パック5枚。持っていないカードが出やすくなっています</span></button>`:''}
+    ${LADDER.on()&&!LADDER.uid()&&LADDER.state!=='loading'?`<button type="button" class="mi main packMi" id="mGift"><img class="miArt" src="scenes/pack.png" alt=""><b>ログインで5パック プレゼント</b><span>Googleでログインすると、はじめてのログインで5パック、はじめてのランクマッチでさらに5パック</span></button>`:''}
     ${ONL.get()&&!NET.conn?`<button type="button" class="mi main" id="mRejoin"><img class="miArt" src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(ONL.get().opp||'相手')}さんとの対戦の続き（${ago(ONL.get().at)}）</span></button>`:''}
     ${savedG?`<button type="button" class="mi main" id="mResume"><img class="miArt" src="art/hunter.png" alt=""><b>対戦の続きから</b><span>${savedG.turnNo+1}ターン目から・ライフ あなた${savedG.me.life}／CPU${savedG.cpu.life}・${ago(savedG.at)}</span></button>`:''}
     ${!savedG&&savedD?`<button type="button" class="mi main" id="mResumeD"><img class="miArt" src="art/peddler.png" alt=""><b>デッキ作りの続きから</b><span>${savedD.D.stage==='build'?'デッキ構築中':`パック${savedD.D.i}/7開封済み`}・${ago(savedD.at)}</span></button>`:''}
@@ -1397,6 +1401,9 @@ function renderMenu(){
   $('#mFree').onclick=()=>go('free');
   const mi=$('#mInstall');if(mi)mi.onclick=installApp;
   $('#mOnline').onclick=()=>go('online');
+  const mpk=$('#mPacks');if(mpk)mpk.onclick=()=>{P=null;go('packs')};
+  const mgf=$('#mGift');if(mgf)mgf.onclick=()=>{P=null;go('packs')};
+  setTimeout(showGifts,300);
   const mrk=$('#mRank');if(mrk)mrk.onclick=()=>{NET.err='';mmStart()};
   bindRankCard();
   $('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');renderMenu()};
@@ -1411,40 +1418,61 @@ function renderMenu(){
   $('#tReset').onclick=()=>{if(!armed){armed=true;$('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();renderMenu()};
 }
 
-/* ---- packs ---- */
+/* ---- packs ----
+   パックはサーバー（Supabase の packs）で数え、開けるのもサーバー（open_pack）。ログインした人だけ。
+   はじめてのログインで5パック、はじめてのランクマッチの決着で5パック（pack_state が渡す） */
 let P=null;
-function genPack(){
-  const Cp=CARDS.filter(c=>c.r==='C'),Rp=CARDS.filter(c=>c.r==='R'),Lp=CARDS.filter(c=>c.r==='L'&&!c.st);
-  return[rand(Cp),rand(Cp),rand(Cp),Math.random()<.3?rand(Rp):rand(Cp),Math.random()<.15?rand(Lp):rand(Rp)].map(c=>c.k);
-}
+const tierRR=k=>{const t=C[k].t;return t==='L'?'L':t==='G'?'R':'C'};
 function renderPacks(){
-  const canEx=SV.shards>=PACK_COST;
+  const n=LADDER.packs||0,inn=!!LADDER.uid();
   let body;
-  if(!P){
+  if(!inn){
+    body=`<div class="packStage"><div class="pack" aria-hidden="true"><span class="pk2">BOOSTER</span><span class="pkh">心</span><span class="pk1">心臓人狼</span><span class="pk2">5 CARDS</span></div>
+      <p class="note">パックは Google でログインすると開けられます。はじめてのログインで<b>5パック</b>、はじめてのランクマッチで<b>さらに5パック</b>プレゼント。</p>
+      <div class="btns" data-gsi><button type="button" class="b primary" id="pkLogin">Googleでログイン</button></div></div>`;
+  }else if(!P){
     body=`<div class="packStage">
-      <button type="button" class="pack" id="packBtn" ${SV.packs?'':'disabled'} aria-label="パックを開ける"><span class="pk2">BOOSTER</span><span class="pkh">心</span><span class="pk1">心臓人狼</span><span class="pk2">5 CARDS</span></button>
-      <div class="muted">${SV.packs?'パックをタップして開封':'パックがありません'}</div>
-      <div class="btns"><button type="button" class="b small" id="exBtn" ${canEx?'':'disabled'}>かけら${PACK_COST}個でパックと交換（所持${SV.shards}）</button></div>
-      <div class="note">1パック5枚。うち1枚はレア以上で、15%でシングルカードが出ます。シングル以外のカードは1枚出ると3枚手に入ります。持っているカードが出たらかけらになります。</div>
+      <button type="button" class="pack" id="packBtn" ${n?'':'disabled'} aria-label="パックを開ける"><span class="pk2">BOOSTER</span><span class="pkh">心</span><span class="pk1">心臓人狼</span><span class="pk2">5 CARDS</span></button>
+      <div class="muted" id="pkMsg">${n?'パックをタップして開封':'パックがありません'}</div>
+      <div class="note">1パック5枚。4枚目はシルバー以上、5枚目はゴールド以上（20%でレジェンド）。まだ持っていないカードが出やすくなっています。</div>
     </div>`;
   }else{
     const all=P.cards.every(c=>c.on);
-    body=`<div class="reveal">${P.cards.map((c,i)=>{const r=C[c.k].r==='S'?'C':C[c.k].r;return`<button type="button" class="flip rr-${r} ${c.on?'on':''}" data-i="${i}" style="animation-delay:${i*90}ms" aria-label="${c.on?N(c.k):'カードをめくる'}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(c.k,'p')}</div></div><div class="res ${c.res.type}">${c.res.txt}</div></button>`}).join('')}</div>
-    <div class="btns" style="justify-content:center">${all?`<button type="button" class="b primary" id="again" ${SV.packs?'':'disabled'}>次のパック（残り${SV.packs}）</button>`:`<button type="button" class="b primary" id="flipAll">すべてめくる</button>`}</div>`;
+    body=`<div class="reveal">${P.cards.map((c,i)=>`<button type="button" class="flip rr-${tierRR(c.k)} ${c.on?'on':''}" data-i="${i}" style="animation-delay:${i*90}ms" aria-label="${c.on?N(c.k):'カードをめくる'}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(c.k,'p')}</div></div><div class="res ${c.res.type}">${c.res.txt}</div></button>`).join('')}</div>
+    <div class="btns" style="justify-content:center">${all?(n?`<button type="button" class="b primary" id="again">次のパック（残り${n}）</button><button type="button" class="b" id="toDeck">デッキ編成へ</button>`:`<button type="button" class="b primary" id="toDeck">デッキ編成へ</button><button type="button" class="b" id="toHome">ホームへ</button>`):`<button type="button" class="b primary" id="flipAll">すべてめくる</button>`}</div>`;
   }
-  $('#app').innerHTML=`<div class="top"><h1>パック開封</h1><div class="btns"><span class="muted">残り ${SV.packs}パック</span><button type="button" class="b small" id="back">戻る</button></div></div>${body}`;
-  $('#back').onclick=()=>go('menu');
+  $('#app').innerHTML=`<div class="top"><h1>パック開封</h1><div class="btns">${inn?`<span class="muted">残り ${n}パック</span>`:''}<button type="button" class="b small" id="back">戻る</button></div></div>${body}${tabBarHTML('')}`;
+  $('#back').onclick=()=>{P=null;go('menu')};bindTabBar();
+  const lg=$('#pkLogin');if(lg)lg.onclick=()=>LADDER.login();gsiRender();
+  const td=$('#toDeck');if(td)td.onclick=()=>{P=null;go('free')};
+  const th=$('#toHome');if(th)th.onclick=()=>{P=null;go('menu')};
   const pb=$('#packBtn');
   if(pb)pb.onclick=async()=>{
-    if(!SV.packs)return;pb.disabled=true;
-    SV.packs--;const ks=genPack();P={cards:ks.map(k=>({k,res:addCard(k),on:false}))};save();
-    pb.classList.add('shake');await sleep(900);pb.classList.remove('shake');pb.classList.add('tear');await sleep(450);
+    if(!LADDER.packs||pb.disabled)return;pb.disabled=true;
+    pb.classList.add('shake');
+    const [res]=await Promise.all([LADDER.sb.rpc('open_pack'),sleep(900)]);
+    pb.classList.remove('shake');
+    if(res.error){console.error(res.error);const m=$('#pkMsg');if(m)m.textContent=/no packs/.test(res.error.message)?'パックがありません':'パックを開けられませんでした。通信を確かめて、もう一度試してください。';await LADDER.loadPacks();pb.disabled=!LADDER.packs;return}
+    LADDER.packs=res.data.n;
+    P={cards:res.data.cards.filter(c=>C[c.k]).map(c=>({k:c.k,on:false,res:c.new?{type:'new',txt:C[c.k].single?'NEW':'NEW ×3'}:{type:'dup',txt:'かぶり'}}))};
+    pb.classList.add('tear');await sleep(450);
+    await LADDER.loadColl();
     renderPacks();
   };
-  const ex=$('#exBtn');if(ex)ex.onclick=()=>{if(SV.shards<PACK_COST)return;SV.shards-=PACK_COST;SV.packs++;save();renderPacks()};
-  document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=P.cards[+b.dataset.i];if(c.on)return;c.on=true;b.classList.add('on');{const rr=C[c.k].r;if(rr==='L'){setTimeout(()=>{SFX.legend();screenFlash('gold')},350)}else if(rr==='R')setTimeout(()=>{SFX.rare();screenFlash('silver')},350);else SFX.flip()}b.style.animation='none';if(P.cards.every(x=>x.on))setTimeout(renderPacks,RM?0:600)});
+  document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=P.cards[+b.dataset.i];if(c.on)return;c.on=true;b.classList.add('on');{const rr=tierRR(c.k),r=b.getBoundingClientRect();if(rr==='L'){setTimeout(()=>{FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2);SFX.legend();screenFlash('gold');quake()},350)}else if(rr==='R')setTimeout(()=>{FXC.burst('#ffd36b',35,6,r.left+r.width/2,r.top+r.height/2);SFX.rare();screenFlash('gold')},350);else SFX.flip()}b.style.animation='none';if(P.cards.every(x=>x.on))setTimeout(renderPacks,RM?0:600)});
   const fa=$('#flipAll');if(fa)fa.onclick=async()=>{for(const b of document.querySelectorAll('.flip:not(.on)')){b.click();await sleep(180)}};
   const ag=$('#again');if(ag)ag.onclick=()=>{P=null;renderPacks();setTimeout(()=>{const b=$('#packBtn');if(b)b.click()},50)};
+}
+// プレゼント（はじめてのログイン・はじめてのランクマッチ）のお知らせ。対戦中は出さず、ホームに戻ったときに出す
+function showGifts(){
+  if(!LADDER.gifts||!LADDER.gifts.length||VIEW!=='menu'||!$('#modal').hidden)return;
+  const g=LADDER.gifts;LADDER.gifts=[];
+  const txt={login:'はじめてのログイン ありがとう！',ranked:'はじめてのランクマッチ おつかれさま！'};
+  modal(`<div class="info giftBox"><div class="infoText" style="width:100%;text-align:center"><div class="giftPk">${g.map(()=>`<div class="pack mini" aria-hidden="true"><span class="pkh">心</span><span class="pk2">×5</span></div>`).join('')}</div><h2>プレゼント</h2>${g.map(k=>`<p>${txt[k]||''}<br><b>パック5つ</b>をプレゼントします</p>`).join('')}<p class="note">1パック5枚入り。持っていないカードが出やすくなっています。</p><div class="btns" style="justify-content:center"><button type="button" class="b primary" id="gOpen">今すぐ開ける</button><button type="button" class="b" id="gLater">あとで</button></div></div></div>`,(m,done)=>{
+    try{SFX.legend()}catch(e){}
+    m.querySelector('#gOpen').onclick=()=>{done();P=null;go('packs')};
+    m.querySelector('#gLater').onclick=()=>{done();renderMenu()};
+  });
 }
 
 /* ---- deck ---- */
@@ -3016,7 +3044,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     try{
       await LADDER.lib();
       LADDER.sb=window.supabase.createClient(RANK_CFG.url,RANK_CFG.key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
-      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
+      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};LADDER.packs=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
       const {data}=await LADDER.sb.auth.getSession();
       LADDER.user=data&&data.session&&data.session.user||null;
       try{const u=new URL(location.href);if(u.searchParams.has('code')){u.searchParams.delete('code');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
@@ -3028,7 +3056,18 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     const {data,error}=await LADDER.sb.rpc('my_profile',{p_name:netName()});
     if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in';if(data&&data.name&&data.name!==SV.nick){SV.nick=data.name;save()}}
     await LADDER.loadColl();
+    await LADDER.loadPacks();
     LADDER.redraw();
+    showGifts();
+  },
+  // 開けていないパックの数。まだのプレゼントがあればサーバーがここで渡す
+  packs:null,gifts:[],
+  async loadPacks(){
+    const me=LADDER.uid();if(!LADDER.sb||!me)return;
+    const {data,error}=await LADDER.sb.rpc('pack_state');
+    if(error){console.error(error);return}
+    if(LADDER.uid()!==me)return;
+    LADDER.packs=data.n;if(Array.isArray(data.got)&&data.got.length)LADDER.gifts.push(...data.got);
   },
   // 持っているカード。読めないとき（サーバーのSQLが古いなど）は前回の控えを使う
   async loadColl(){
@@ -3039,9 +3078,9 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     if(LADDER.uid()!==me)return;
     COLL.map=data&&typeof data==='object'?data:{};SV.collCache={uid:me,map:COLL.map};save();
   },
-  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
+  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='packs'&&!P)renderPacks();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
   login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
-  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
+  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};LADDER.packs=null;SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
   async startMatch(mid){if(!LADDER.rated()||!mid)return;const {error}=await LADDER.sb.rpc('start_match',{p_match:mid,p_opp:NET.oppUid});if(error)console.error(error)},
   async report(mid,won,reason,opp=NET.oppUid){
     const me=LADDER.uid();
@@ -3169,6 +3208,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:41,d:'2026-11-09',t:'パックができました。Googleで<b>はじめてログインすると5パック</b>、<b>はじめてのランクマッチで5パック</b>プレゼント（1パック5枚、持っていないカードが出やすい）。そのあとは今までどおり、ランクマッチで勝つと2種・負けても1種もらえます。'},
   {id:40,d:'2026-11-09',t:'心臓人狼のアドレスが <b>shinzoujinro.com</b> になりました。前のアドレスを開いても自動でこちらに移り、銀貨・プロフィール・デッキなどの保存もそのまま引き継がれます。あわせて、友達対戦・ランクマッチの通信を専用のサーバーに移し、学校や会社などの回線でもつながりやすくしました。'},
   {id:39,d:'2026-11-09',t:'カードにレアリティ（ブロンズ・シルバー・ゴールド・レジェンド）をつけました。シミュレーションの勝率が高いカードほど上（占い師や霊媒師などおなじみの役はゴールドまで）で、カードの右上の印と枠の色でわかります。〈預言者〉は「ゴールド以上か、シルバー以下か」を知る効果になりました（判定されるカードは今までのレア以上と同じです）。'},
   {id:38,d:'2026-11-09',t:'ホーム画面を見やすくしました。いちばん上に大きく「ランクマッチ」、その下に「デッキ編成」と「CPUと対戦」。チュートリアルは「遊び方」の中に移しました。'},
