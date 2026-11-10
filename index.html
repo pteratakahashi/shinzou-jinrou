@@ -1063,6 +1063,153 @@ body.onHome{overflow:hidden}
 @media (max-height:700px){.hmMascot{display:none}.hmLogo{top:40%}}
 .stRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .xBtn{background:linear-gradient(180deg,#5a2230,#2a0910)!important;border:2px solid #c9984a!important;color:#ffe7b0!important;box-shadow:0 3px 0 #1a0508}
+
+/* ================= FIT（2026-11-11）=================
+   どの機種でも対戦を1画面に収める。画面の幅・高さ・向きから JS（FIT）が html に fit-p（スマホ縦）／fit-tight（低い）／fit-xs（とても低い）／fit-land（横向き）を付け、
+   手札の幅（--cw）と推理表の列数・行の高さ（--tcols/--trow）を機種ごとに計算する。ここより上の対戦画面の指定を上書きする */
+html{-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text}
+img,svg{-webkit-user-drag:none}
+@media (pointer:coarse){*{scrollbar-width:none}*::-webkit-scrollbar{display:none}}
+body.inBattle{padding:0;height:100vh;height:100dvh;overflow:hidden}
+body.inBattle #app{max-width:none;margin:0;gap:0}
+body.inBattle .bt{width:100%}
+body.hasTabs{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+@media (min-width:1000px) and (max-height:820px){html:not(.fit-land) body.inBattle{height:auto;min-height:100vh;overflow-y:auto}}
+html.fit-p body.inBattle,html.fit-land body.inBattle{height:var(--vh,100vh)}
+html.fit-p .bt,html.fit-land .bt{height:var(--vh,100vh);min-height:0}
+
+/* --- 上のバー：ラウンド／だれのターンか／記録・メニュー --- */
+.btTop{position:relative;min-height:34px;gap:8px}
+.btTurn{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--game);font-size:12px;letter-spacing:.06em;padding:4px 12px;border-radius:99px;color:#d9c7b0;background:rgba(0,0,0,.35);border:1px solid rgba(201,152,74,.35)}
+.btTurn.me{color:#3a1c00;background:linear-gradient(180deg,#fff0b8,#f0b648);border-color:#fff0b8;box-shadow:0 0 12px rgba(255,200,90,.45)}
+.btTurn.op{color:#fff;background:linear-gradient(180deg,#d93049,#8a1228);border-color:#ff9aa8}
+.btIcons{display:flex;gap:6px;margin-left:auto;flex:none}
+.ib{position:relative;flex:none;display:flex;align-items:center;justify-content:center;gap:5px;min-width:40px;height:36px;padding:0 9px;border-radius:10px;border:2px solid #c9984a;background:linear-gradient(180deg,#5a2230,#2a0910);color:#ffe7b0;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 3px 0 #1a0508;cursor:pointer;font:800 11px var(--body)}
+.ib:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 0 #1a0508}
+.ib svg,.mrow svg{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib span{display:none}
+@media (min-width:560px){.ib span{display:inline}}
+.btMenuBack{position:fixed;inset:0;z-index:24;background:rgba(6,2,4,.55)}
+.btMenu{position:absolute;right:0;top:calc(100% + 6px);z-index:25;width:min(260px,calc(100vw - 20px));display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;border:2px solid #c9984a;background:linear-gradient(180deg,#3a1019,#1c060b);box-shadow:0 14px 34px rgba(0,0,0,.7);animation:btMenuIn .16s ease-out}
+@keyframes btMenuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.mrow{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:0 12px;border-radius:10px;border:1px solid rgba(201,152,74,.4);background:rgba(0,0,0,.28);color:#ffe7b0;font:800 13px var(--body);text-align:left;cursor:pointer}
+.mrow:active{background:rgba(255,200,90,.14)}
+.mrow span{flex:1}
+.mrow em{font-style:normal;font-size:11px;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,.1);color:#b9a58c}
+.mrow em.on{background:#f0b648;color:#3a1c00}
+.mrow.danger{justify-content:center;color:#ffb3bf;border-color:rgba(255,120,140,.5);margin-top:4px}
+
+/* --- 推理表：スマホ縦と横向きは、タブで片方ずつ。列数と行の高さは JS が機種ごとに決める --- */
+.trkTabs .pct{flex:none;width:38px;padding:5px 0;text-align:center;font-family:var(--game)}
+html.fit-p .trkTabs,html.fit-land .trkTabs{display:flex;gap:5px}
+html.fit-p .trkTabs .chip,html.fit-land .trkTabs .chip{flex:1;min-width:0;padding:5px 4px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.fit-p .trkTabs .chip.pct,html.fit-land .trkTabs .chip.pct{flex:none}
+html.fit-p .bt .btMid,html.fit-land .bt .btMid{position:relative;display:flex;flex-direction:column;overflow:hidden;gap:5px;padding:6px 7px}
+html.fit-p .bt .btMid>.sh,html.fit-land .bt .btMid>.sh{display:none}
+html.fit-p .bt .btMid .trkTabs,html.fit-land .bt .btMid .trkTabs{flex:none}
+html.fit-p .bt .btMid .duo,html.fit-land .bt .btMid .duo{flex:1;min-height:0;display:flex;flex-direction:column;gap:0}
+html.fit-p .bt .duo.t-opp .col:nth-child(2),html.fit-p .bt .duo.t-me .col:nth-child(1),html.fit-land .bt .duo.t-opp .col:nth-child(2),html.fit-land .bt .duo.t-me .col:nth-child(1){display:none}
+html.fit-p .bt .btMid .duo .col,html.fit-land .bt .btMid .duo .col{display:flex;flex-direction:column;flex:1;min-height:0;gap:0;justify-content:center}
+html.fit-p .bt .btMid .duo .colh,html.fit-land .bt .btMid .duo .colh,html.fit-p .bt .btMid .duo .col>div:last-child,html.fit-land .bt .btMid .duo .col>div:last-child{display:none}
+html.fit-p .bt .btMid .grid,html.fit-land .bt .btMid .grid{flex:none;min-height:0;grid-template-columns:repeat(var(--tcols,4),minmax(0,1fr));grid-auto-rows:var(--trow,30px);gap:var(--tgap,4px);align-content:start}
+html.fit-p .bt .btMid .tt,html.fit-land .bt .btMid .tt{padding:1px 6px;gap:1px;border-radius:7px;justify-content:center;min-height:0;overflow:hidden;border-left-width:4px}
+html.fit-p .bt .btMid .tt .tn,html.fit-land .bt .btMid .tt .tn{font-size:var(--tfs,11px);line-height:1.15}
+html.fit-p .bt .btMid .tt .tn small,html.fit-land .bt .btMid .tt .tn small{font-size:.72em;margin-left:2px}
+html.fit-p .bt .btMid .tt .dots,html.fit-land .bt .btMid .tt .dots{font-size:calc(var(--tfs,11px) * .72);letter-spacing:1px;line-height:1}
+html.fit-p .bt .btMid .tt .pp,html.fit-land .bt .btMid .tt .pp{font-size:calc(var(--tfs,11px) * .8);line-height:1}
+html.fit-p .pp i,html.fit-land .pp i{display:none}
+/* 行が低いとき：●と確率を1行に並べる（m）。幅に余裕があれば名前の右に置く（s） */
+html[data-trow] .bt .btMid .tt{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;align-items:center;column-gap:3px;row-gap:0;padding:0 5px}
+html[data-trow] .bt .btMid .tt .tn{grid-column:1/-1}
+html[data-trow] .bt .btMid .tt .tn small{display:none}
+html.fit-xs .btAct .detail:not(.ph){font-size:11.5px;line-height:1.4;padding:6px 9px}
+html[data-trow] .bt .btMid .tt .dots{font-size:6.5px;letter-spacing:0}
+html[data-trow] .bt .btMid .tt .pp{font-size:8.5px}
+html[data-trow="s"] .bt .btMid .tt{grid-template-columns:minmax(0,1fr) auto auto}
+html[data-trow="s"] .bt .btMid .tt .tn{grid-column:auto}
+
+/* --- 手札：カードの幅は JS の --cw --- */
+html.fit-p .bt .hand .hc .tcg.m,html.fit-land .bt .hand .hc .tcg.m{box-sizing:border-box;width:var(--cw,72px);font-size:calc(var(--cw,72px) * .116)}
+html.fit-p .bt .hand,html.fit-land .bt .hand{padding:12px 2px 2px;gap:6px;justify-content:safe center}
+html.fit-p .bt .hand.fit,html.fit-land .bt .hand.fit{justify-content:flex-start;gap:0}
+html.fit-p .hc .twin,html.fit-land .hc .twin{font-size:8px;top:-7px;left:2px;padding:0 5px;white-space:nowrap}
+
+/* --- 選んだカードの説明：盤面を押し広げず、手札の上に浮かべる --- */
+html.fit-p .btAct .detail:not(.ph),html.fit-land .btAct .detail:not(.ph){position:fixed;left:8px;right:8px;bottom:var(--dB,220px);z-index:8;max-height:none;overflow:visible;pointer-events:none;font-size:12.5px;line-height:1.5;padding:8px 11px;border-radius:12px;border:2px solid #c9984a;background:linear-gradient(180deg,rgba(58,16,25,.97),rgba(24,6,10,.97));box-shadow:0 10px 26px rgba(0,0,0,.65);animation:btMenuIn .14s ease-out}
+html.fit-p .btAct .detail .bluffNote{display:block;margin-top:4px;font-size:11px;opacity:.8}
+html.fit-tight .btAct .detail .bluffNote,html.fit-land .btAct .detail .bluffNote{display:none}
+html.fit-land .btAct .detail:not(.ph){right:auto;width:calc(50vw - 16px)}
+
+/* --- 操作ボタン --- */
+html.fit-p .btAct,html.fit-land .btAct{gap:4px}
+html.fit-p .btAct .phase,html.fit-land .btAct .phase{font-size:11.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.fit-p .actBtns{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
+html.fit-p .actBtns .b,html.fit-land .actBtns .b{font-size:11.5px;padding:4px 2px;min-height:44px;line-height:1.2;letter-spacing:0;border-radius:10px}
+@media (max-width:340px){html.fit-p .actBtns .b{font-size:10.5px}}
+
+/* --- スマホ縦 --- */
+html.fit-p .bt{gap:5px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto;grid-template-areas:"top" "opp" "mid" "last" "me" "hand" "act";
+  padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+html.fit-p .bt .sh{flex-wrap:nowrap;min-width:0}
+html.fit-p .bt .sh .who,html.fit-land .bt .sh .who{max-width:8.5em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+html.fit-p .bt .mini{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+html.fit-p .btLast,html.fit-land .btLast{font-size:11.5px;padding:3px 9px;min-height:0;line-height:1.5}
+html.fit-p .oppLast,html.fit-land .oppLast{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* --- 低い画面と横向き：相手・自分の枠を1行にまとめる（名前・ライフ｜心臓・伏せ・山札・捨て札・手札） --- */
+html.fit-tight .bt .side,html.fit-land .bt .side{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:3px;padding:4px 8px}
+html.fit-tight .bt .side>.sh,html.fit-land .bt .side>.sh{flex:0 1 auto;gap:5px;min-width:0}
+html.fit-tight .bt .side>.sh .mini,html.fit-land .bt .side>.sh .mini{display:none}
+html.fit-tight .bt .side>.tableRow,html.fit-land .bt .side>.tableRow{flex:1 1 0;min-width:0;justify-content:flex-end;align-items:center;gap:5px}
+html.fit-tight .bt .side>.badges,html.fit-land .bt .side>.badges{order:5;flex:1 0 100%}
+html.fit-tight .bt .side>.oppLast,html.fit-land .bt .side>.oppLast{order:6;flex:1 0 100%;min-width:0;font-size:11px}
+html.fit-tight .bt .slot,html.fit-land .bt .slot{position:relative;font-size:0;gap:0}
+html.fit-tight .bt .slot.disBtn span,html.fit-land .bt .slot.disBtn span{font-size:0}
+html.fit-tight .bt .slot.disBtn span b,html.fit-land .bt .slot.disBtn span b{position:absolute;right:-4px;bottom:-3px;margin:0;font-size:9px;line-height:1;padding:2px 4px;border-radius:99px;background:#1c060b;border:1px solid #c9984a;color:#ffe7b0}
+html.fit-tight .bt .tableRow .tcg.s,html.fit-tight .bt .tableRow .emptySlot,html.fit-tight .bt .tableRow .deckPile,html.fit-land .bt .tableRow .tcg.s,html.fit-land .bt .tableRow .emptySlot,html.fit-land .bt .tableRow .deckPile{width:27px;font-size:4.4px}
+html.fit-tight .bt .tableRow .deckPile,html.fit-land .bt .tableRow .deckPile{font-size:9px}
+html.fit-tight .bt .myRecent,html.fit-land .bt .myRecent{display:none}
+html.fit-tight .bt .oppHand,html.fit-land .bt .oppHand{flex:0 1 auto;padding-left:16px}
+html.fit-tight .bt .oppHand .tcg,html.fit-land .bt .oppHand .tcg{margin-left:-16px}
+html.fit-tight .bt .lives svg,html.fit-land .bt .lives svg{height:20px}
+html.fit-tight .bt .sh .who,html.fit-land .bt .sh .who{font-size:13px}
+/* とても低い画面（小型スマホ＋ブラウザのバー） */
+html.fit-xs .bt{gap:4px}
+html.fit-xs .btTop{min-height:30px}html.fit-xs .ib{height:30px;min-width:36px}
+html.fit-xs .btRound b{font-size:16px}
+html.fit-xs .actBtns .b{min-height:38px;font-size:11px}
+html.fit-xs .bt .btMid{padding:4px 6px;gap:4px}
+html.fit-xs .trkTabs .chip{padding:3px 4px;font-size:11px}
+html.fit-xs .btLast{padding:2px 8px;font-size:11px}
+html.fit-xs .bt .hand{padding-top:10px}
+html.fit-xs .bt .tableRow .tcg.s,html.fit-xs .bt .tableRow .emptySlot,html.fit-xs .bt .tableRow .deckPile{width:22px;font-size:3.6px}
+html.fit-xs .bt .tableRow .deckPile{font-size:8px}
+html.fit-xs .bt .side{padding:3px 8px;row-gap:2px}
+html.fit-xs .bt .side>.oppLast{font-size:10.5px}
+
+/* --- 横向き（スマホを横に持ったとき）：左に 相手／自分、右に推理表、下に 手札｜操作 --- */
+html.fit-land .bt{gap:4px 8px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  grid-template-areas:"top top" "opp mid" "last mid" "me mid" "hand act";
+  padding:max(4px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+html.fit-land .btField{display:none}
+html.fit-land .btMe{align-self:start}
+html.fit-land .btAct{align-self:end;padding-bottom:2px}
+html.fit-land .btTop{min-height:28px}html.fit-land .ib{height:28px}
+html.fit-land .btRound b{font-size:16px}
+html.fit-land .actBtns{display:grid;grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+html.fit-land .actBtns .b{min-height:34px}
+html.fit-land .bt .hand{padding-top:10px}
+html.fit-land .bt .tableRow .tcg.s,html.fit-land .bt .tableRow .emptySlot,html.fit-land .bt .tableRow .deckPile{width:24px;font-size:4px}
+
+/* --- ダイアログ：どの幅でも画面からはみ出さない --- */
+#modal .sheet{box-sizing:border-box;max-width:min(620px,100%);max-height:calc(var(--vh,100vh) - 24px);overscroll-behavior:contain}
+#modal .sheet .grid{grid-template-columns:repeat(auto-fill,minmax(min(78px,29%),1fr))}
+@media (max-width:340px){#modal .sheet{padding:12px}#modal .sheet h2{font-size:18px}}
+html.fit-land #modal .sheet{max-width:min(760px,100%)}
+html.fit-land #modal .sheet .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+@media (prefers-reduced-motion:reduce){.btMenu,.btAct .detail{animation:none!important}}
 </style>
 
 <div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1183,7 +1330,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261109080832';
+const APP_VER='20261110194638';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1545,6 +1692,8 @@ function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)re
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
   document.body.classList.toggle('onHome',VIEW==='menu');
+  document.body.classList.toggle('inBattle',VIEW==='battle'&&!!S);
+  FIT.apply();
   if(VIEW!=='battle')BGM.set('menu');
   if(VIEW!=='menu')guardHist();
   if(VIEW==='menu'||VIEW==='rules'||VIEW==='deck'||VIEW==='free'||VIEW==='packs'||VIEW==='shop'||VIEW==='cards'||VIEW==='howto'||VIEW==='octo')setBg(null);
@@ -1561,6 +1710,7 @@ function draw_(){
   else if(VIEW==='howto')renderHowto();
   else if(VIEW==='draft')renderDraft();
   else if(VIEW==='online')renderOnline();
+  document.body.classList.toggle('hasTabs',!!document.querySelector('.tabBar'));
 }
 
 function renderMenu(){
@@ -2178,7 +2328,7 @@ function modalAuto(){const c=MODAL_CUR;if(c&&c.def){let v;try{v=c.def()}catch(e)
 function modalKill(){const c=MODAL_CUR;if(c)c.fin(KILL)}
 function tileHTML(target,ty,view,tag='div',cls=''){
   const c=C[ty],n=copies(target,ty);let dots='',out=false,extra='';
-  if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty];if(SV.showP)extra=`<span class="pp">推定 ${Math.round(view.w[ty]*100)}%</span>`}
+  if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty];if(SV.showP)extra=`<span class="pp"><i>推定 </i>${Math.round(view.w[ty]*100)}%</span>`}
   return `<${tag} ${tag==='button'?'type="button"':''} class="tt cat-${c.cat} ${out?'out':''} ${cls}" data-ty="${ty}"><span class="tn">${c.n}${c.single?'<small>単</small>':''}</span>${view?`<span class="dots">${dots}</span>`:''}${extra}</${tag}>`;
 }
 function pickTypes(target,count,title,sub,cancelable,viewer){
@@ -2872,10 +3022,49 @@ function hudHTML(){
   const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
   return`<div class="hud" role="status">${side(S.cpu,false)}<div class="hm">ROUND<b>${S.round||1}</b>${S.turnNo?S.turnNo+'ターン':''}</div>${side(S.me,true)}</div>`;
 }
+/* ===== FIT：機種ごとの画面合わせ =====
+   画面の幅・高さ・向きから対戦画面の形を決める。get() が寸法、apply() が html のクラスと --vh、after() が描画後の微調整（推理表の列数など） */
+const FIT={c:null,
+  get(){
+    const vv=window.visualViewport,w=Math.round(innerWidth),h=Math.round(vv&&vv.height&&Math.abs(vv.scale-1)<.01?Math.min(innerHeight,vv.height):innerHeight);
+    if(this.c&&this.c.w===w&&this.c.h===h)return this.c;
+    const land=w>h&&h<=520&&w>=480,phone=w<=700&&!land,tight=phone&&h<700,xs=phone&&h<540;
+    let handW=86;
+    if(land)handW=Math.round(Math.max(46,Math.min(64,h*.15)));
+    else if(phone)handW=Math.round(Math.max(48,Math.min(w<360?64:w*.21,h*.108)));
+    return this.c={w,h,land,phone,tight,xs,handW,handFr:.5};
+  },
+  apply(){
+    const F=this.get(),r=document.documentElement;
+    r.style.setProperty('--vh',F.h+'px');r.style.setProperty('--cw',F.handW+'px');
+    r.classList.toggle('fit-p',F.phone);r.classList.toggle('fit-tight',F.tight);r.classList.toggle('fit-xs',F.xs);r.classList.toggle('fit-land',F.land);
+    return F;
+  },
+  // 描画のあと：推理表を「全種類が必ず見える」列数・行の高さにし、カード説明の位置を手札の上に合わせる
+  after(){
+    const F=this.apply(),r=document.documentElement,mid=document.querySelector('.btMid');
+    if(!mid||!(F.phone||F.land)){r.removeAttribute('data-trow');return}
+    const hand=document.querySelector('.btHand');if(hand)r.style.setProperty('--dB',Math.round(F.h-hand.getBoundingClientRect().top+10)+'px');
+    const g=[...mid.querySelectorAll('.grid')].find(x=>x.offsetParent);if(!g)return;
+    const n=g.children.length||14,gap=F.xs||F.land?3:4,cs=getComputedStyle(mid),tabs=mid.querySelector('.trkTabs');
+    const mb=mid.getBoundingClientRect(),top=tabs?tabs.getBoundingClientRect().bottom+parseFloat(cs.rowGap||5):mb.top+parseFloat(cs.paddingTop);
+    const avail=mb.bottom-parseFloat(cs.paddingBottom)-parseFloat(cs.borderBottomWidth)-top,w=g.clientWidth;
+    let best=null;
+    for(let c=3;c<=7;c++){const rows=Math.ceil(n/c),cw=(w-(c-1)*gap)/c,ch=(avail-(rows-1)*gap)/rows;if(cw<50&&c>3)continue;
+      const sc=Math.min(ch/40,cw/74,1.2)-c*.002;if(!best||sc>best.sc)best={c,rows,cw,ch,sc}}
+    const rh=Math.max(18,Math.min(60,Math.floor(best.ch))),fs=Math.max(9.5,Math.min(14.5,rh*.36,(best.cw-13)/4.1));
+    r.style.setProperty('--tcols',best.c);r.style.setProperty('--trow',rh+'px');r.style.setProperty('--tgap',gap+'px');r.style.setProperty('--tfs',fs.toFixed(1)+'px');
+    if(rh<26&&best.cw>=72)r.setAttribute('data-trow','s');else if(rh<34)r.setAttribute('data-trow','m');else r.removeAttribute('data-trow');
+  }
+};
+FIT.apply();
 function handFit(n){
-  const avail=Math.min(760,innerWidth)-32-26;const W=innerWidth<560?72:86;const gap=8;
+  // 手札のカード幅は画面の高さで決める（低い画面では小さく、高い画面では大きく）。横向きは左の列の幅に収める
+  const F=FIT.get(),gap=8;
+  const avail=F.land?Math.floor((innerWidth-28)*F.handFr)-8:F.phone?innerWidth-28:Math.min(760,innerWidth)-32-26;
+  const W=F.handW;
   if(n<=1||n*(W+gap)<=avail)return{fit:false,W,ov:0};
-  const step=Math.max(18,(avail-W)/(n-1));return{fit:true,W,ov:Math.max(0,W-step)};
+  const step=Math.max(16,(avail-W)/(n-1));return{fit:true,W,ov:Math.max(0,W-step)};
 }
 function lives(p){
   // 心臓が減った／増えたら、描き直しが続いても1.8秒は動きを見せ続ける
@@ -3003,7 +3192,13 @@ function autoEndCheck(){
   if(!nothingLeft())return;
   autoEndT=setTimeout(()=>{if(nothingLeft()&&$('#modal').hidden){TUT.bypass=true;try{onEnd()}finally{TUT.bypass=false}}},1500);
 }
-function render(){setTimeout(autoEndCheck,0);const r=render0();if(TUT.on)setTimeout(tutTick,0);return r}
+function render(){setTimeout(autoEndCheck,0);const r=render0();document.body.classList.toggle('inBattle',VIEW==='battle'&&!!S);if(VIEW==='battle'&&S)FIT.after();if(TUT.on)setTimeout(tutTick,0);return r}
+let BTMENU=false;
+const BIC={log:'<svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3a2 2 0 0 0-2 2v12h2M9 8h7M9 12h7M9 16h4"/></svg>',
+  menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  book:'<svg viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-5a3 3 0 0 0-3 3"/><path d="M20 4v14h-6"/></svg>',
+  snd:'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
+  bgm:'<svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>'};
 function render0(){
   if(VIEW==='battle'&&S){BGM.set(S.over?null:'battle');BGM.hot(!S.over&&(S.me.life===1||S.cpu.life===1))}
   if(VIEW==='battle'&&S&&!S.over)guardHist();
@@ -3035,7 +3230,15 @@ function render0(){
   $('#app').innerHTML=`<div class="bt">
   <header class="btTop">
     <div class="btRound"><span>ROUND</span><b>${S.round||1}</b><span>${S.turnNo?S.turnNo+'ターン':''}${wn?`・観戦${wn}人`:''}</span></div>
-    <div class="btns"><button type="button" class="b small" id="bLog">記録</button><button type="button" class="b small" id="bRules">ルール</button><button type="button" class="b small" id="snd" aria-label="効果音">${sndOn()?'音 ON':'音 OFF'}</button><button type="button" class="b small" id="bgmB" aria-label="BGM">${bgmOn()?'曲 ON':'曲 OFF'}</button><button type="button" class="b small" id="quit">${SP?'観戦をやめる':'降参'}</button></div>
+    <div class="btTurn ${S.over?'':S.cur===me?'me':S.cur?'op':''}">${S.over?'対戦終了':S.cur?(S.cur===me?(SP?MYN()+'のターン':'あなたのターン'):OPN()+'のターン'):'心臓を選ぶ'}</div>
+    <div class="btIcons"><button type="button" class="ib" id="bLog" aria-label="記録を見る">${BIC.log}<span>記録</span></button><button type="button" class="ib" id="bMenu" aria-label="メニュー" aria-expanded="${BTMENU}">${BIC.menu}<span>メニュー</span></button></div>
+    <div class="btMenuBack" id="bMenuBack" ${BTMENU?'':'hidden'}></div>
+    <div class="btMenu" role="menu" ${BTMENU?'':'hidden'}>
+      <button type="button" class="mrow" id="bRules">${BIC.book}<span>ルール・カードの効果</span></button>
+      <button type="button" class="mrow" id="snd" aria-label="効果音">${BIC.snd}<span>効果音</span><em class="${sndOn()?'on':''}">${sndOn()?'ON':'OFF'}</em></button>
+      <button type="button" class="mrow" id="bgmB" aria-label="BGM">${BIC.bgm}<span>音楽</span><em class="${bgmOn()?'on':''}">${bgmOn()?'ON':'OFF'}</em></button>
+      <button type="button" class="mrow danger" id="quit">${SP?'観戦をやめる':'降参する'}</button>
+    </div>
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
@@ -3043,8 +3246,8 @@ function render0(){
     ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
-    <div class="sh"><span class="label">推理の状況（●公開済み・消えたマスは候補外）</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率</label></div>
-    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button></div>
+    <div class="sh"><span class="label">推理の状況</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率</label></div>
+    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button><button type="button" class="chip pct ${SV.showP?'on':''}" id="pTog2" aria-pressed="${!!SV.showP}" aria-label="確率を表示">%</button></div>
     <div class="duo t-${TRK}">
       <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
       <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種${SP?'':`・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em>`}</span></div>${trackGrid(me,cpu,SP?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
@@ -3059,7 +3262,7 @@ function render0(){
   ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています…（最大2分）</div>`:''}
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}</div>
-    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」で、効果のある伏せ札のふりをして伏せられます。次の相手ターンに相手がカードを1枚も使わなければブラフ成功（自分のデッキに伏せ専用カードが入っているときだけ）：自分のターンにこのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類を1つ知ります。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
+    ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」＝伏せ札のふりをして伏せる。次の相手ターンに相手がカードを使わなければ成功：手札に戻り、1枚多く使え、相手の心臓ではない種類を1つ知る。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set&&!czBlock(me,S.sel.type)?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':S.sel&&czBlock(me,S.sel.type)?'呪いで使えない':'使う'}</button>
       <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
@@ -3080,12 +3283,14 @@ function render0(){
   </aside>
   </div>`;
   {const d=$('#drawer');if(d)d.scrollTop=drScroll}
-  $('#bLog').onclick=()=>{LOGOPEN=true;render()};$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
+  $('#bLog').onclick=()=>{LOGOPEN=true;BTMENU=false;render()};$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
   document.querySelectorAll('[data-trk]').forEach(b=>b.onclick=()=>{TRK=b.dataset.trk;render()});
   const lg=$('#log');if(lg)lg.scrollTop=logScroll;
   document.querySelectorAll('[data-lf]').forEach(b=>b.onclick=()=>{LF=b.dataset.lf;render()});
   $('#pToggle').onchange=e=>{SV.showP=e.target.checked;save();render()};
-  $('#bRules').onclick=showRulesOverlay;
+  {const pt=$('#pTog2');if(pt)pt.onclick=()=>{SV.showP=!SV.showP;save();render()}}
+  $('#bMenu').onclick=()=>{BTMENU=!BTMENU;render()};$('#bMenuBack').onclick=()=>{BTMENU=false;render()};
+  $('#bRules').onclick=()=>{BTMENU=false;render();showRulesOverlay()};
   $('#snd').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.turn();render()};
   {const bb=$('#bgmB');if(bb)bb.onclick=()=>{BGM.toggle();render()}}
   document.querySelectorAll('.hc').forEach(b=>{const t=b.querySelector('.tcg');b.onpointermove=e=>{if(e.pointerType!=='mouse'||RM)return;const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(500px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.08)`};b.onpointerleave=()=>{t.style.transform=''}});
@@ -3101,7 +3306,7 @@ function render0(){
   if(!SP){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
-  $('#quit').onclick=e=>{if(SP)return watchLeave();if(S.over)return S.online?netLeave():go('menu');if(!armed){armed=true;e.target.textContent='本当に降参する';return}if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+  $('#quit').onclick=e=>{if(SP)return watchLeave();if(S.over)return S.online?netLeave():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
 }
 
 
@@ -3560,6 +3765,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:46,d:'2026-11-11',t:'対戦画面を、どのスマホでも1画面に収まるようにしました。画面の大きさと向きに合わせて、推理表の列の数、手札の大きさ、相手と自分の枠を自動で調整します（小さいスマホ・横向きにも対応）。上のボタンは「記録」と「メニュー」の2つにまとめ、選んだカードの説明は手札の上に浮かんで出ます。'},
   {id:45,d:'2026-11-09',t:'画面のデザインを新しくしました。ホームは1枚の絵の上に、右にミッション・プレゼント・称号とタコ・遊び方、下にランクマッチとデッキ編成を並べました。下のまんなかの「対戦」ボタンから、ランクマッチ・CPU・友達対戦をすぐ選べます。名前やサウンド、ログインは右上の歯車から。'},
   {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。全身が映る特別なイラスト（持ち物が光ります）と、虹色に光る枠になります。ショップで銀貨と交換すると使えます（カードの説明から、いつもの絵と切りかえられます）。'},
   {id:43,d:'2026-11-09',t:'称号とタコのページができました。プロフィールのタコか称号を押すと開けます。いつものタコのほかに、ポーズのちがうタコが10体。「はじめて勝つ」「対人戦で10勝」「ランクがゴールドになる」「全部のカードを集める」などの実績で、称号とタコが開放されていきます。選んだタコは対戦中のライフに出て、友達対戦・ランクマッチでは相手にも見えます。ショップの称号は、こちらにまとめました（交換ずみの称号はそのまま使えます）。'},
@@ -4146,7 +4352,8 @@ function renderOnline(){
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
 }
 
-let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(VIEW==='battle'&&S&&!S.busy)render()},200)});
+let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='battle'&&S){if(S.busy)FIT.after();else render()}},120)};
+addEventListener('resize',onRz);addEventListener('orientationchange',onRz);if(window.visualViewport)visualViewport.addEventListener('resize',onRz);
 $('#app').addEventListener('click',e=>{
   if(VIEW!=='battle')return;
   const ds=e.target.closest('[data-dis]');if(ds&&S){showDiscard(ds.dataset.dis);return}
