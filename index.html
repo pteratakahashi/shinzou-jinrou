@@ -1296,6 +1296,152 @@ body.resultOn #flash{animation:none!important;opacity:0!important}
 .result .resArt{max-height:30vh;object-fit:cover;animation:none}
 #modal .sheet:has(.result){animation:none;overscroll-behavior:none;touch-action:pan-y}
 .result .btns{width:100%}.result .btns .b{flex:1 1 auto;min-height:48px}
+
+/* ================= PC（2026-11-11）=================
+   幅1000px以上は、配信で映える「卓」の配置。左に記録、中央に 相手／場（最後に使ったカードを大きく）／自分／手札／操作、右に推理ボード。
+   JS（FIT）が html に fit-wide（幅1200以上は fit-w3 も）を付け、列の幅（--colL/--colR）とカードの大きさ（--cw/--tcw/--fw）を画面から計算する */
+html.fit-wide body.inBattle{height:var(--vh,100vh);min-height:0;overflow:hidden}
+html.fit-wide .bt{height:var(--vh,100vh);min-height:0;max-width:2800px;gap:10px 14px;padding:10px 16px 12px;
+  grid-template-columns:minmax(0,1fr) var(--colR,440px);grid-template-rows:auto auto minmax(0,1fr) auto auto auto;
+  grid-template-areas:"top top" "opp mid" "field mid" "me mid" "hand mid" "act mid"}
+html.fit-w3 .bt{grid-template-columns:var(--colL,340px) minmax(0,1fr) var(--colR,440px);
+  grid-template-areas:"top top top" "log opp mid" "log field mid" "log me mid" "log hand mid" "log act mid"}
+html.fit-wide .bt .btMid{position:relative;top:auto;max-height:none;align-self:stretch;overflow:hidden;display:flex;flex-direction:column;padding:12px 14px;gap:8px}
+html.fit-wide .bt .btAct{position:static;background:none;padding:0;z-index:auto}
+html.fit-wide .btLast{display:none}
+
+/* 上のバー */
+html.fit-wide .btTop{min-height:46px;padding:0 4px}
+html.fit-wide .btRound{font-size:14px;gap:8px}html.fit-wide .btRound b{font-size:30px}
+html.fit-wide .btTurn{font-size:17px;padding:7px 22px}
+html.fit-wide .ib{height:42px;padding:0 14px;font-size:13px}
+html.fit-w3 #bLog{display:none}
+
+/* 左：記録（いつも開いている） */
+html.fit-w3 .drawer{grid-area:log;position:static;transform:none;visibility:visible;width:auto;z-index:auto;min-height:0;box-shadow:none;border:0;background:none;padding:0;gap:10px;overflow:hidden}
+html.fit-w3 .drawer>.sh{display:none}
+html.fit-w3 .drawer .zone{padding:10px 12px;gap:7px;flex:none}
+html.fit-w3 .drawer .zone:last-child{flex:1;min-height:0;display:flex;flex-direction:column}
+html.fit-w3 .drawer .log{flex:1;min-height:0;max-height:none;font-size:13.5px;line-height:1.5}
+html.fit-w3 .drawer .label{font-family:var(--game);font-size:12px;letter-spacing:.1em;color:#ffd45e}
+html.fit-w3 .drawer .hrow{align-items:flex-start;flex-direction:column;gap:3px}
+html.fit-w3 .drawer .hrow .who{width:auto}
+html.fit-w3 .drawer .hlist{display:flex;gap:5px;overflow:hidden;min-height:0}
+
+/* 相手・自分の枠：左に名前とライフ、右に 心臓／伏せ／山札／捨て札／手札 */
+html.fit-wide .bt .side{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:18px;row-gap:4px;padding:10px 16px}
+html.fit-wide .bt .side>.sh{flex:0 0 auto;flex-direction:column;align-items:flex-start;gap:6px;width:clamp(170px,15vw,260px);flex-wrap:nowrap}
+html.fit-wide .bt .sh .who{font-size:clamp(20px,1.6vw,28px);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.fit-wide .bt .mini{margin:0;font-size:12px;white-space:normal;line-height:1.5}
+html.fit-wide .bt .lives{padding:4px 12px 4px 10px;gap:7px}
+html.fit-wide .bt .lives .lfL{font-size:12px}
+html.fit-wide .bt .lives .lfH i{width:24px;height:24px}html.fit-wide .bt .lives .lfH svg{height:24px}
+html.fit-wide .bt .lives .lfN{font-size:26px}
+html.fit-wide .bt .lives .lfOcto{width:96px;height:96px;margin-top:-48px}
+html.fit-wide .bt .side>.tableRow{flex:1 1 0;min-width:0;gap:12px;align-items:flex-end;flex-wrap:nowrap}
+html.fit-wide .bt .side>.badges{order:5;flex:1 0 100%}
+html.fit-wide .bt .side>.oppLast{order:6;flex:1 0 100%;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.fit-wide .bt .tableRow .tcg.s,html.fit-wide .bt .tableRow .emptySlot,html.fit-wide .bt .tableRow .deckPile{width:var(--tcw,56px);font-size:calc(var(--tcw,56px) * .16)}
+html.fit-wide .bt .tableRow .deckPile{font-size:calc(var(--tcw,56px) * .3)}
+html.fit-wide .bt .slot{font-size:11px;gap:3px}
+html.fit-wide .bt .oppHand{padding-left:calc(var(--tcw,56px) * .45);margin-left:auto;flex:0 1 auto}
+html.fit-wide .bt .oppHand .tcg{margin-left:calc(var(--tcw,56px) * -.45)}
+html.fit-wide .bt .myRecent{flex:0 1 auto;margin-left:auto;border-left:0;align-items:flex-end}
+html.fit-wide .bt .myRecent .tcg.s{width:calc(var(--tcw,56px) * .8);font-size:calc(var(--tcw,56px) * .13)}
+
+/* 中央の「場」：おたがいが最後に使ったカードを大きく */
+html.fit-wide .btField{grid-area:field;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;justify-items:center;gap:0 clamp(20px,4vw,90px);min-height:0;position:relative;border-radius:50%/42%;
+  background:radial-gradient(ellipse at 50% 50%,rgba(150,24,46,.42) 0,rgba(70,10,24,.3) 45%,transparent 72%)}
+html.fit-wide .btField::before{content:"";position:absolute;inset:4% 6%;border-radius:50%;border:2px solid rgba(246,207,106,.28);box-shadow:0 0 40px rgba(255,70,100,.18) inset;pointer-events:none}
+html.fit-wide .btField::after{content:"VS";grid-column:2;grid-row:1;font-family:var(--game);font-size:clamp(22px,2.6vw,44px);letter-spacing:.06em;color:#fff4dc;-webkit-text-stroke:2px #2a0610;paint-order:stroke fill;text-shadow:0 3px 0 #2a0610,0 0 22px rgba(255,80,100,.7)}
+html.fit-wide .fldSide{grid-row:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:0;position:relative;z-index:1}
+html.fit-wide .fldSide.cpu{grid-column:1;justify-self:end}html.fit-wide .fldSide.me{grid-column:3;justify-self:start}
+html.fit-wide .fldSide .tcg{width:var(--fw,150px);font-size:calc(var(--fw,150px) * .116)}
+html.fit-wide .fldSide.cpu .tcg{box-shadow:0 0 0 2px #ff5a72,0 0 34px rgba(255,70,100,.45),0 14px 34px rgba(0,0,0,.6)}
+html.fit-wide .fldSide.me .tcg{box-shadow:0 0 0 2px #f6cf6a,0 0 34px rgba(246,207,106,.4),0 14px 34px rgba(0,0,0,.6)}
+html.fit-wide .fldL{font:800 13px var(--body);color:#f3e6d2;padding:2px 12px;border-radius:99px;background:rgba(0,0,0,.45)}
+html.fit-wide .fldT{font-size:12px;color:#d9c7b0}
+html.fit-wide .fldEmpty{width:var(--fw,150px);aspect-ratio:5/7;border:2px dashed rgba(246,207,106,.3);border-radius:12px;display:grid;place-items:center;font-size:12px;color:#b9a58c;text-align:center;padding:8px;box-sizing:border-box}
+
+/* 手札と操作 */
+html.fit-wide .bt .hand{justify-content:safe center;gap:10px;padding:18px 4px 4px;overflow:visible}
+html.fit-wide .bt .hand.fit{justify-content:flex-start;gap:0}
+html.fit-wide .bt .hand .hc .tcg.m{box-sizing:border-box;width:var(--cw,110px);font-size:calc(var(--cw,110px) * .116)}
+html.fit-wide .btAct{gap:7px}
+html.fit-wide .btAct .phase{font-size:15px;text-align:center}
+html.fit-wide .btAct .detail{height:4.75em;max-height:none;font-size:13.5px;line-height:1.5;padding:6px 14px;text-align:center;overflow:hidden;border-radius:10px}
+html.fit-wide .btAct .detail.ph{display:block;visibility:hidden}
+html.fit-wide .btAct .detail .bluffNote{display:none}
+html.fit-wide .actBtns{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-columns:none;gap:10px;max-width:980px;margin:0 auto;width:100%}
+html.fit-wide .actBtns .b{min-height:52px;font-size:16px;padding:8px 6px}
+
+/* 右：推理ボード（カードの絵つき） */
+html.fit-wide .trkTabs{display:none}
+html.fit-wide .bt .btMid>.sh{flex:none}
+html.fit-wide .bt .btMid>.sh .label{font-family:var(--game);font-size:15px;letter-spacing:.12em;color:#ffd45e}
+html.fit-wide .bt .btMid .duo{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+html.fit-wide .bt .btMid .duo .col{display:flex;flex-direction:column;flex:1 1 0;min-height:0;gap:6px}
+html.fit-wide .bt .btMid .duo .colh{flex:none;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+html.fit-wide .bt .btMid .duo .colh b{display:inline;font-family:var(--display);font-size:20px;font-weight:400}
+html.fit-wide .bt .btMid .duo .colh span{font-size:12px;color:#d9c7b0}
+html.fit-wide .bt .btMid .duo .col>div:last-child{flex:none;font-size:11.5px;max-height:2.9em;overflow:hidden}
+html.fit-wide .bt .btMid .duo .col>div:last-child:empty{display:none}
+html.fit-wide .bt .btMid .grid{flex:none;grid-template-columns:repeat(var(--tcols,3),minmax(0,1fr));grid-auto-rows:var(--trow,60px);gap:6px}
+html.fit-wide .bt .btMid .tt{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;align-items:start;gap:0;padding:0;border-radius:10px;overflow:hidden;border:2px solid #6b3a14;border-left-width:2px;min-height:0;background:#1a0a12;box-shadow:0 3px 0 rgba(0,0,0,.45)}
+html.fit-wide .bt .btMid .tt::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,3,6,.55) 0,transparent 30%,transparent 48%,rgba(10,3,6,.92) 82%),var(--art) 50% 16%/cover no-repeat,linear-gradient(180deg,#3a1630,#1a0a1c);image-rendering:pixelated}
+html.fit-wide .bt .btMid .tt::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--cc)}
+html.fit-wide .bt .btMid .tt>*{position:relative;z-index:1}
+html.fit-wide .bt .btMid .tt .tn{grid-column:1/-1;grid-row:3;text-align:center;font-size:clamp(12px,calc(var(--trow,60px) * .24),17px);line-height:1.15;padding:0 4px 7px;color:#fff4dc;text-shadow:0 2px 0 #000,0 0 6px #000}
+html.fit-wide .bt .btMid .tt .dots{grid-column:1;grid-row:1;font-size:10px;letter-spacing:1px;line-height:1;padding:5px 0 0 6px;text-shadow:0 1px 2px #000}
+html.fit-wide .bt .btMid .tt .pp{grid-column:3;grid-row:1;font:800 12px var(--body);line-height:1;margin:4px 4px 0 0;padding:3px 6px;border-radius:99px;background:rgba(10,3,6,.8);color:#ffe7b0;font-variant-numeric:tabular-nums}
+html.fit-wide .bt .btMid .tt .pp i{display:none}
+html.fit-wide .bt .btMid .tt.out{opacity:1;border-color:#3a2a2e;box-shadow:none}
+html.fit-wide .bt .btMid .tt.out::before{filter:grayscale(1) brightness(.35)}
+html.fit-wide .bt .btMid .tt.out::after{background:#3a2a2e}
+html.fit-wide .bt .btMid .tt.out .tn{color:#8a7a7e;text-decoration:line-through}
+html.fit-wide .bt .btMid .tt.out .pp{display:none}
+html.fit-wide .bt .btMid .tt.mine{border-color:#ff5a72;box-shadow:0 0 0 2px #ff5a72,0 0 16px rgba(255,70,100,.6)}
+html.fit-wide .bt .btMid .duo .colh{align-self:stretch}
+html.fit-wide .bt .btMid .tt.hot{border-color:#f6cf6a;box-shadow:0 0 0 2px #f6cf6a,0 0 16px rgba(246,207,106,.6)}
+
+/* PC で縦が短い画面（ノートPC・720p配信など）：枠を低くし、カードの説明は手札の上に浮かべ、推理ボードは横長のマスにする */
+html.fit-ws .bt{gap:8px 12px;padding:8px 12px 10px}
+html.fit-ws .btTop{min-height:40px}html.fit-ws .btRound b{font-size:24px}html.fit-ws .btTurn{font-size:15px;padding:5px 18px}html.fit-ws .ib{height:36px}
+html.fit-ws .bt .side{padding:7px 14px;column-gap:14px}
+html.fit-ws .bt .side>.sh{gap:5px;width:clamp(150px,14vw,210px)}
+html.fit-ws .bt .mini{display:none}
+html.fit-ws .bt .sh .who{font-size:20px}
+html.fit-ws .bt .lives .lfH i{width:20px;height:20px}html.fit-ws .bt .lives .lfH svg{height:20px}html.fit-ws .bt .lives .lfN{font-size:21px}
+html.fit-ws .bt .slot{font-size:10px;gap:2px}
+html.fit-ws .bt .hand{padding-top:14px}
+html.fit-ws .btAct{gap:5px}
+html.fit-ws .btAct .phase{font-size:13.5px}
+html.fit-ws .actBtns .b{min-height:44px;font-size:14px;letter-spacing:0;padding:4px}
+html.fit-ws .btAct .detail.ph{display:none}
+html.fit-ws .btAct .detail:not(.ph){position:fixed;left:calc(12px + var(--colL,0px) + var(--colGap,0px));width:var(--centerW,600px);box-sizing:border-box;bottom:var(--dB2,var(--dB,240px));height:auto;z-index:8;pointer-events:none;font-size:13.5px;line-height:1.5;padding:9px 14px;border-radius:12px;border:2px solid #c9984a;background:linear-gradient(180deg,rgba(58,16,25,.97),rgba(24,6,10,.97));box-shadow:0 10px 26px rgba(0,0,0,.65);animation:btMenuIn .14s ease-out}
+html.fit-ws .fldL{font-size:11.5px;padding:1px 10px}html.fit-ws .fldT{font-size:11px}
+html.fit-ws .bt .btMid{padding:9px 11px;gap:6px}
+html.fit-ws .bt .btMid .duo{gap:8px}
+html.fit-ws .bt .btMid .duo .colh b{font-size:17px}
+html.fit-ws .bt .btMid .duo .colh{flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
+html.fit-ws .bt .btMid .duo .colh span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+html.fit-ws .drawer .zone{padding:8px 10px}
+html.fit-ws .drawer .hlist .tcg.s{width:40px;font-size:6.4px}
+/* 横長のマス：左に絵、右に名前と●・確率 */
+html[data-tw="row"].fit-wide .bt .btMid .grid{gap:4px}
+html[data-tw="row"].fit-wide .bt .btMid .tt{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-content:center;align-items:center;column-gap:4px;padding:0 5px 0 calc(var(--trow,44px) * .9 + 6px);border-width:1px;box-shadow:none}
+html[data-tw="row"].fit-wide .bt .btMid .tt::before{inset:0 auto 0 0;width:calc(var(--trow,44px) * .9);background:var(--art) 50% 16%/cover no-repeat,linear-gradient(180deg,#3a1630,#1a0a1c)}
+html[data-tw="row"].fit-wide .bt .btMid .tt::after{left:0;right:auto;top:0;bottom:0;width:3px;height:auto}
+html[data-tw="row"].fit-wide .bt .btMid .tt .tn{grid-column:1/-1;grid-row:1;text-align:left;padding:0;font-size:clamp(11.5px,calc(var(--trow,44px) * .3),15px)}
+html[data-tw="row"].fit-wide .bt .btMid .tt .dots{grid-column:1;grid-row:2;padding:0;font-size:8.5px;letter-spacing:1px}
+html[data-tw="row"].fit-wide .bt .btMid .tt .pp{grid-column:2;grid-row:2;margin:0;padding:0;background:none;font-size:11px}
+
+html[data-fld="s"].fit-wide .fldL,html[data-fld="s"].fit-wide .fldT{display:none}
+html[data-fld="s"].fit-wide .btField::before{display:none}
+html[data-fld="s"].fit-wide .btField::after{font-size:20px}
+@media (min-height:1300px){html.fit-wide .bt{font-size:17px}html.fit-wide .btAct .detail{font-size:17px}html.fit-wide .btAct .phase{font-size:19px}html.fit-wide .actBtns .b{min-height:64px;font-size:20px}html.fit-wide .actBtns{max-width:1300px}
+  html.fit-wide .bt .mini{font-size:15px}html.fit-wide .bt .slot{font-size:14px}html.fit-wide .drawer .log{font-size:17px}html.fit-wide .bt .btMid .duo .colh b{font-size:26px}html.fit-wide .bt .btMid .duo .colh span{font-size:15px}html.fit-wide .bt .btMid .tt .pp{font-size:15px}html.fit-wide .bt .btMid .tt .dots{font-size:13px}html.fit-wide .fldL{font-size:16px}html.fit-wide .bt .side>.oppLast{font-size:16px}html.fit-wide .bt .btMid .tt .tn{font-size:20px}
+  html.fit-wide .drawer .hlist .tcg.s{width:72px;font-size:11.5px}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1416,7 +1562,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261110202528';
+const APP_VER='20261110205227';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2425,7 +2571,7 @@ function modalKill(){const c=MODAL_CUR;if(c)c.fin(KILL)}
 function tileHTML(target,ty,view,tag='div',cls=''){
   const c=C[ty],n=copies(target,ty);let dots='',out=false,extra='';
   if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty];if(SV.showP)extra=`<span class="pp"><i>推定 </i>${Math.round(view.w[ty]*100)}%</span>`}
-  return `<${tag} ${tag==='button'?'type="button"':''} class="tt cat-${c.cat} ${out?'out':''} ${cls}" data-ty="${ty}"><span class="tn">${c.n}${c.single?'<small>単</small>':''}</span>${view?`<span class="dots">${dots}</span>`:''}${extra}</${tag}>`;
+  return `<${tag} ${tag==='button'?'type="button"':''} class="tt cat-${c.cat} ${out?'out':''} ${cls}" data-ty="${ty}" style="--art:url(art/${ty}.png)"><span class="tn">${c.n}${c.single?'<small>単</small>':''}</span>${view?`<span class="dots">${dots}</span>`:''}${extra}</${tag}>`;
 }
 function pickTypes(target,count,title,sub,cancelable,viewer){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'types',target:whoOf(target),count,title,sub,cancelable:!!cancelable,viewer:viewer?whoOf(viewer):null});
@@ -3128,15 +3274,22 @@ const FIT={c:null,
     const vv=window.visualViewport,w=Math.round(innerWidth),h=Math.round(vv&&vv.height&&Math.abs(vv.scale-1)<.01?Math.min(innerHeight,vv.height):innerHeight);
     if(this.c&&this.c.w===w&&this.c.h===h)return this.c;
     const land=w>h&&h<=520&&w>=480,phone=w<=700&&!land,tight=phone&&h<700,xs=phone&&h<540;
+    const wide=w>=1000&&!land,w3=wide&&w>=1200,W=Math.min(w,2800);
+    const colL=w3?Math.round(Math.max(270,Math.min(520,W*.2))):0,colR=wide?Math.round(Math.max(330,Math.min(680,W*.26))):0;
+    const ws=wide&&h<860,centerW=wide?W-(ws?24:32)-colL-colR-(ws?12:14)*(w3?2:1):0;
     let handW=86;
-    if(land)handW=Math.round(Math.max(46,Math.min(64,h*.15)));
+    if(wide)handW=Math.round(Math.max(76,Math.min(190,h*.122,centerW*.16)));
+    else if(land)handW=Math.round(Math.max(46,Math.min(64,h*.15)));
     else if(phone)handW=Math.round(Math.max(48,Math.min(w<360?64:w*.21,h*.108)));
-    return this.c={w,h,land,phone,tight,xs,handW,handFr:.5};
+    return this.c={w,h,land,phone,tight,xs,handW,handFr:.5,wide,w3,colL,colR,centerW,tcw:wide?Math.round(Math.max(38,Math.min(96,h*.058))):0};
   },
   apply(){
     const F=this.get(),r=document.documentElement;
     r.style.setProperty('--vh',F.h+'px');r.style.setProperty('--cw',F.handW+'px');
     r.classList.toggle('fit-p',F.phone);r.classList.toggle('fit-tight',F.tight);r.classList.toggle('fit-xs',F.xs);r.classList.toggle('fit-land',F.land);r.classList.toggle('fit-tab',!F.phone&&!F.land&&F.w<1000);
+    r.classList.toggle('fit-wide',F.wide);r.classList.toggle('fit-w3',F.w3);r.classList.toggle('fit-ws',F.wide&&F.h<860);
+    if(!F.wide)r.removeAttribute('data-tw');
+    if(F.wide){r.style.setProperty('--colL',F.colL+'px');r.style.setProperty('--colR',F.colR+'px');r.style.setProperty('--tcw',F.tcw+'px');r.style.setProperty('--centerW',F.centerW+'px');r.style.setProperty('--colGap',(F.w3?(F.h<860?12:14):0)+'px')}
     return F;
   },
   // ホーム：右のアイコンの列が下のボタンに重なるときは、2列に折り返す
@@ -3147,6 +3300,17 @@ const FIT={c:null,
   after(){
     const F=this.apply(),r=document.documentElement,mid=document.querySelector('.btMid');
     const hand=document.querySelector('.btHand');if(hand)r.style.setProperty('--dB',Math.round(F.h-hand.getBoundingClientRect().top+10)+'px');
+    if(mid&&F.wide){
+      // PC：場のカードは場の高さいっぱいに。推理ボードは3列で、2つの表が縦に収まる行の高さにする
+      const meZ=document.querySelector('.btMe');if(meZ)r.style.setProperty('--dB2',Math.round(F.h-meZ.getBoundingClientRect().top+6)+'px');
+      const fld=document.querySelector('.btField');
+      if(fld){const fh=fld.getBoundingClientRect().height,sm=fh<175;r.style.setProperty('--fw',Math.round(Math.max(40,Math.min(300,(fh-(sm?10:58))/1.4,F.centerW*.22)))+'px');if(sm)r.setAttribute('data-fld','s');else r.removeAttribute('data-fld')}
+      r.removeAttribute('data-trow');
+      const cols=[...mid.querySelectorAll('.duo .col')];if(!cols.length)return;
+      const c=F.colR>=440&&F.h>=860?4:3,g=cols[0].querySelector('.grid'),n=g?g.children.length:14,rows=Math.ceil(n/c);
+      let rh=F.h>=1300?112:84;for(const col of cols){const gr=col.querySelector('.grid');if(!gr)continue;const used=[...col.children].filter(x=>x!==gr).reduce((a,x)=>a+x.getBoundingClientRect().height+6,0);
+        rh=Math.min(rh,Math.floor((col.getBoundingClientRect().height-used-(rows-1)*6)/rows))}
+      r.style.setProperty('--tcols',c);r.style.setProperty('--trow',Math.max(30,rh)+'px');r.setAttribute('data-tw',rh<62?'row':'card');return}
     if(!mid||!(F.phone||F.land)){r.removeAttribute('data-trow');return}
     const g=[...mid.querySelectorAll('.grid')].find(x=>x.offsetParent);if(!g)return;
     const n=g.children.length||14,gap=F.xs||F.land?3:4,cs=getComputedStyle(mid),tabs=mid.querySelector('.trkTabs');
@@ -3164,7 +3328,7 @@ FIT.apply();
 function handFit(n){
   // 手札のカード幅は画面の高さで決める（低い画面では小さく、高い画面では大きく）。横向きは左の列の幅に収める
   const F=FIT.get(),gap=8;
-  const avail=F.land?Math.floor((innerWidth-28)*F.handFr)-8:F.phone?innerWidth-28:Math.min(760,innerWidth)-32-26;
+  const avail=F.wide?F.centerW-20:F.land?Math.floor((innerWidth-28)*F.handFr)-8:F.phone?innerWidth-28:Math.min(760,innerWidth)-32-26;
   const W=F.handW;
   if(n<=1||n*(W+gap)<=avail)return{fit:false,W,ov:0};
   const step=Math.max(16,(avail-W)/(n-1));return{fit:true,W,ov:Math.max(0,W-step)};
@@ -3376,7 +3540,7 @@ function render0(){
       <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
       <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
     </div>`}</div>
-  <aside class="drawer ${LOGOPEN?'open':''}" id="drawer" aria-label="記録" ${LOGOPEN?'':'inert'}>
+  <aside class="drawer ${LOGOPEN?'open':''}" id="drawer" aria-label="記録" ${LOGOPEN||FIT.get().w3?'':'inert'}>
     <div class="sh"><b>記録</b><button type="button" class="b small" id="bLogClose">閉じる</button></div>
     <section class="zone">
       <div class="label">使われたカード（新しい順）。タップで効果を確認</div>
@@ -3871,6 +4035,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:50,d:'2026-11-11',t:'PCの対戦画面を、画面いっぱいの「卓」の配置に変えました。中央に、おたがいが最後に使ったカードが大きく出ます。左に記録、右にカードの絵つきの推理ボードが並び、手札も大きくなりました。'},
   {id:49,d:'2026-11-11',t:'対戦画面のライフを、ハートと数字で見やすくしました（タコは心臓が減ったときの演出だけ出ます）。マッチングなどの待ち時間に、タコや人狼ゲームの豆知識が出るようになりました。'},
   {id:48,d:'2026-11-11',t:'〈妖狐〉の共鳴効果（公開しなくてよい）をなくしました。化けたカードはどのみち相手に見えるためです。'},
   {id:47,d:'2026-11-11',t:'ホーム画面も、小さいスマホや横向きでボタンが重ならないようにしました。起動したときにロゴが出るようになり、画面の切りかえもなめらかになりました。'},
