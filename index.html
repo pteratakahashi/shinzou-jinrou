@@ -1258,6 +1258,36 @@ html.fit-land .hmResume{padding:3px 10px;font-size:12px}
 #app.vIn{animation:vIn .2s ease-out}
 @keyframes vIn{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){#boot .bootIn,#boot svg,#boot i::after,#app.vIn{animation:none}}
+
+/* --- ライフ：ハートと数字。タコは減った／増えたときだけ出る --- */
+.bt .lives{position:relative;display:inline-flex;align-items:center;gap:5px;flex:none;padding:2px 9px 2px 8px;border-radius:99px;background:rgba(0,0,0,.38);border:1px solid rgba(201,152,74,.45)}
+.bt .lives .lfL{font:800 10px var(--body);color:#d9c7b0;letter-spacing:.04em}
+.bt .lives .lfH{display:inline-flex;gap:2px}
+.bt .lives .lfH i{display:block;width:17px;height:17px}
+.bt .lives .lfH svg{display:block;width:100%;height:100%;height:17px}
+.bt .lives .lfH i.on svg{fill:#ff4561;stroke:#fff0f2;stroke-width:1.4;filter:drop-shadow(0 0 4px rgba(255,69,97,.7))}
+.bt .lives .lfH i.off svg{fill:rgba(0,0,0,.35);stroke:#6b4a52;stroke-width:1.6}
+.bt .lives .lfH i.chg{animation:lfChg .9s ease-out}
+@keyframes lfChg{0%{transform:scale(2.4)}35%{transform:scale(.8)}60%{transform:scale(1.25)}100%{transform:none}}
+.bt .lives .lfN{font-family:var(--game);font-weight:400;font-size:17px;line-height:1;color:#fff4dc;min-width:.7em;text-align:center;text-shadow:0 2px 0 #2a0610}
+.bt .lives.hurt{animation:lfPill 1.8s ease-out}
+@keyframes lfPill{0%,30%{background:rgba(255,69,97,.55);border-color:#ffb3bf}100%{background:rgba(0,0,0,.38)}}
+.bt .lives .lfOcto{position:absolute;left:calc(100% + 4px);top:50%;width:58px;height:58px;margin-top:-29px;z-index:6;pointer-events:none;animation:lfOcto 1.8s ease-out both;filter:drop-shadow(0 4px 8px rgba(0,0,0,.7))}
+.bt .lives .lfOcto svg,.bt .lives .lfOcto .octo{width:100%;height:100%}
+@keyframes lfOcto{0%{opacity:0;transform:scale(.4)}12%{opacity:1;transform:scale(1.15)}22%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.9)}}
+html.fit-tight .bt .lives,html.fit-land .bt .lives{padding:1px 7px 1px 6px;gap:4px}
+html.fit-tight .bt .lives .lfH i,html.fit-land .bt .lives .lfH i{width:14px;height:14px}
+html.fit-tight .bt .lives .lfH svg,html.fit-land .bt .lives .lfH svg{height:14px}
+html.fit-tight .bt .lives .lfN,html.fit-land .bt .lives .lfN{font-size:15px}
+@media (max-width:400px){html.fit-tight .bt .lives .lfL{display:none}}
+@media (max-width:340px){.bt .lives .lfL{display:none}}
+@media (prefers-reduced-motion:reduce){.bt .lives.hurt,.bt .lives .lfH i.chg{animation:none}}
+/* --- 待ち時間の豆知識 --- */
+.trivia{margin-top:10px;padding:9px 12px 10px;border-radius:12px;text-align:left;background:rgba(0,0,0,.32);border:1px solid rgba(201,152,74,.4)}
+.trivia b{display:block;font-family:var(--game);font-weight:400;font-size:11px;letter-spacing:.12em;color:#ffd45e;margin-bottom:3px}
+.trivia span{display:block;font-size:12.5px;line-height:1.55;color:#f3e6d2;min-height:3.1em;animation:vIn .4s ease-out}
+html.fit-p .bt .sh .who,html.fit-land .bt .sh .who{flex:0 0 auto}
+html.fit-p .bt .mini{flex:1 1 0;text-align:right}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1378,7 +1408,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261110201611';
+const APP_VER='20261110201843';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3133,7 +3163,10 @@ function lives(p){
   if(p._shownLife!=null&&p._shownLife!==p.life){p._lfFrom=p._shownLife;p._lfT0=now}
   p._shownLife=p.life;
   const anim=p._lfT0&&now-p._lfT0<1800;
-  return`<span class="lives" aria-label="心臓 残り${p.life}つ">${octoSVG(p.life,anim?p._lfFrom:p.life,'',anim?p._lfT0:0,octoOf(p))}</span>`}
+  // ふだんは「ライフ ♥♥♡ 2」と数字で見せる。タコは、心臓が減った／増えたときの演出のあいだだけ出す
+  const mx=Math.max(3,p.life,anim?p._lfFrom:0),HP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8-5.200-8-11a4.600 4.600 0 0 1 8-3 4.600 4.600 0 0 1 8 3c0 5.800-8 11-8 11z"/></svg>';
+  let hs='';for(let i=0;i<mx;i++)hs+=`<i class="${i<p.life?'on':'off'}${anim&&i>=Math.min(p.life,p._lfFrom)&&i<Math.max(p.life,p._lfFrom)?' chg':''}">${HP}</i>`;
+  return`<span class="lives ${anim?'hurt':''}" aria-label="ライフ 残り${p.life}"><span class="lfL">ライフ</span><span class="lfH">${hs}</span><b class="lfN">${p.life}</b>${anim?`<span class="lfOcto" style="animation-delay:-${now-p._lfT0}ms">${octoSVG(p.life,p._lfFrom,'',p._lfT0,octoOf(p))}</span>`:''}</span>`}
 function badges(p){
   const b=[];
   if(p.f.noGuess)b.push(['次ターン宣言不可','warn']);
@@ -3826,6 +3859,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:49,d:'2026-11-11',t:'対戦画面のライフを、ハートと数字で見やすくしました（タコは心臓が減ったときの演出だけ出ます）。マッチングなどの待ち時間に、タコや人狼ゲームの豆知識が出るようになりました。'},
   {id:48,d:'2026-11-11',t:'〈妖狐〉の共鳴効果（公開しなくてよい）をなくしました。化けたカードはどのみち相手に見えるためです。'},
   {id:47,d:'2026-11-11',t:'ホーム画面も、小さいスマホや横向きでボタンが重ならないようにしました。起動したときにロゴが出るようになり、画面の切りかえもなめらかになりました。'},
   {id:46,d:'2026-11-11',t:'対戦画面を、どのスマホでも1画面に収まるようにしました。画面の大きさと向きに合わせて、推理表の列の数、手札の大きさ、相手と自分の枠を自動で調整します（小さいスマホ・横向きにも対応）。上のボタンは「記録」と「メニュー」の2つにまとめ、選んだカードの説明は手札の上に浮かんで出ます。'},
@@ -3892,6 +3926,28 @@ function showUpdates(){
     m.querySelector('#uClose').onclick=()=>{m.onclick=null;done()};m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
   });
 }
+/* 待ち時間に出す豆知識。7秒ごとに次のものに変わる */
+const TRIVIA=[
+  'タコには心臓が3つある。このゲームで守る心臓も3つ。',
+  'タコの心臓は、えらに血を送るものが2つ、体じゅうに血を送るものが1つ。',
+  'タコの血は青い。鉄ではなく銅で酸素を運んでいるから。',
+  'タコは泳いでいるあいだ、体に血を送る心臓が止まる。だから泳ぐより、はって歩くほうが楽。',
+  'タコの神経細胞の約3分の2は、頭ではなく8本の腕にある。',
+  '人の心臓は、1日におよそ10万回動く。',
+  '人狼ゲームの元は、1986年ごろにソ連のモスクワ大学で生まれた「マフィア」というゲーム。',
+  '「マフィア」を人狼の物語に置きかえたのは、アメリカのアンドリュー・プロトキン（1997年）。',
+  '相手のデッキの13種とシングル1枚は、最初から公開されている。心臓はその中のどれか。',
+  '先攻は5枚、後攻は6枚の中から、心臓にするカードを選ぶ。',
+  '同じ属性のカードを続けて使うと「共鳴」して、追加の効果が出る。',
+  'ブラフが通ると、カードが手札に戻り、1枚多く使えて、相手の心臓ではない種類を1つ知れる。',
+  '宣言を外すと、手札をランダムに2枚捨てる。確信が持てるまで待つのも手。',
+  '相手の捨て札は、心臓ではない可能性が高い。捨て札をタップすると一覧が見られる。',
+  '推理表の●は、その種類のカードがすでに何枚見えたかを表している。',
+  '呪いは場に1つだけ。新しい呪いで上書きして解くこともできる。'];
+const TRIV0=Math.floor(Math.random()*TRIVIA.length);
+const trivNow=()=>TRIVIA[(TRIV0+Math.floor(Date.now()/7000))%TRIVIA.length];
+const triviaHTML=()=>`<div class="trivia" aria-live="off"><b>豆知識</b><span id="trivT">${trivNow()}</span></div>`;
+setInterval(()=>{const el=document.getElementById('trivT');if(!el)return;const t=trivNow();if(el.textContent!==t){const n=el.cloneNode(false);n.textContent=t;el.replaceWith(n)}},1000);
 /* ランクマッチ：待機列に入って、先に待っている人がいればその部屋に入る。いなければ自分が部屋を作って待つ */
 const MM={fails:0,on:false,timer:0,t0:0,waiting:0,joining:false,clock:0};
 async function mmStart(){
@@ -4378,16 +4434,16 @@ function renderOnline(){
           <button type="button" class="mi ${deckLegal(freeDeck())?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
   }else if(st==='opening'||st==='joining'){
-    body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div></div>`
-    :`<div class="onCard"><p class="onBig">${st==='opening'?'部屋を用意しています…':'部屋につないでいます…'}</p>${st==='joining'?`<p class="note">部屋コード <b>${esc(NET.code)}</b></p>`:''}</div>`;
+    body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div>${triviaHTML()}</div>`
+    :`<div class="onCard"><p class="onBig">${st==='opening'?'部屋を用意しています…':'部屋につないでいます…'}</p>${st==='joining'?`<p class="note">部屋コード <b>${esc(NET.code)}</b></p>`:''}${triviaHTML()}</div>`;
   }else if(st==='waiting'&&MM.on){
-    body=`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">対戦相手を探しています…</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b>・いま探している人 <b id="mmCount">${MM.waiting||1}</b>人</p><p class="note">この画面を開いたまま待ってください。見つかると自動でつながります。</p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div></div>`;
+    body=`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">対戦相手を探しています…</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b>・いま探している人 <b id="mmCount">${MM.waiting||1}</b>人</p><p class="note">この画面を開いたまま待ってください。見つかると自動でつながります。</p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div>${triviaHTML()}</div>`;
   }else if(st==='waiting'){
     body=`<div class="onCard"><p class="label">部屋コード</p><div class="roomCode">${esc(NET.code)}</div>
       <p class="note">このリンクを友達に送ってください。友達がリンクを開いて「参加する」を押すとつながります。</p>
       <div class="linkBox"><input id="oLink" readonly value="${esc(roomLink())}"></div>
       <div class="btns"><button type="button" class="b primary" id="oCopy">リンクをコピー</button>${navigator.share?'<button type="button" class="b" id="oShare">送る</button>':''}</div>
-      <p class="note">この画面を開いたまま待ってください（閉じると部屋が消えます）。</p></div>`;
+      <p class="note">この画面を開いたまま待ってください（閉じると部屋が消えます）。</p>${triviaHTML()}</div>`;
   }else{
     body=`<div class="onCard"><span class="label">あなたの名前（相手に表示されます）</span><div class="nameRow">${nameEdHTML('oName')}</div></div>
       <div class="menu">
