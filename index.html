@@ -1137,7 +1137,7 @@ html.fit-p .bt .hand.fit,html.fit-land .bt .hand.fit{justify-content:flex-start;
 html.fit-p .hc .twin,html.fit-land .hc .twin{font-size:8px;top:-7px;left:2px;padding:0 5px;white-space:nowrap}
 
 /* --- 選んだカードの説明：盤面を押し広げず、手札の上に浮かべる --- */
-html.fit-p .btAct .detail:not(.ph),html.fit-land .btAct .detail:not(.ph){position:fixed;left:8px;right:8px;bottom:var(--dB,220px);z-index:8;max-height:none;overflow:visible;pointer-events:none;font-size:12.5px;line-height:1.5;padding:8px 11px;border-radius:12px;border:2px solid #c9984a;background:linear-gradient(180deg,rgba(58,16,25,.97),rgba(24,6,10,.97));box-shadow:0 10px 26px rgba(0,0,0,.65);animation:btMenuIn .14s ease-out}
+html.fit-p .btAct .detail:not(.ph),html.fit-land .btAct .detail:not(.ph),html.fit-tab .btAct .detail:not(.ph){position:fixed;left:8px;right:8px;bottom:var(--dB,220px);z-index:8;max-height:none;overflow:visible;pointer-events:none;font-size:12.5px;line-height:1.5;padding:8px 11px;border-radius:12px;border:2px solid #c9984a;background:linear-gradient(180deg,rgba(58,16,25,.97),rgba(24,6,10,.97));box-shadow:0 10px 26px rgba(0,0,0,.65);animation:btMenuIn .14s ease-out}
 html.fit-p .btAct .detail .bluffNote{display:block;margin-top:4px;font-size:11px;opacity:.8}
 html.fit-tight .btAct .detail .bluffNote,html.fit-land .btAct .detail .bluffNote{display:none}
 html.fit-land .btAct .detail:not(.ph){right:auto;width:calc(50vw - 16px)}
@@ -1210,9 +1210,57 @@ html.fit-land .bt .tableRow .tcg.s,html.fit-land .bt .tableRow .emptySlot,html.f
 html.fit-land #modal .sheet{max-width:min(760px,100%)}
 html.fit-land #modal .sheet .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
 @media (prefers-reduced-motion:reduce){.btMenu,.btAct .detail{animation:none!important}}
+
+/* --- ホーム：低い画面・横向きでも、ロゴ・右のアイコン・下のボタンが重ならない --- */
+.hmLogo h1{font-size:clamp(34px,min(14vw,10.5vh),70px)}
+@media (max-height:660px){
+  .hmSide{gap:5px}.hmIc{width:50px}.hmIc i{width:38px;height:38px;padding:8px}.hmIc span{font-size:9px}
+  .hmB{height:50px}.hmMain{height:108px}.hmDock{bottom:24px;gap:6px}
+  .hmLogo{top:37%}.hmLogo small{font-size:10px}
+  .hmResume{padding:5px 12px;font-size:13px}
+}
+@media (max-height:560px){
+  .hmTop{padding:3px 6px 3px 3px}.hmAv{width:38px;height:38px}.hmGear{width:34px;height:34px}
+  .hmEvt{top:62px;padding:4px 8px 5px}.hmEvt span{-webkit-line-clamp:1}
+  .hmSide{top:62px;gap:4px}.hmIc{width:40px}.hmIc i{width:34px;height:34px;padding:7px}.hmIc span{display:none}
+  .hmB{height:42px;padding:5px 10px}.hmB b{font-size:15px}.hmMain{height:90px}.hmDock{bottom:16px}
+  .hmLogo{top:33%}.hmLogo small{display:none}
+  .hmResume{padding:3px 10px;font-size:12px}
+}
+html:not(.fit-land) .hmLogo{right:var(--sideW,72px)}
+html:not(.fit-land) .hmEvt{max-width:calc(100% - var(--sideW,72px) - 26px)}
+html:not(.fit-land) .hmSide{flex-wrap:wrap-reverse;align-content:flex-start;column-gap:4px;max-height:var(--sideH,none)}
+html.fit-land .hm{max-width:none}
+html.fit-land .hmMascot,html.fit-land .hmEvt,html.fit-land .hmLogo small{display:none}
+html.fit-land .hmSide{flex-direction:row;top:58px;right:10px;gap:6px}
+html.fit-land .hmIc{width:auto}html.fit-land .hmIc i{width:34px;height:34px;padding:7px}html.fit-land .hmIc span{display:none}
+html.fit-land .hmLogo{left:0;right:52%;top:38%}
+html.fit-land .hmLogo h1{font-size:clamp(34px,15vh,60px)}
+html.fit-land .hmDock{left:50%;right:10px;bottom:14px;gap:5px}html.fit-land .hmSub{gap:5px}html.fit-land .hmB{height:40px}
+html.fit-land .hmMain{height:88px}html.fit-land .hmB{height:41px;padding:4px 10px}html.fit-land .hmB b{font-size:15px}
+html.fit-land .hmResume{padding:3px 10px;font-size:12px}
+
+/* --- 下のタブ：細い画面でもはみ出さない --- */
+.tabBar button{min-width:0;white-space:nowrap}
+@media (max-width:340px){.tabBar button{font-size:9.5px;letter-spacing:0;padding:6px 0}.tabBar button svg{width:24px;height:24px}.tabBar .tbBattle{width:70px;max-width:70px}.tabBar .tbBattle i{width:58px;height:58px;font-size:13px}}
+/* --- 起動画面と、画面の切りかえ --- */
+#boot{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:radial-gradient(60% 45% at 50% 46%,#5a0f22 0,#1a0509 55%,#070203 100%);transition:opacity .45s ease,visibility .45s}
+#boot.out{opacity:0;visibility:hidden;pointer-events:none}
+#boot .bootIn{display:flex;flex-direction:column;align-items:center;gap:14px;animation:bootIn .7s ease-out both}
+#boot svg{width:64px;height:64px;animation:bootBeat 1.1s ease-in-out infinite;filter:drop-shadow(0 0 18px rgba(255,70,100,.7))}
+#boot b{font-family:var(--display);font-weight:400;font-size:clamp(38px,13vw,62px);line-height:1;color:#fff4dc;letter-spacing:.06em;text-shadow:0 4px 0 #2a0610,0 0 26px rgba(255,80,100,.6)}
+#boot b span{color:#ff4561}
+#boot i{display:block;width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+#boot i::after{content:"";display:block;width:40%;height:100%;border-radius:3px;background:linear-gradient(90deg,#f6cf6a,#fff2bf);animation:bootBar 1s ease-in-out infinite}
+@keyframes bootIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes bootBeat{0%,100%{transform:scale(1)}18%{transform:scale(1.16)}36%{transform:scale(1)}54%{transform:scale(1.1)}}
+@keyframes bootBar{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
+#app.vIn{animation:vIn .2s ease-out}
+@keyframes vIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#boot .bootIn,#boot svg,#boot i::after,#app.vIn{animation:none}}
 </style>
 
-<div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
+<div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
 <div id="fx" hidden></div>
 <div id="flash"></div>
 <canvas id="fxc" aria-hidden="true"></canvas>
@@ -1330,7 +1378,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261110194638';
+const APP_VER='20261110195455';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1686,7 +1734,8 @@ function deckIssues(){
 
 /* ================= views ================= */
 let VIEW='menu';
-function go(v){VIEW=v;window.scrollTo(0,0);draw_();}
+function go(v){const ch=VIEW!==v;VIEW=v;window.scrollTo(0,0);draw_();
+  if(ch){const a=document.getElementById('app');a.classList.remove('vIn');void a.offsetWidth;a.classList.add('vIn')}}
 // 画面ごとの背景の一枚絵（ドット絵）。name なしで消す
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
@@ -1711,6 +1760,7 @@ function draw_(){
   else if(VIEW==='draft')renderDraft();
   else if(VIEW==='online')renderOnline();
   document.body.classList.toggle('hasTabs',!!document.querySelector('.tabBar'));
+  if(VIEW==='menu')FIT.home();
 }
 
 function renderMenu(){
@@ -3037,14 +3087,18 @@ const FIT={c:null,
   apply(){
     const F=this.get(),r=document.documentElement;
     r.style.setProperty('--vh',F.h+'px');r.style.setProperty('--cw',F.handW+'px');
-    r.classList.toggle('fit-p',F.phone);r.classList.toggle('fit-tight',F.tight);r.classList.toggle('fit-xs',F.xs);r.classList.toggle('fit-land',F.land);
+    r.classList.toggle('fit-p',F.phone);r.classList.toggle('fit-tight',F.tight);r.classList.toggle('fit-xs',F.xs);r.classList.toggle('fit-land',F.land);r.classList.toggle('fit-tab',!F.phone&&!F.land&&F.w<1000);
     return F;
   },
+  // ホーム：右のアイコンの列が下のボタンに重なるときは、2列に折り返す
+  home(){const sd=document.querySelector('.hmSide'),dk=document.querySelector('.hmDock');if(!sd||!dk)return;
+    document.documentElement.style.setProperty('--sideH',Math.max(90,Math.floor(dk.getBoundingClientRect().top-sd.getBoundingClientRect().top-8))+'px');
+    document.documentElement.style.setProperty('--sideW',Math.ceil(sd.getBoundingClientRect().width+12)+'px')},
   // 描画のあと：推理表を「全種類が必ず見える」列数・行の高さにし、カード説明の位置を手札の上に合わせる
   after(){
     const F=this.apply(),r=document.documentElement,mid=document.querySelector('.btMid');
-    if(!mid||!(F.phone||F.land)){r.removeAttribute('data-trow');return}
     const hand=document.querySelector('.btHand');if(hand)r.style.setProperty('--dB',Math.round(F.h-hand.getBoundingClientRect().top+10)+'px');
+    if(!mid||!(F.phone||F.land)){r.removeAttribute('data-trow');return}
     const g=[...mid.querySelectorAll('.grid')].find(x=>x.offsetParent);if(!g)return;
     const n=g.children.length||14,gap=F.xs||F.land?3:4,cs=getComputedStyle(mid),tabs=mid.querySelector('.trkTabs');
     const mb=mid.getBoundingClientRect(),top=tabs?tabs.getBoundingClientRect().bottom+parseFloat(cs.rowGap||5):mb.top+parseFloat(cs.paddingTop);
@@ -3765,6 +3819,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:47,d:'2026-11-11',t:'ホーム画面も、小さいスマホや横向きでボタンが重ならないようにしました。起動したときにロゴが出るようになり、画面の切りかえもなめらかになりました。'},
   {id:46,d:'2026-11-11',t:'対戦画面を、どのスマホでも1画面に収まるようにしました。画面の大きさと向きに合わせて、推理表の列の数、手札の大きさ、相手と自分の枠を自動で調整します（小さいスマホ・横向きにも対応）。上のボタンは「記録」と「メニュー」の2つにまとめ、選んだカードの説明は手札の上に浮かんで出ます。'},
   {id:45,d:'2026-11-09',t:'画面のデザインを新しくしました。ホームは1枚の絵の上に、右にミッション・プレゼント・称号とタコ・遊び方、下にランクマッチとデッキ編成を並べました。下のまんなかの「対戦」ボタンから、ランクマッチ・CPU・友達対戦をすぐ選べます。名前やサウンド、ログインは右上の歯車から。'},
   {id:44,d:'2026-11-09',t:'レジェンドカード16種に「絵違い」ができました。全身が映る特別なイラスト（持ち物が光ります）と、虹色に光る枠になります。ショップで銀貨と交換すると使えます（カードの説明から、いつもの絵と切りかえられます）。'},
@@ -4352,7 +4407,7 @@ function renderOnline(){
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
 }
 
-let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='battle'&&S){if(S.busy)FIT.after();else render()}},120)};
+let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='menu')FIT.home();if(VIEW==='battle'&&S){if(S.busy)FIT.after();else render()}},120)};
 addEventListener('resize',onRz);addEventListener('orientationchange',onRz);if(window.visualViewport)visualViewport.addEventListener('resize',onRz);
 $('#app').addEventListener('click',e=>{
   if(VIEW!=='battle')return;
@@ -4381,6 +4436,9 @@ addEventListener('beforeunload',e=>{if(VIEW==='battle'&&S&&!S.over){e.preventDef
 draw_();
 guardHist();
 LADDER.init();
+// 起動画面：文字（フォント）が用意できたら消す。遅くても1.6秒で消す
+{const bt=document.getElementById('boot'),t0=Date.now(),off=()=>{if(!bt||bt.classList.contains('out'))return;setTimeout(()=>{bt.classList.add('out');setTimeout(()=>bt.remove(),600)},Math.max(0,650-(Date.now()-t0)))};
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(off);setTimeout(off,1600)}
 </script>
 
 </body></html>
