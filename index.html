@@ -430,7 +430,7 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .infoText .eff{font-size:15px;line-height:1.7;padding:10px 12px;border-radius:8px;background:var(--panel2)}
 
 /* ---- stronger card-game fx ---- */
-#fxc{position:fixed;inset:0;width:100vw;height:100vh;z-index:31;pointer-events:none}
+#fxc{position:fixed;inset:0;width:100%;height:100%;z-index:31;pointer-events:none}
 #flash{position:fixed;inset:0;z-index:29;pointer-events:none;opacity:0}
 #flash.red{background:radial-gradient(ellipse at center,transparent 35%,rgba(220,40,60,.55));animation:flashA .7s ease-out}
 #flash.gold{background:radial-gradient(ellipse at center,rgba(255,210,120,.25),transparent 60%);animation:flashA .6s ease-out}
@@ -1378,7 +1378,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261110195455';
+const APP_VER='20261110200857';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1408,17 +1408,24 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const CATCOL={info:'#6aa2f0',atk:'#ef5a68',grd:'#4fc492',sup:'#f0b84a',cur:'#9a8cb8',one:'#b689f2'};
 const FXC=(()=>{
   const c=document.getElementById('fxc');const g=c.getContext('2d');let parts=[],raf=0;
-  function size(){const d=window.devicePixelRatio||1;c.width=innerWidth*d;c.height=innerHeight*d;g.setTransform(d,0,0,d,0,0)}
+  let sw=0,sh=0,lastT=0;
+  function size(){const d=window.devicePixelRatio||1;sw=innerWidth;sh=innerHeight;c.width=Math.round(sw*d);c.height=Math.round(sh*d);g.setTransform(d,0,0,d,0,0)}
   size();addEventListener('resize',size);
+  // 画面の高さが変わったのに描き直しの範囲が古いままだと、下の帯に粒が消えずに残る（iPhoneでバーが出入りしたとき）。毎回キャンバス全体を消し、大きさも合わせ直す
+  function wipe(){g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,c.width,c.height);g.restore()}
   function loop(){
-    g.clearRect(0,0,innerWidth,innerHeight);parts=parts.filter(p=>p.life>0);
+    lastT=Date.now();if(sw!==innerWidth||sh!==innerHeight)size();
+    wipe();parts=parts.filter(p=>p.life>0&&p.y<sh+60);
     for(const p of parts){p.life--;p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.98;g.globalAlpha=Math.max(0,p.life/p.max);
       if(p.ring){p.r+=p.dr;p.dr*=.94;g.strokeStyle=p.color;g.lineWidth=4*(p.life/p.max)+1;g.beginPath();g.arc(p.x,p.y,p.r,0,Math.PI*2);g.stroke()}
       else if(p.rect){g.save();g.translate(p.x,p.y);g.rotate(p.rot+=p.vr);g.fillStyle=p.color;g.fillRect(-p.s,-p.s/2,p.s*2,p.s);g.restore()}
       else{g.fillStyle=p.color;g.beginPath();g.arc(p.x,p.y,p.s,0,Math.PI*2);g.fill()}}
     g.globalAlpha=1;raf=parts.length?requestAnimationFrame(loop):0;
   }
-  const go=()=>{if(!raf)raf=requestAnimationFrame(loop)};
+  // 別のアプリに切りかえたあとなどに描画が止まったままになったら、動かし直す（止まると粒が画面に残る）
+  const go=()=>{if(raf&&Date.now()-lastT>600){cancelAnimationFrame(raf);raf=0}if(!raf){lastT=Date.now();raf=requestAnimationFrame(loop)}};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)return;if(raf){cancelAnimationFrame(raf);raf=0}parts=[];wipe()});
+  addEventListener('pageshow',()=>{if(!raf)wipe()});
   const cx=()=>innerWidth/2,cy=()=>innerHeight/2;
   return{
     burst(color,n=50,spd=7,x=cx(),y=cy()){if(RM)return;for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=Math.random()*spd+1.5;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.1,s:Math.random()*3+1,life:45+Math.random()*30,max:75,color})}go()},
