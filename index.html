@@ -1288,6 +1288,14 @@ html.fit-tight .bt .lives .lfN,html.fit-land .bt .lives .lfN{font-size:15px}
 .trivia span{display:block;font-size:12.5px;line-height:1.55;color:#f3e6d2;min-height:3.1em;animation:vIn .4s ease-out}
 html.fit-p .bt .sh .who,html.fit-land .bt .sh .who{flex:0 0 auto}
 html.fit-p .bt .mini{flex:1 1 0;text-align:right}
+
+/* --- 結果の画面：うしろの盤面は止め、結果の枠は動かさない --- */
+body.resultOn #app,body.resultOn #app *,body.resultOn #app *::before,body.resultOn #app *::after{animation:none!important;transition:none!important}
+body.resultOn #flash{animation:none!important;opacity:0!important}
+.result{width:100%}
+.result .resArt{max-height:30vh;object-fit:cover;animation:none}
+#modal .sheet:has(.result){animation:none;overscroll-behavior:none;touch-action:pan-y}
+.result .btns{width:100%}.result .btns .b{flex:1 1 auto;min-height:48px}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1408,7 +1416,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261110201843';
+const APP_VER='20261110202528';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1777,6 +1785,7 @@ function go(v){const ch=VIEW!==v;VIEW=v;window.scrollTo(0,0);draw_();
 function setBg(name,mode=''){const el=document.getElementById('bgArt');if(!el)return;const k=(name||'')+'|'+mode;if(el.dataset.k===k)return;el.dataset.k=k;
   el.className=name?'on '+mode:'';if(name)el.style.backgroundImage=`url(scenes/${name}.png)`}
 function draw_(){
+  document.body.classList.remove('resultOn');
   document.body.classList.toggle('onHome',VIEW==='menu');
   document.body.classList.toggle('inBattle',VIEW==='battle'&&!!S);
   FIT.apply();
@@ -2969,8 +2978,10 @@ async function gameOver(w){
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
   const rated=on&&LADDER.rated()&&NET.mid,rp=rated?LADDER.report(NET.mid,win,'ko'):null;
   if(!on)lsDel(GAME_KEY);else ONL.clear();
-  VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);quake();FXC.burst('#ffffff',120,12);
+  VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);if(win)quake();FXC.burst('#ffffff',120,12);
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();
+  // 結果の画面では、うしろの盤面の動きをすべて止める（揺れたままだとボタンが押しにくい）
+  document.getElementById('app').classList.remove('quake');document.body.classList.remove('hitstop');document.body.classList.add('resultOn');
   if(win){SFX.win();FXC.confetti();screenFlash('gold');VOICE.say('You win!')}else{SFX.lose();screenFlash('red');VOICE.say('You lose.',{rate:.8})}
   await sleep(600);
   if(S.tut){SV.tutDone=true;TUT.on=false;tutHide()}
@@ -2989,6 +3000,7 @@ async function gameOver(w){
       el.innerHTML=(st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。')+gotHTML(d)});
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu'],['#rRank','rank']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
+    document.body.classList.remove('resultOn');
     if(on){if(v==='rank'){netLeave();setTimeout(()=>mmStart(),450);return}if(!NET.conn)return go('menu');if(v==='new'){NET.ready.me=null;go('online')}else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
     if(S.tut){if(v==='same')startTutorial();else go('menu');return}
     if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu')});
@@ -3286,7 +3298,7 @@ function autoEndCheck(){
   if(!nothingLeft())return;
   autoEndT=setTimeout(()=>{if(nothingLeft()&&$('#modal').hidden){TUT.bypass=true;try{onEnd()}finally{TUT.bypass=false}}},1500);
 }
-function render(){setTimeout(autoEndCheck,0);const r=render0();document.body.classList.toggle('inBattle',VIEW==='battle'&&!!S);if(VIEW==='battle'&&S)FIT.after();if(TUT.on)setTimeout(tutTick,0);return r}
+function render(){setTimeout(autoEndCheck,0);const r=render0();document.body.classList.toggle('inBattle',VIEW==='battle'&&!!S);if(VIEW==='battle'&&S){document.body.classList.remove('onHome','hasTabs')}if(VIEW==='battle'&&S)FIT.after();if(TUT.on)setTimeout(tutTick,0);return r}
 let BTMENU=false;
 const BIC={log:'<svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3a2 2 0 0 0-2 2v12h2M9 8h7M9 12h7M9 16h4"/></svg>',
   menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
@@ -4471,7 +4483,7 @@ function renderOnline(){
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
 }
 
-let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='menu')FIT.home();if(VIEW==='battle'&&S){if(S.busy)FIT.after();else render()}},120)};
+let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='menu')FIT.home();if(VIEW==='battle'&&S){if(S.busy||S.over)FIT.after();else render()}},120)};
 addEventListener('resize',onRz);addEventListener('orientationchange',onRz);if(window.visualViewport)visualViewport.addEventListener('resize',onRz);
 $('#app').addEventListener('click',e=>{
   if(VIEW!=='battle')return;
