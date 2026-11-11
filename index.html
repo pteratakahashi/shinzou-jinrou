@@ -1521,6 +1521,27 @@ html.fit-wide .hmPc{grid-area:side;display:flex;flex-direction:column;gap:clamp(
 .hmMsnP .msnList{margin:0;gap:10px}.hmMsnP .msnList li{font-size:13.5px}
 @media (max-height:700px){html.fit-wide .hmMascot{display:block}}
 @media (max-height:600px){html.fit-wide .hmMascot{display:none}}
+
+/* --- 相手の手札の枚数：数字で大きく --- */
+.ohWrap{display:flex;align-items:center;gap:7px;flex:1 1 0;min-width:0;align-self:center;justify-content:flex-end}
+.ohWrap .oppHand{flex:0 1 auto;min-width:0}
+.ohN{flex:none;display:inline-flex;align-items:baseline;gap:3px;padding:3px 10px 4px;border-radius:10px;border:2px solid #c9984a;background:linear-gradient(180deg,#3a1019,#1c060b);color:#ffe7b0;box-shadow:0 2px 0 #12040a;white-space:nowrap}
+.ohN small{font:800 10px var(--body);color:#d9c7b0}
+.ohN b{font-family:var(--game);font-weight:400;font-size:22px;line-height:1;color:#fff4dc;text-shadow:0 2px 0 #2a0610;font-variant-numeric:tabular-nums}
+.ohN.zero{border-color:#ff7d8f;background:linear-gradient(180deg,#7a1428,#3a0812)}.ohN.zero b{color:#ffd0d6}
+html.fit-tight .bt .ohWrap,html.fit-land .bt .ohWrap{flex:0 1 auto;gap:5px}
+html.fit-tight .ohN,html.fit-land .ohN{padding:2px 7px 3px;border-width:1px;border-radius:8px}
+html.fit-tight .ohN b,html.fit-land .ohN b{font-size:17px}
+html.fit-tight .ohN small,html.fit-land .ohN small{font-size:9px}
+html.fit-xs .ohN small:last-child{display:none}
+@media (max-width:340px){.ohN small:last-child{display:none}}
+/* 細くて低い画面では、裏向きのカードの絵は出さず数字だけにする（つぶれて見えるため） */
+@media (max-width:430px){html.fit-tight .bt .oppHand{display:none}}
+html.fit-wide .bt .ohWrap{margin-left:auto;flex:0 1 auto;gap:12px}
+html.fit-wide .ohN{padding:5px 14px 7px;gap:5px}
+html.fit-wide .ohN b{font-size:clamp(28px,calc(var(--tcw,56px) * .62),48px)}
+html.fit-wide .ohN small{font-size:13px}
+html.fit-ws .ohN small{font-size:11.5px}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1641,7 +1662,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261110205227';
+const APP_VER='20261111024833';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3596,7 +3617,7 @@ function render0(){
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
-    <div class="tableRow"><div class="slot">${backHTML('s')}心臓</div><div class="slot">${cpu.setCard?backHTML('s','伏せ'):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="oppHand" aria-label="${OPN()}の手札${cpu.hand.length}枚">${cpu.hand.map(()=>backHTML('s')).join('')}</div></div>
+    <div class="tableRow"><div class="slot">${backHTML('s')}心臓</div><div class="slot">${cpu.setCard?backHTML('s','伏せ'):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand" aria-hidden="true">${cpu.hand.map(()=>backHTML('s')).join('')}</div></div></div>
     ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
@@ -4119,6 +4140,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:52,d:'2026-11-11',t:'相手の手札の枚数を、数字で大きく出すようにしました（0枚のときは赤くなります）。'},
   {id:51,d:'2026-11-11',t:'PCのホーム画面を、PC用の配置に作り替えました。横長の絵が画面いっぱいに広がり、左にメニュー、右にデイリーミッションとお知らせが並びます。ホームから「友達と対戦」もすぐ選べます。'},
   {id:50,d:'2026-11-11',t:'PCの対戦画面を、画面いっぱいの「卓」の配置に変えました。中央に、おたがいが最後に使ったカードが大きく出ます。左に記録、右にカードの絵つきの推理ボードが並び、手札も大きくなりました。'},
   {id:49,d:'2026-11-11',t:'対戦画面のライフを、ハートと数字で見やすくしました（タコは心臓が減ったときの演出だけ出ます）。マッチングなどの待ち時間に、タコや人狼ゲームの豆知識が出るようになりました。'},
