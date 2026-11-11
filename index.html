@@ -1956,7 +1956,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111110651';
+const APP_VER='20261111115548';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2307,7 +2307,7 @@ function renderMenu(){
       <button type="button" class="hmGear" id="hmSet" aria-label="設定">${IC.gear}</button>
     </header>
     <button type="button" class="hmEvt" id="updAll">${updNew?'<i class="bdg n">NEW</i>':''}<b>お知らせ</b><span>${UPDATES.length?esc(String(UPDATES[0].t).replace(/<[^>]+>/g,'')):''}</span></button>
-    <div class="hmLogo"><small>― 3つの心臓を守りぬけ ―</small><h1>心臓<span>人狼</span></h1></div>
+    <div class="hmLogo"><h1>心臓<span>人狼</span></h1></div>
     <button type="button" class="hmMascot" id="pOcto" aria-label="タコをえらぶ">${octoSVG(3,3,'',0,SV.equip.octo||'')}<span class="hmSay">${tips[Math.floor(Date.now()/60000)%tips.length]}</span></button>
     <aside class="hmPc" aria-label="お知らせとミッション">
       <section class="hmPn hmMsnP"><h2>デイリーミッション<small>毎日0時に入れ替わり</small></h2>${missionsHTML()}</section>
