@@ -1956,7 +1956,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111105921';
+const APP_VER='20261111110651';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2020,10 +2020,12 @@ const sndOn=()=>SV.sound!==false,sfxVol=()=>SV.sfxVol==null?1:Math.max(0,Math.mi
    ページを開いたら先に読みこみ、最初のタップで音の出口（AudioContext）を作って使える形にする。圧縮（コンプレッサー）と残響を通す */
 const SFX=(()=>{
   // 名前: 音量
-  const VOL={ui:.3,tab:.42,select:.45,draw:.6,flip:.55,set:.6,play:.75,turn:.5,coin:.6,res:.55,
-    rare:.6,legend:.9,pack:.8,
-    call:.8,hit:1,miss:.7,crush:.8,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
-    round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
+  // 音はどれも同じ大きさにそろえて書き出してある（finish_audio.py）。ここでは役わりごとの大きさだけ決める
+  const VOL={ui:.6,tab:.45,select:.6,                                  // 画面の操作：小さく
+    draw:.6,flip:.6,set:.7,play:.8,coin:.55,crush:.8,                    // カードを扱う音
+    turn:.5,res:.55,rare:.55,call:.7,miss:.6,round:1,match:.7,pack:.7,   // 合図
+    hit:1,shatter:.85,guard:.8,trap:.8,raid:.8,heart:1,final:.75,legend:.8,ko:1, // 山場
+    jingle_win:.5,jingle_lose:.5};                                       // 勝ち負けの合図：ひかえめに
   let ac=null,bus=null,mg=null,hitAt=0;const raw={},buf={};
   for(const n in VOL)fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;raw[n]=ab;if(ac)dec(n)}).catch(()=>{});
   function dec(n){const ab=raw[n];if(!ab)return;delete raw[n];try{ac.decodeAudioData(ab,b=>{buf[n]=b},()=>{})}catch(e){}}
@@ -4395,6 +4397,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:62,d:'2026-11-11',t:'効果音をさらに作り直しました。勝ったとき・負けたときの音は短く静かな合図に、ほかの音も短く整った音に替え、音楽と効果音の大きさをそろえました。'},
   {id:61,d:'2026-11-11',t:'音楽と効果音の音量を、それぞれバーで変えられるようになりました（設定と、対戦中のメニュー）。設定のアイコンも歯車に描き直しました。'},
   {id:60,d:'2026-11-11',t:'カードの効果やコストで心臓の候補が絞られると、候補の盤面が出て、消えた候補がつぶれる演出が入るようになりました（音つき）。'},
   {id:59,d:'2026-11-11',t:'ライフが減る時の音を作り直しました。重い一撃のあと、心臓が「パリン」と割れます。'},
