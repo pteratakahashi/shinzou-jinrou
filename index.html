@@ -17,6 +17,11 @@
 html.fit-wide .nwWrap{width:min(64vw,760px);padding:18px 18px 20px}html.fit-wide .nwGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}html.fit-wide .nwT span{font-size:12px}html.fit-wide .nwH b{font-size:20px}
 @media (orientation:landscape) and (max-height:520px){.nwWrap{width:min(92vw,128vh);padding:8px 10px 10px}.nwGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.nwH{margin-bottom:6px}}
 @media (max-height:620px) and (orientation:portrait){.nwWrap{width:min(92vw,62vh)}}
+
+/* 音量バー（2026-11-11） */
+.sndSet{flex-wrap:nowrap}.sndSet .label{flex:none;width:4.5em}.sndSet input[type=range]{max-width:none;min-width:0}
+input[type=range]{accent-color:var(--gold)}input[type=range]:disabled{opacity:.35}
+.mvol{width:100%;margin:-2px 0 4px;height:22px}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -1951,7 +1956,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111104213';
+const APP_VER='20261111105921';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2009,7 +2014,7 @@ const FXC=(()=>{
 })();
 function quake(){if(RM)return;const a=document.getElementById('app');a.classList.remove('quake');void a.offsetWidth;a.classList.add('quake')}
 function screenFlash(kind){if(RM)return;const f=document.getElementById('flash');f.className='';void f.offsetWidth;f.className=kind}
-const sndOn=()=>SV.sound!==false;
+const sndOn=()=>SV.sound!==false,sfxVol=()=>SV.sfxVol==null?1:Math.max(0,Math.min(1,+SV.sfxVol||0));
 /* ---- 効果音（2026-11-11 作り替え）----
    音はすべて ElevenLabs で作ったこのゲーム用のオリジナル（audio/NAME.mp3。作り方は ~/shinzou-jinrou/audio の gen_audio.py → finish_audio.py）。
    ページを開いたら先に読みこみ、最初のタップで音の出口（AudioContext）を作って使える形にする。圧縮（コンプレッサー）と残響を通す */
@@ -2019,13 +2024,13 @@ const SFX=(()=>{
     rare:.6,legend:.9,pack:.8,
     call:.8,hit:1,miss:.7,crush:.8,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
     round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
-  let ac=null,bus=null,hitAt=0;const raw={},buf={};
+  let ac=null,bus=null,mg=null,hitAt=0;const raw={},buf={};
   for(const n in VOL)fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;raw[n]=ab;if(ac)dec(n)}).catch(()=>{});
   function dec(n){const ab=raw[n];if(!ab)return;delete raw[n];try{ac.decodeAudioData(ab,b=>{buf[n]=b},()=>{})}catch(e){}}
   function ctx(){if(!sndOn())return null;if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();build(ac);for(const n in raw)dec(n)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
   function build(a){
     const comp=a.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=10;comp.ratio.value=3.5;comp.attack.value=.004;comp.release.value=.22;
-    const master=a.createGain();master.gain.value=.9;comp.connect(master).connect(a.destination);
+    const master=a.createGain();master.gain.value=.9*sfxVol();mg=master;comp.connect(master).connect(a.destination);
     const len=Math.floor(a.sampleRate*2.6),ir=a.createBuffer(2,len,a.sampleRate);
     for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3)}
     const conv=a.createConvolver();conv.buffer=ir;const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3200;const wet=a.createGain();wet.gain.value=.3;conv.connect(lp).connect(wet).connect(comp);
@@ -2038,6 +2043,7 @@ const SFX=(()=>{
     src.start(a.currentTime+when)}
   return{
     p,ctx,unlock(){ctx()},
+    volume(v){SV.sfxVol=v;save();if(mg)mg.gain.value=.9*sfxVol()},
     ui(){p('ui',{wet:0})},tab(){p('tab',{wet:0})},
     select(){p('select',{wet:.05})},
     draw(n=1){for(let i=0;i<Math.min(n,4);i++)p('draw',{when:i*.13,rate:1+i*.05,v:i?.8:1,wet:.06})},
@@ -2281,7 +2287,7 @@ function renderMenu(){
     octo:'<svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0v2H5z"/><path d="M6 14c-1 3-2 5-3 6M10 14c0 3-1 5-2 7M14 14c0 3 1 5 2 7M18 14c1 3 2 5 3 6"/><circle cx="9.5" cy="10" r="1"/><circle cx="14.5" cy="10" r="1"/></svg>',
     book:'<svg viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-5a3 3 0 0 0-3 3"/><path d="M20 4v14h-6"/></svg>',
     bell:'<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
-    gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+    gear:'<svg viewBox="0 0 24 24"><path d="M10.30 4.90L10.72 2.49L13.28 2.49L13.70 4.90L15.81 5.78L17.82 4.37L19.63 6.18L18.22 8.19L19.10 10.30L21.51 10.72L21.51 13.28L19.10 13.70L18.22 15.81L19.63 17.82L17.82 19.63L15.81 18.22L13.70 19.10L13.28 21.51L10.72 21.51L10.30 19.10L8.19 18.22L6.18 19.63L4.37 17.82L5.78 15.81L4.90 13.70L2.49 13.28L2.49 10.72L4.90 10.30L5.78 8.19L4.37 6.18L6.18 4.37L8.19 5.78Z"/><circle cx="12" cy="12" r="3.1"/></svg>',
     app:'<svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>'};
   const resume=NET.conn?'':ONL.get()?`<button type="button" class="hmResume" id="mRejoin">▶ 対戦に戻る <small>${esc(ONL.get().opp||'相手')}さん・${ago(ONL.get().at)}</small></button>`:savedG?`<button type="button" class="hmResume" id="mResume">▶ 対戦の続きから <small>${savedG.turnNo+1}ターン目・あなた${savedG.me.life}／CPU${savedG.cpu.life}</small></button>`:'';
   $('#app').innerHTML=`<div class="hm">
@@ -2345,7 +2351,8 @@ function showSettings(){
   const html=()=>`<div class="mHead"><h2>設定</h2><button type="button" class="xBtn" id="stX" aria-label="閉じる">×</button></div>
     <div class="stRow"><span class="label">名前</span>${nameEdHTML('mName')}</div>
     ${rankCardHTML()}
-    <div class="sndSet"><span class="label">サウンド</span><button type="button" class="b small" id="mBgm">BGM ${bgmOn()?'ON':'OFF'}</button><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="BGMの音量"><button type="button" class="b small" id="mSfx">効果音 ${sndOn()?'ON':'OFF'}</button></div>
+    <div class="sndSet"><span class="label">音楽</span><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}><button type="button" class="b small" id="mBgm">${bgmOn()?'ON':'OFF'}</button></div>
+    <div class="sndSet"><span class="label">効果音</span><input type="range" id="mSfxVol" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}><button type="button" class="b small" id="mSfx">${sndOn()?'ON':'OFF'}</button></div>
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   modal(html(),(m,done)=>{
@@ -2355,6 +2362,7 @@ function showSettings(){
       bindRankCard();bindNameEd('mName',()=>{m.querySelector('.sheet').innerHTML=html();bind()});
       m.querySelector('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');m.querySelector('.sheet').innerHTML=html();bind()};
       m.querySelector('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
+      {const sv=m.querySelector('#mSfxVol');sv.oninput=e=>SFX.volume(+e.target.value);sv.onchange=()=>SFX.select()}
       m.querySelector('#mSfx').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.ui();m.querySelector('.sheet').innerHTML=html();bind()};
       m.querySelector('#tReset').onclick=()=>{if(!armed){armed=true;m.querySelector('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();done();renderMenu()};
     };bind();
@@ -3855,7 +3863,9 @@ function render0(){
     <div class="btMenu" role="menu" ${BTMENU?'':'hidden'}>
       <button type="button" class="mrow" id="bRules">${BIC.book}<span>ルール・カードの効果</span></button>
       <button type="button" class="mrow" id="snd" aria-label="効果音">${BIC.snd}<span>効果音</span><em class="${sndOn()?'on':''}">${sndOn()?'ON':'OFF'}</em></button>
+      <input type="range" class="mvol" id="sndV" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}>
       <button type="button" class="mrow" id="bgmB" aria-label="BGM">${BIC.bgm}<span>音楽</span><em class="${bgmOn()?'on':''}">${bgmOn()?'ON':'OFF'}</em></button>
+      <input type="range" class="mvol" id="bgmV" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}>
       <button type="button" class="mrow danger" id="quit">${SP?'観戦をやめる':'降参する'}</button>
     </div>
   </header>
@@ -3912,6 +3922,7 @@ function render0(){
   $('#bRules').onclick=()=>{BTMENU=false;render();showRulesOverlay()};
   $('#snd').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.turn();render()};
   {const bb=$('#bgmB');if(bb)bb.onclick=()=>{BGM.toggle();render()}}
+  {const a=$('#sndV'),b=$('#bgmV');if(a){a.oninput=e=>SFX.volume(+e.target.value);a.onchange=()=>SFX.select()}if(b)b.oninput=e=>BGM.volume(+e.target.value)}
   document.querySelectorAll('.hc').forEach(b=>{const t=b.querySelector('.tcg');b.onpointermove=e=>{if(e.pointerType!=='mouse'||RM)return;const r=b.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(500px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.08)`};b.onpointerleave=()=>{t.style.transform=''}});
   document.querySelectorAll('.hc').forEach(b=>{
     const card=()=>me.hand[+b.dataset.i];let lp=0,lpFired=false;
@@ -4384,6 +4395,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:61,d:'2026-11-11',t:'音楽と効果音の音量を、それぞれバーで変えられるようになりました（設定と、対戦中のメニュー）。設定のアイコンも歯車に描き直しました。'},
   {id:60,d:'2026-11-11',t:'カードの効果やコストで心臓の候補が絞られると、候補の盤面が出て、消えた候補がつぶれる演出が入るようになりました（音つき）。'},
   {id:59,d:'2026-11-11',t:'ライフが減る時の音を作り直しました。重い一撃のあと、心臓が「パリン」と割れます。'},
   {id:58,d:'2026-11-11',t:'友達と対戦に「パックを7つ開けて組む」が戻ってきました。その場で開けたカードからデッキを組むので、持っていないカードも使えます（この対戦はランクに関係しません）。'},
