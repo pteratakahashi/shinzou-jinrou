@@ -1932,7 +1932,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111102621';
+const APP_VER='20261111103134';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2000,7 +2000,7 @@ const SFX=(()=>{
     rare:.6,legend:.9,pack:.8,
     call:.8,hit:1,miss:.7,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
     round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
-  let ac=null,bus=null;const raw={},buf={};
+  let ac=null,bus=null,hitAt=0;const raw={},buf={};
   for(const n in VOL)fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;raw[n]=ab;if(ac)dec(n)}).catch(()=>{});
   function dec(n){const ab=raw[n];if(!ab)return;delete raw[n];try{ac.decodeAudioData(ab,b=>{buf[n]=b},()=>{})}catch(e){}}
   function ctx(){if(!sndOn())return null;if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();build(ac);for(const n in raw)dec(n)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
@@ -2027,7 +2027,9 @@ const SFX=(()=>{
     play(cat,r='C'){p('play',{wet:.1});if(r==='R'||r==='L')p('rare',{v:.7,when:.35,wet:.3})},
     legend(){p('legend',{wet:.3})},
     rare(){p('rare',{wet:.3})},
-    hit(){p('hit',{wet:.25})},
+    hit(){hitAt=Date.now();p('hit',{wet:.15})},
+    // ライフが減る時：重い一撃（直前に当たりの音が鳴っていれば省く）→ 心臓がはじける瞬間に「パリン」
+    lifeBreak(at=.85){if(Date.now()-hitAt>3500)p('hit',{wet:.15,v:.9});p('shatter',{when:at,wet:.22})},
     miss(){p('miss')},
     res(n=1){p('res',{rate:1+Math.min(3,n-1)*.12,wet:.3})},
     coin(){p('coin',{wet:.05})},
@@ -2121,7 +2123,7 @@ function hitstop(ms=110){if(RM)return;document.body.classList.add('hitstop');set
 const VOICE={say(t){if(!sndOn())return;
   if(/^Round one/.test(t)||/^Round/.test(t))SFX.round();
   else if(/^Final/.test(t))SFX.round(true);
-  else if(/^Heart/.test(t))SFX.shatter();
+  else if(/^Heart/.test(t))SFX.lifeBreak();
   else if(/^Raid/.test(t))SFX.raid();
   else if(/^Guard/.test(t))SFX.guard();
   else if(/^Resonance/.test(t))SFX.res(2);
@@ -4096,7 +4098,7 @@ function renderOcto(){
   document.querySelectorAll('[data-oc]').forEach(b=>b.onclick=()=>{OCTO_PV=b.dataset.oc;const y=window.scrollY;renderOcto();window.scrollTo(0,y)});
   document.querySelectorAll('[data-tt]').forEach(b=>b.onclick=()=>{const t=b.dataset.tt;if(t&&!titleOwned(t))return;SV.equip.title=t;save();const y=window.scrollY;renderOcto();window.scrollTo(0,y)});
   const u=$('#ocUse');if(u)u.onclick=()=>{SV.equip.octo=pv;save();renderOcto()};
-  const dm=$('#ocDemo');if(dm)dm.onclick=async()=>{dm.disabled=true;const el=$('#ocBig');for(let l=3;l>0;l--){if(!el.isConnected)return;el.innerHTML=octoSVG(l-1,l,'',Date.now(),pv);try{SFX.hit()}catch(e){}await sleep(1300)}await sleep(600);if(el.isConnected){el.innerHTML=octoSVG(3,0,'',0,pv);dm.disabled=false}};
+  const dm=$('#ocDemo');if(dm)dm.onclick=async()=>{dm.disabled=true;const el=$('#ocBig');for(let l=3;l>0;l--){if(!el.isConnected)return;el.innerHTML=octoSVG(l-1,l,'',Date.now(),pv);try{SFX.lifeBreak(.35)}catch(e){}await sleep(1300)}await sleep(600);if(el.isConnected){el.innerHTML=octoSVG(3,0,'',0,pv);dm.disabled=false}};
 }
 function renderShop(){
   ecoInit();
@@ -4337,6 +4339,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:59,d:'2026-11-11',t:'ライフが減る時の音を作り直しました。重い一撃のあと、心臓が「パリン」と割れます。'},
   {id:58,d:'2026-11-11',t:'友達と対戦に「パックを7つ開けて組む」が戻ってきました。その場で開けたカードからデッキを組むので、持っていないカードも使えます（この対戦はランクに関係しません）。'},
   {id:57,d:'2026-11-11',t:'見た目を全部作り替えました。太い金ぶち・縁どり文字・大きなボタンをやめて、細い線と明朝体の落ちついた雰囲気に。スマホ・タブレット・PCのホーム、カード、ショップ、対戦画面まで、すべて同じ雰囲気でそろえています。'},
   {id:56,d:'2026-11-11',t:'音楽を、長く遊んでも疲れない落ちついた曲に替えました。ホーム2曲・対戦3曲からランダムに流れます。カードを引く音・出す音・めくる音・ターンの音も、すっきりした音に作り直しました。'},
