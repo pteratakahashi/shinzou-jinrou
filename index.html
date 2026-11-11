@@ -1448,6 +1448,79 @@ html[data-trow="t"] .bt .btMid .tt{display:block;position:relative;padding:0 4px
 html[data-trow="t"] .bt .btMid .tt .tn{display:block;line-height:calc(var(--trow,20px) - 2px);font-size:10px}
 html[data-trow="t"] .bt .btMid .tt .dots{position:absolute;right:3px;top:1px;font-size:5.5px;letter-spacing:0;line-height:1}
 html[data-trow="t"] .bt .btMid .tt .pp{position:absolute;right:3px;bottom:1px;font-size:7.5px;line-height:1}
+/* ================= PC のホーム（2026-11-11）=================
+   幅1000px以上（html.fit-wide）。スマホの縦長の枠をやめ、横長の絵を画面いっぱいに。
+   左に縦のメニュー（下タブを立てたもの。カード・ショップなどの画面でも同じ）、上の帯に名前とアイコン類、左にロゴとボタン、右にお知らせとミッション */
+.hmWho{display:contents}.hmPc,.pcOnly{display:none}
+html.fit-wide{--rail:92px}
+html.fit-wide body.hasTabs{padding-bottom:40px;padding-left:calc(var(--rail) + 16px)}
+html.fit-wide .tabBar{top:0;bottom:0;right:auto;width:var(--rail);flex-direction:column;justify-content:flex-start;align-items:stretch;gap:6px;padding:18px 8px!important;
+  border-top:0!important;border-right:2px solid transparent!important;border-image:linear-gradient(180deg,transparent,#f6cf6a 15%,#fff2bf 50%,#f6cf6a 85%,transparent) 1!important;box-shadow:6px 0 20px rgba(0,0,0,.55)}
+html.fit-wide .tabBar button{flex:none;max-width:none;padding:10px 0;font-size:11.5px;border-radius:12px;transition:background .15s,color .15s}
+html.fit-wide .tabBar button:hover{color:#ffe7b0;background:rgba(255,220,160,.08)}
+html.fit-wide .tabBar button.on{background:linear-gradient(90deg,rgba(246,207,106,.2),transparent)}
+html.fit-wide .tabBar button.on::before{top:0;bottom:0;left:-8px;width:4px;height:auto;translate:none;border-radius:0 4px 4px 0;background:var(--gold);z-index:0}
+html.fit-wide .tabBar .tbBattle{order:9;width:auto;max-width:none;margin:auto 0 0;padding:6px 0}
+html.fit-wide .tabBar .tbBattle:hover{background:none}
+html.fit-wide .hm{left:var(--rail);bottom:0;max-width:none;margin:0;border:0;box-shadow:none;display:grid;
+  grid-template:"top top" auto "logo side" minmax(0,1fr) "dock side" auto / minmax(0,1fr) clamp(330px,25vw,460px);gap:clamp(10px,1.6vh,18px) clamp(18px,2vw,32px);padding:0 clamp(18px,2vw,32px) clamp(16px,2.6vh,28px)}
+html.fit-wide .hmBg{top:60px}html.fit-wide .hmBg img{object-position:50% 12%;transform-origin:50% 0;animation-name:hmPanW}
+@keyframes hmPanW{from{transform:scale(1.02) translateX(-.6%)}to{transform:scale(1.06) translateX(.6%)}}
+html.fit-wide .hm::after{background:linear-gradient(90deg,rgba(10,3,6,.82) 0,rgba(10,3,6,.35) 26%,transparent 44%,transparent 62%,rgba(10,3,6,.8) 100%),linear-gradient(180deg,rgba(10,3,6,.75) 0,transparent 14%,transparent 60%,rgba(10,3,6,.85) 100%)}
+/* 上の帯 */
+html.fit-wide .hmTop{grid-area:top;gap:12px;margin:0 calc(-1*clamp(18px,2vw,32px));padding:10px clamp(18px,2vw,32px);border-radius:0;border-width:0 0 2px;
+  background:linear-gradient(180deg,rgba(30,9,16,.94),rgba(12,4,7,.82)) padding-box,linear-gradient(90deg,#8a5512,#fff0b8 30%,#d9a23c 70%,#8a5512) border-box;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+html.fit-wide .hmWho{display:flex;align-items:center;gap:10px;min-width:0}
+html.fit-wide .hmAv{width:52px;height:52px}
+html.fit-wide .hmId{flex:0 1 auto}html.fit-wide .hmId b{font-size:18px}html.fit-wide .hmId em{font-size:11px}
+html.fit-wide .hmSide{position:static;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;max-height:none}
+html.fit-wide #hmMsn{display:none}
+html.fit-wide .hmIc{width:auto;flex-direction:row;gap:7px;padding:4px 14px 4px 4px;border-radius:99px;border:2px solid #7a4c1c;background:linear-gradient(180deg,rgba(74,26,38,.9),rgba(30,9,14,.9));transition:border-color .15s,transform .15s}
+html.fit-wide .hmIc:hover{border-color:#ffe08a;transform:translateY(-1px)}
+html.fit-wide .hmIc i{width:34px;height:34px;padding:7px;box-shadow:none}
+html.fit-wide .hmIc span{display:block;font-size:13px}
+html.fit-wide .hmIc .bdg{top:-8px;right:-4px}
+html.fit-wide .hmTop>.coin{font-size:17px;padding:5px 14px 5px 6px}
+html.fit-wide .hmGear{width:42px;height:42px}
+/* 左：ロゴとタコ */
+html.fit-wide .hmEvt{display:none}
+html.fit-wide .hmLogo{position:static;grid-area:logo;align-self:start;justify-self:start;text-align:left;padding-top:clamp(4px,2vh,22px)}
+html.fit-wide .hmLogo small{display:block;font-size:clamp(12px,1vw,16px);margin:0 0 6px 4px}
+html.fit-wide .hmLogo h1{font-size:clamp(64px,min(8vw,15vh),150px);-webkit-text-stroke:3px #2a0610;text-shadow:0 6px 0 #2a0610,0 0 40px rgba(255,80,100,.6);white-space:nowrap}
+html.fit-wide .hmMascot{position:relative;left:auto;bottom:auto;grid-area:logo;align-self:end;justify-self:start;display:block;width:clamp(84px,11vh,120px);height:clamp(84px,11vh,120px)}
+html.fit-wide .hmSay{left:calc(100% + 4px);bottom:42%;max-width:340px;font-size:13px;padding:8px 12px}
+/* 左下：遊ぶボタン。ランクマッチを大きく、その下にほかを横に並べる（真ん中の絵をかくさない幅） */
+html.fit-wide .hmDock{position:static;grid-area:dock;align-self:end;justify-self:start;gap:10px;width:clamp(430px,31vw,640px)}
+html.fit-wide .hmResume{font-size:16px;padding:10px 20px}html.fit-wide .hmResume small{font-size:13px}
+html.fit-wide .hmBtns{display:flex;flex-wrap:wrap;gap:10px}
+html.fit-wide .hmSub{display:contents}html.fit-wide .pcOnly{display:flex}
+html.fit-wide .hmMain{order:-1;flex:1 0 100%;height:clamp(116px,18vh,190px);padding:12px 18px;border-radius:18px}
+html.fit-wide .hmB{flex:1 1 0;min-width:0;height:clamp(62px,10vh,100px);padding:8px 12px;border-radius:16px}
+html.fit-wide .hmMain b{font-size:clamp(30px,2.7vw,48px)}html.fit-wide .hmMain span{font-size:14px}
+html.fit-wide .hmB b{font-size:clamp(15px,1.15vw,21px);white-space:nowrap}
+html.fit-wide .hmMain img{height:125%;right:-4px}
+html.fit-wide .hmMain .miTag{font-size:13px;top:12px;left:14px}
+html.fit-wide .hmB,html.fit-wide .hmMain{transition:transform .15s,filter .15s}
+html.fit-wide .hmB:hover,html.fit-wide .hmMain:hover{transform:translateY(-4px);filter:brightness(1.18)}
+html.fit-wide .hmB:active,html.fit-wide .hmMain:active{transform:translateY(2px)}
+/* 右：お知らせとミッション */
+html.fit-wide .hmPc{grid-area:side;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,16px);min-height:0;padding-top:clamp(4px,1.2vh,12px)}
+.hmPn{display:flex;flex-direction:column;min-height:0;border:2px solid transparent;border-radius:16px;padding:12px 14px 14px;background:linear-gradient(180deg,rgba(42,15,24,.9),rgba(14,5,9,.92)) padding-box,var(--frame) border-box;box-shadow:0 5px 0 rgba(0,0,0,.4)}
+.hmPn h2{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-family:var(--game);font-weight:400;font-size:17px;letter-spacing:.06em;color:var(--gold);text-shadow:0 2px 0 #000}
+.hmPn h2 small{font-family:var(--body);font-weight:800;font-size:11px;letter-spacing:0;color:#b99a86}
+.hmPn h2 button{margin-left:auto;font:800 12px var(--body);color:#ffe7b0;background:rgba(0,0,0,.35);border:1px solid #7a4c1c;border-radius:99px;padding:3px 12px;cursor:pointer}
+.hmPn h2 button:hover{border-color:#ffe08a}
+.hmNews{flex:0 1 auto;overflow:hidden;padding-right:6px}
+.hmNews .updList{margin:0;gap:9px;font-size:13px;line-height:1.5;overflow-y:auto;padding-right:8px;scrollbar-width:thin;scrollbar-color:#7a4c1c transparent}
+.hmNews .updList li{flex-wrap:wrap;gap:2px 6px;padding-bottom:9px;border-bottom:1px dashed rgba(255,220,160,.18)}
+.hmNews .updList li:last-child{border:0;padding-bottom:0}
+.hmNews .updD{color:#ffd9a0;font-weight:800;font-size:12px}
+.hmNews .updT{flex:1 0 100%;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#f1e4d8}
+.hmMsnP{flex:none}
+.hmMsnP .msnBox{background:none!important;border:0!important;box-shadow:none!important;padding:0;margin:0}.hmMsnP .msnBox .updHead{display:none}
+.hmMsnP .msnList{margin:0;gap:10px}.hmMsnP .msnList li{font-size:13.5px}
+@media (max-height:700px){html.fit-wide .hmMascot{display:block}}
+@media (max-height:600px){html.fit-wide .hmMascot{display:none}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1975,29 +2048,34 @@ function renderMenu(){
     app:'<svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>'};
   const resume=NET.conn?'':ONL.get()?`<button type="button" class="hmResume" id="mRejoin">▶ 対戦に戻る <small>${esc(ONL.get().opp||'相手')}さん・${ago(ONL.get().at)}</small></button>`:savedG?`<button type="button" class="hmResume" id="mResume">▶ 対戦の続きから <small>${savedG.turnNo+1}ターン目・あなた${savedG.me.life}／CPU${savedG.cpu.life}</small></button>`:'';
   $('#app').innerHTML=`<div class="hm">
-    <div class="hmBg"><img src="scenes/home_a.png" alt=""></div>
+    <div class="hmBg"><img src="scenes/${FIT.get().wide?'home_w':'home_a'}.png" alt=""></div>
     <header class="hmTop">
-      <button type="button" class="hmAv" id="pAvatar" aria-label="アイコンを変える"><img src="art/${SV.equip.avatar}.png" alt=""></button>
-      <div class="hmId"><b>${esc(netName())}</b><span>${rk?`<em class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</em>`:''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div>
-      ${coinsHTML()}
-      <button type="button" class="hmGear" id="hmSet" aria-label="設定">${IC.gear}</button>
-    </header>
-    <button type="button" class="hmEvt" id="updAll">${updNew?'<i class="bdg n">NEW</i>':''}<b>お知らせ</b><span>${UPDATES.length?esc(String(UPDATES[0].t).replace(/<[^>]+>/g,'')):''}</span></button>
-    <nav class="hmSide">
+      <div class="hmWho"><button type="button" class="hmAv" id="pAvatar" aria-label="アイコンを変える"><img src="art/${SV.equip.avatar}.png" alt=""></button>
+      <div class="hmId"><b>${esc(netName())}</b><span>${rk?`<em class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</em>`:''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div></div>
+      <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
       ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):LADDER.on()&&!inn&&LADDER.state!=='loading'?side('mGift',IC.gift,'プレゼント','5','glow'):''}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
       ${side('mRules',IC.book,'遊び方',!SV.tutDone?'!':'',!SV.tutDone?'glow':'')}
       ${canInstall()?side('mInstall',IC.app,'アプリ',''):''}
     </nav>
+      ${coinsHTML()}
+      <button type="button" class="hmGear" id="hmSet" aria-label="設定">${IC.gear}</button>
+    </header>
+    <button type="button" class="hmEvt" id="updAll">${updNew?'<i class="bdg n">NEW</i>':''}<b>お知らせ</b><span>${UPDATES.length?esc(String(UPDATES[0].t).replace(/<[^>]+>/g,'')):''}</span></button>
     <div class="hmLogo"><small>― 3つの心臓を守りぬけ ―</small><h1>心臓<span>人狼</span></h1></div>
     <button type="button" class="hmMascot" id="pOcto" aria-label="タコをえらぶ">${octoSVG(3,3,'',0,SV.equip.octo||'')}<span class="hmSay">${tips[Math.floor(Date.now()/60000)%tips.length]}</span></button>
+    <aside class="hmPc" aria-label="お知らせとミッション">
+      <section class="hmPn hmMsnP"><h2>デイリーミッション<small>毎日0時に入れ替わり</small></h2>${missionsHTML()}</section>
+      <section class="hmPn hmNews"><h2>お知らせ<button type="button" id="updAll2">すべて見る</button></h2>${updListHTML(UPDATES.slice(0,8),updPrev())}</section>
+    </aside>
     <div class="hmDock">
       ${resume}
       <div class="hmBtns">
         <div class="hmSub">
           <button type="button" class="hmB" id="mFree"><img src="art/greatdet.png" alt=""><b>デッキ編成</b>${CARDS.some(c=>isNewCard(c.k))?'<i class="bdg n">NEW</i>':''}</button>
           <button type="button" class="hmB" id="mBattle"><img src="art/wolf.png" alt=""><b>${savedG?'新しくCPU戦':'CPU対戦'}</b></button>
+          ${NET.conn?'':'<button type="button" class="hmB pcOnly" id="mFriend"><img src="art/twins.png" alt=""><b>友達と対戦</b></button>'}
         </div>
         ${NET.conn?`<button type="button" class="hmMain" id="mOnline"><img src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(NET.opp||'相手')}さん</span></button>`
           :`<button type="button" class="hmMain" id="mRank"><img src="art/greatwolf.png" alt=""><i class="miTag">カードがもらえる</i><b>ランクマッチ</b><span>${inn?'対人戦':'Googleでログイン'}</span></button>`}
@@ -2011,7 +2089,7 @@ function renderMenu(){
   on('mRules',()=>go('howto'));on('mFree',()=>go('free'));on('mInstall',installApp);on('mOnline',()=>go('online'));
   on('mPacks',()=>{P=null;go('packs')});on('mGift',()=>{P=null;go('packs')});
   on('mRank',()=>{NET.err='';mmStart()});
-  on('updAll',showUpdates);on('pAvatar',pickAvatar);
+  on('updAll',showUpdates);on('updAll2',showUpdates);on('pAvatar',pickAvatar);on('mFriend',()=>go('online'));bindMissions();
   on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});on('hmTitle',()=>{OCTO_PV=null;go('octo')});
   on('hmMsn',showMissions);on('hmSet',showSettings);
   bindTabBar();
@@ -4041,6 +4119,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:51,d:'2026-11-11',t:'PCのホーム画面を、PC用の配置に作り替えました。横長の絵が画面いっぱいに広がり、左にメニュー、右にデイリーミッションとお知らせが並びます。ホームから「友達と対戦」もすぐ選べます。'},
   {id:50,d:'2026-11-11',t:'PCの対戦画面を、画面いっぱいの「卓」の配置に変えました。中央に、おたがいが最後に使ったカードが大きく出ます。左に記録、右にカードの絵つきの推理ボードが並び、手札も大きくなりました。'},
   {id:49,d:'2026-11-11',t:'対戦画面のライフを、ハートと数字で見やすくしました（タコは心臓が減ったときの演出だけ出ます）。マッチングなどの待ち時間に、タコや人狼ゲームの豆知識が出るようになりました。'},
   {id:48,d:'2026-11-11',t:'〈妖狐〉の共鳴効果（公開しなくてよい）をなくしました。化けたカードはどのみち相手に見えるためです。'},
@@ -4654,7 +4733,7 @@ function renderOnline(){
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
 }
 
-let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='menu')FIT.home();if(VIEW==='battle'&&S){if(S.busy||S.over)FIT.after();else render()}},120)};
+let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='menu'){const im=document.querySelector('.hmBg img');if(im&&$('#modal').hidden&&/home_w/.test(im.src)!==FIT.get().wide)renderMenu();else FIT.home()}if(VIEW==='battle'&&S){if(S.busy||S.over)FIT.after();else render()}},120)};
 addEventListener('resize',onRz);addEventListener('orientationchange',onRz);if(window.visualViewport)visualViewport.addEventListener('resize',onRz);
 $('#app').addEventListener('click',e=>{
   if(VIEW!=='battle')return;
