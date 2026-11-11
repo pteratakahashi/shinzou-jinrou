@@ -1932,7 +1932,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111083340';
+const APP_VER='20261111101433';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2591,7 +2591,7 @@ function renderCards(){
   const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['cur','呪い'],['one','シングル']];
   const list=CARDS.filter(c=>fMatch(CFS,c,false));
   $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">所持 ${ownedCount()}/${CARDS.length}種</span></div>
-  <p class="note tierLeg">レアリティ：<b class="tierTx t-B">ブロンズ</b> → <b class="tierTx t-S">シルバー</b> → <b class="tierTx t-G">ゴールド</b> → <b class="tierTx t-L">レジェンド</b>　CPUどうしで対戦させたシミュレーションで、勝率が高いカードほど上です。レジェンドは、効果が派手なカードとシングル。</p>
+  <p class="note tierLeg">レアリティ：<b class="tierTx t-B">ブロンズ</b> → <b class="tierTx t-S">シルバー</b> → <b class="tierTx t-G">ゴールド</b> → <b class="tierTx t-L">レジェンド</b>　上のレアリティほど、パックから出にくいカードです。レジェンドは、効果が派手なカードとシングル。</p>
   ${filterBar(CFS,{single:true})}
   <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div class="${owns(c.k)?'':'unown'}">${cardHTML(c.k,'p')}</div>`).join('')}</div>
   ${tabBarHTML('cards')}`;
