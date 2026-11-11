@@ -22,6 +22,16 @@ html.fit-wide .nwWrap{width:min(64vw,760px);padding:18px 18px 20px}html.fit-wide
 .sndSet{flex-wrap:nowrap}.sndSet .label{flex:none;width:4.5em}.sndSet input[type=range]{max-width:none;min-width:0}
 input[type=range]{accent-color:var(--gold)}input[type=range]:disabled{opacity:.35}
 .mvol{width:100%;margin:-2px 0 4px;height:22px}
+
+/* 2026-11-12：パックから出たカードは、説明が長くても絵を残す（説明は下が切れる。めくったカードを押すと全文） */
+.reveal .tcg.p .tart{flex:none;height:44%}
+.reveal .tcg.p .ttext{flex:1;min-height:0;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+/* いくつか選ぶ画面（祈祷師） */
+.multiPick{display:flex;flex-direction:column;gap:8px;margin:8px 0 12px}
+.multiPick .b{text-align:left;display:flex;flex-direction:column;gap:2px;position:relative;padding-right:40px}
+.multiPick .mpL{font-family:var(--pcf);font-size:17px}
+.multiPick .b.on{border-color:var(--gold);background:rgba(163,29,46,.5);color:#fff}
+.multiPick .b.on::after{content:'✓';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:18px}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -1852,7 +1862,7 @@ const CAT={info:'情報',atk:'攻撃',grd:'防御',sup:'補助',cur:'呪い',one
 const RAW=[
  ['villager','村人','村','sup','S','自分は1枚引く。このターン、自分はカードをもう1枚使える（ただし、このターンすでに使える枚数が増えていれば増えない）。共鳴：自分はさらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['chief','村長','旗','sup','C','自分は1枚引く。次の自分のターン、カードを1枚多く使える。共鳴：次の自分のターン、1枚多く引く。'],
- ['seer','占い師','占','info','S','種類を2つ指定し、相手の心臓がその中にあるか判定する。共鳴：自分は1枚引き、相手の心臓ではない種類を1つ知る。'],
+ ['seer','占い師','占','info','S','種類を2つまで指定し、相手の心臓がその中にあるか判定する。共鳴：自分は1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['medium','霊媒師','霊','info','S','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を1つ指定し、相手の心臓がその系統か判定する。共鳴：自分は1枚引く。'],
  ['hunter','狩人','狩','grd','S','自分は1枚引く。次の相手ターン、相手は宣言できない。さらに、相手の心臓ではない種類を2つ知る。'],
  ['wolf','人狼','狼','atk','S','相手の手札をランダムに1枚捨てさせる。相手の手札が3枚以下なら、さらに1枚捨てさせる。共鳴：さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
@@ -1868,7 +1878,7 @@ const RAW=[
  ['vampire','吸血鬼','血','atk','C','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせ、自分は1枚引く。共鳴：コストなし。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['priest','司祭','祈','sup','C','自分の捨て札からカードを2枚まで選び、手札に戻す。共鳴：3枚まで。'],
  ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にし、相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
- ['alchemist','錬金術師','錬','sup','C','手札を2枚まで選んで捨て、3枚引く。共鳴：4枚引く。'],
+ ['alchemist','錬金術師','錬','sup','C','条件：ほかに手札が2枚以上あるときだけ使える。手札を2枚選んで捨て、4枚引く。共鳴：5枚引く。'],
  ['twins','双子','双','sup','C','自分は1枚引く。自分の捨て札に別の双子があれば、さらに2枚引く。共鳴：自分はさらに1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['sage','賢者','賢','sup','C','自分の山札の上から3枚を見て、2枚を手札に加える（残りは山札の上に戻す）。'],
  ['bard','吟遊詩人','詩','sup','C','3枚引く。次の相手ターン、相手も1枚多く引く。共鳴：相手は多く引かない。'],
@@ -1877,7 +1887,7 @@ const RAW=[
  ['decoy','影武者','影','grd','R','【伏せ専用】相手が宣言したとき発動。その宣言を無効にし、相手は外れたときと同じペナルティを受ける（当たり外れは明かされない）。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['inquisitor','審問官','審','atk','R','種類を2つまで指定する。相手の手札にその種類のカードがあれば、すべて捨てさせる。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
- ['cryboy','狼少年','嘘','sup','R','自分は2枚引く。このターン、自分の宣言+1回。ただし、このターンに宣言を外すと3枚捨てる。共鳴：外しても捨てない。'],
+ ['cryboy','狼少年','嘘','sup','R','自分は2枚引く。このターン、自分の宣言+1回。ただし、このターンに宣言を外すと、いつもの2枚ではなく3枚捨てる。共鳴：外しても、捨てるのはいつもどおり2枚。'],
  ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['prophet','預言者','予','info','C','相手の心臓が、ゴールド以上（ゴールド・レジェンド）か、シルバー以下かを知る。さらに、相手の心臓ではない種類を1つ知る。'],
@@ -1932,13 +1942,13 @@ const RAW=[
  ['drummer','鼓手','鼓','sup','C','相手の心臓ではない種類を1つ知る。次に使う共鳴つきのカードは必ず共鳴する。'],
  ['gambler','博徒','賭','sup','R','このターン、自分の宣言+1回。共鳴：自分は1枚引く。'],
  ['moonqueen','月の女王','月','one','L','コスト：自分の心臓の系統を相手に知られる。効果：相手の心臓の系統を知る。'],
- ['seal','封印師','封','cur','C','自分は1枚引く。呪い（2ターン）：お互い、攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['seal','封印師','封','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['fangpull','牙抜き','牙','cur','C','自分は1枚引く。呪い（次の相手ターン）：相手は攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['mute','沈黙僧','黙','cur','C','自分は1枚引く。呪い（次の相手ターン）：相手は情報系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['kotodama','言霊師','言','cur','C','自分は1枚引く。呪い（次の相手ターン）：相手は宣言できない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['chain','鎖使い','鎖','cur','C','自分は1枚引く。呪い（2ターン）：お互い、1ターンにカードを1枚しか使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['thirst','渇き巫女','渇','cur','C','自分は1枚引く。呪い（2ターン）：お互い、カードの効果では引けない（ターンのはじめに引く1枚や、襲撃のあとに引く分は引ける）。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['blind','目隠し鬼','盲','cur','C','自分は1枚引く。呪い（2ターン）：お互い、「相手の心臓ではない種類を知る」効果がはたらかない。共鳴：自分はさらに1枚引く。'],
+ ['chain','鎖使い','鎖','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、1ターンにカードを1枚しか使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['thirst','渇き巫女','渇','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、カードの効果では引けない（ターンのはじめに引く1枚や、襲撃のあとに引く分は引ける）。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['blind','目隠し鬼','盲','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、「相手の心臓ではない種類を知る」効果がはたらかない。共鳴：自分はさらに1枚引く。'],
  ['dispel','解呪師','解','cur','C','場の呪いを解き、自分は2枚引く。呪いがなかったときは、さらに相手の心臓ではない種類を1つ知る。'],
 ];
 // カードの文を「条件／コスト／効果／共鳴／襲撃」ごとに行を分けて、見出しを付ける
@@ -1956,7 +1966,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111115548';
+const APP_VER='20261111165856';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2411,7 +2421,7 @@ function renderPacks(){
     await LADDER.loadColl();
     renderPacks();
   };
-  document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=P.cards[+b.dataset.i];if(c.on)return;c.on=true;b.classList.add('on');{const rr=tierRR(c.k),r=b.getBoundingClientRect();if(rr==='L'){setTimeout(()=>{FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2);SFX.legend();screenFlash('gold');quake()},350)}else if(rr==='R')setTimeout(()=>{FXC.burst('#ffd36b',35,6,r.left+r.width/2,r.top+r.height/2);SFX.rare();screenFlash('gold')},350);else SFX.flip()}b.style.animation='none';if(P.cards.every(x=>x.on))setTimeout(()=>{const bx=$('#pkBtns');if(bx){bx.innerHTML=pkBtnsHTML(true,LADDER.packs||0);bindPkBtns()}},RM?0:600)});
+  document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=P.cards[+b.dataset.i];if(c.on){showCardInfo(c.k);return}c.on=true;b.classList.add('on');{const rr=tierRR(c.k),r=b.getBoundingClientRect();if(rr==='L'){setTimeout(()=>{FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2);SFX.legend();screenFlash('gold');quake()},350)}else if(rr==='R')setTimeout(()=>{FXC.burst('#ffd36b',35,6,r.left+r.width/2,r.top+r.height/2);SFX.rare();screenFlash('gold')},350);else SFX.flip()}b.style.animation='none';if(P.cards.every(x=>x.on))setTimeout(()=>{const bx=$('#pkBtns');if(bx){bx.innerHTML=pkBtnsHTML(true,LADDER.packs||0);bindPkBtns()}},RM?0:600)});
 }
 // 開封後のボタン。全部めくったらボタンだけ差し替える（画面ごと描き直すとカードが配られる演出がもう一度出てしまう）
 function pkBtnsHTML(all,n){
@@ -2597,7 +2607,7 @@ function rulesListHTML(){
   <section class="hw terms"><div class="hwNo">用語</div><div class="hwBody">
     <dl class="hwTerms">
       <dt>系統</dt><dd>カードは6つに分かれます：${chip('info','情報')}${chip('atk','攻撃')}${chip('grd','防御')}${chip('sup','補助')}${chip('cur','呪い')}${chip('one','シングル')}</dd>
-      <dt>呪い</dt><dd>呪い系のカードを使うと、場に「呪い」が残り、書かれたターンのあいだ効き続けます（「2ターン」は、次の相手のターンと、その次の自分のターン）。場に置ける呪いは1つだけで、新しい呪いを使うと前の呪いは消えます。〈解呪師〉で解くこともできます。</dd>
+      <dt>呪い</dt><dd>呪い系のカードを使うと、場に「呪い」が残り、書かれたターンのあいだ効き続けます。「次の相手ターン」は、使ったあとに来る相手のターン1回分。「このターンの残り・次の相手ターン・次の自分のターン」は、使った瞬間から、次の自分のターンが終わるまでです。場に置ける呪いは1つだけで、新しい呪いを使うと前の呪いは消えます。〈解呪師〉で解くこともできます。</dd>
       <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分や、相手のターンに発動した伏せカードも含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>ブラフ</dt><dd>伏せ専用ではないカードも「ブラフ」ボタンで伏せられます（効果は発動しません）。相手が警戒して、次の相手ターンにカードを1枚も使わなかったら<b>ブラフ成功</b>。ただし、自分のデッキに伏せ専用カードが1種も入っていなければ、伏せはすべてブラフだと相手にわかるので、ブラフは成功しません。自分のターンのはじめにそのカードが手札に戻り、そのターンはカードを1枚多く使えます。さらに、相手の心臓ではない種類を1つ知ります。</dd><dt>引く・見る</dt><dd>「引く」は、いつも<b>自分の山札から</b>自分の手札に加えることです。相手の山札や手札を「見る」効果では、カードは動きません（見たカードは相手のところに残ります）。</dd><dt>通常カード</dt><dd>属性マークのないカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
@@ -2697,7 +2707,7 @@ function renderDraft(){
     $('#skipAll').onclick=()=>{while(d.i<DRAFT_N){addPulls(d,d.packs[d.i]);d.i++}d.cur=null;toBuild()};
     const pb=$('#packBtn');
     if(pb)pb.onclick=async()=>{pb.disabled=true;SFX.pack();openPack(d);pb.classList.add('shake');await sleep(700);pb.classList.remove('shake');pb.classList.add('tear');await sleep(400);renderDraft()};
-    document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=d.cur[+b.dataset.i];if(c.on)return;c.on=true;b.classList.add('on');{const r=b.getBoundingClientRect(),rr=C[c.k].r;if(rr==='R'||rr==='L'){setTimeout(()=>{FXC.burst(rr==='L'?'#f3cf6d':'#b9c7e8',rr==='L'?70:35,6,r.left+r.width/2,r.top+r.height/2);if(rr==='L'){SFX.legend();screenFlash('gold');quake()}else{SFX.rare();screenFlash('silver')}},350)}else SFX.flip()}b.style.animation='none';if(d.cur.every(x=>x.on))setTimeout(renderDraft,RM?0:600)});
+    document.querySelectorAll('.flip').forEach(b=>b.onclick=()=>{const c=d.cur[+b.dataset.i];if(c.on){showCardInfo(c.k);return}c.on=true;b.classList.add('on');{const r=b.getBoundingClientRect(),rr=C[c.k].r;if(rr==='R'||rr==='L'){setTimeout(()=>{FXC.burst(rr==='L'?'#f3cf6d':'#b9c7e8',rr==='L'?70:35,6,r.left+r.width/2,r.top+r.height/2);if(rr==='L'){SFX.legend();screenFlash('gold');quake()}else{SFX.rare();screenFlash('silver')}},350)}else SFX.flip()}b.style.animation='none';if(d.cur.every(x=>x.on))setTimeout(renderDraft,RM?0:600)});
     const fa=$('#flipAll');if(fa)fa.onclick=async()=>{for(const b of document.querySelectorAll('.flip:not(.on)')){b.click();await sleep(150)}};
     const np=$('#nextPack');if(np)np.onclick=()=>{d.cur=null;renderDraft();setTimeout(()=>{const b=$('#packBtn');if(b)b.click()},50)};
     const tb=$('#toBuild');if(tb)tb.onclick=toBuild;
@@ -2932,8 +2942,8 @@ function tileHTML(target,ty,view,tag='div',cls=''){
   if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty];if(SV.showP)extra=`<span class="pp"><i>推定 </i>${Math.round(view.w[ty]*100)}%</span>`}
   return `<${tag} ${tag==='button'?'type="button"':''} class="tt cat-${c.cat} ${out?'out':''} ${cls}" data-ty="${ty}" style="--art:url(art/${ty}.png)"><span class="tn">${c.n}${c.single?'<small>単</small>':''}</span>${view?`<span class="dots">${dots}</span>`:''}${extra}</${tag}>`;
 }
-function pickTypes(target,count,title,sub,cancelable,viewer){
-  if(S&&S.decider&&S.decider.remote)return NET.ask({k:'types',target:whoOf(target),count,title,sub,cancelable:!!cancelable,viewer:viewer?whoOf(viewer):null});
+function pickTypes(target,count,title,sub,cancelable,viewer,min=count){
+  if(S&&S.decider&&S.decider.remote)return NET.ask({k:'types',target:whoOf(target),count,min,title,sub,cancelable:!!cancelable,viewer:viewer?whoOf(viewer):null});
   const view=viewer?probs(viewer):null;
   const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="tracker"><div class="grid">${typesOf(target).map(ty=>tileHTML(target,ty,view,'button','pick')).join('')}</div></div><div class="btns"><button type="button" class="b primary" id="mOk" disabled>決定</button>${cancelable?'<button type="button" class="b" id="mCancel">やめる</button>':''}</div>`;
   return modal(html,(m,done)=>{
@@ -2943,7 +2953,7 @@ function pickTypes(target,count,title,sub,cancelable,viewer){
       const ty=b.dataset.ty;const i=sel.indexOf(ty);
       if(i>=0){sel.splice(i,1);b.classList.remove('on')}
       else{if(sel.length>=count){const old=sel.shift();m.querySelector(`.pick[data-ty="${old}"]`).classList.remove('on')}sel.push(ty);b.classList.add('on')}
-      ok.disabled=sel.length!==count;
+      ok.disabled=sel.length<min||sel.length>count;
     });
     ok.onclick=()=>done([...sel]);
     const c=m.querySelector('#mCancel');if(c)c.onclick=()=>done(null);
@@ -2953,6 +2963,19 @@ function pickOption(title,sub,opts){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'opt',title,sub,opts});
   const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div style="display:flex;flex-direction:column;gap:8px">${opts.map((o,i)=>`<button type="button" class="b" style="text-align:left;display:flex;flex-direction:column;gap:2px" data-i="${i}"><span style="font-family:var(--display);font-size:17px;font-weight:400">${o.label}</span><span class="note">${o.desc}</span></button>`).join('')}</div>`;
   return modal(html,(m,done)=>{m.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>done(opts[+b.dataset.i].value))},()=>opts[0].value);
+}
+// いくつかの選択肢から count 個を選んで決定する（祈祷師の系統選びなど）
+function pickMulti(title,sub,opts,count){
+  if(S&&S.decider&&S.decider.remote)return NET.ask({k:'multi',title,sub,opts,count});
+  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="multiPick">${opts.map((o,i)=>`<button type="button" class="b" data-i="${i}"><span class="mpL">${o.label}</span><span class="note">${o.desc}</span></button>`).join('')}</div><div class="btns"><button type="button" class="b primary" id="mOk" disabled>決定</button></div>`;
+  return modal(html,(m,done)=>{
+    const sel=[],ok=m.querySelector('#mOk');
+    m.querySelectorAll('.multiPick [data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,j=sel.indexOf(i);
+      if(j>=0){sel.splice(j,1);b.classList.remove('on')}
+      else{if(sel.length>=count){const old=sel.shift();m.querySelector(`.multiPick [data-i="${old}"]`).classList.remove('on')}sel.push(i);b.classList.add('on')}
+      ok.disabled=sel.length!==count});
+    ok.onclick=()=>done(sel.map(i=>opts[i].value));
+  },()=>opts.slice(0,count).map(o=>o.value));
 }
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
@@ -2972,13 +2995,14 @@ function pickCards(cards,title,sub,min,max){
 const pickCard=async(cards,t,s)=>(await pickCards(cards,t,s,1,1))[0];
 
 /* ---- choices that differ for CPU / player ---- */
-async function chooseTypes(p,n,title,sub){
+async function chooseTypes(p,n,title,sub,min=n){
   if(!p.isCpu){
-    // 候補がもう選ぶ数以下なら、選ばせても意味がないので候補を全部入れて自動で判定する
+    // 候補がもう選ぶ数以下なら、選ばせても意味がないので候補を全部入れて自動で判定する（「〜まで」で少なく選べるカードは選ばせる）
     const live=ranked(p).filter(e=>e[1]>0).map(e=>e[0]);
-    if(live.length&&live.length<=n){log(`候補が残り${live.length}種なので、選ばずにそのまま判定する。`,whoOf(p),whoOf(p));return live.concat(shuffle(typesOf(opp(p)).filter(t=>!live.includes(t)))).slice(0,n)}
-    return by(p,()=>pickTypes(opp(p),n,title,sub,false,p));
+    if(min===n&&live.length&&live.length<=n){log(`候補が残り${live.length}種なので、選ばずにそのまま判定する。`,whoOf(p),whoOf(p));return live.concat(shuffle(typesOf(opp(p)).filter(t=>!live.includes(t)))).slice(0,n)}
+    return by(p,()=>pickTypes(opp(p),n,title,sub,false,p,min));
   }
+  if(min<n){const live=ranked(p).filter(e=>e[1]>0).map(e=>e[0]);if(live.length&&live.length<2*n)return live.slice(0,Math.max(min,Math.floor(live.length/2)))}
   let r=ranked(p).filter(e=>e[1]>0).map(e=>e[0]).slice(0,n);
   if(r.length<n)r=r.concat(shuffle(typesOf(opp(p)).filter(t=>!r.includes(t))).slice(0,n-r.length));
   return r;
@@ -3017,23 +3041,31 @@ function czBlock(p,type,noChain){
   if(!noChain&&czOn(p,'chain')&&(p.f.played||0)>=1)return'呪いで1ターンに1枚まで';
   return'';
 }
+// 呪い以外もふくめて、いまそのカードを使えない理由（使えるなら空）。copy＝妖狐で化けて使うとき
+function useBlock(p,type,copy){
+  const z=czBlock(p,type,copy);if(z)return z;
+  if(type==='alchemist'&&p.hand.length<(copy?2:3))return'捨てるカードが2枚ない';
+  if(type==='fox'&&!copy&&!p.hand.some(h=>!C[h.type].set&&h.type!=='fox'))return'化けられるカードがない';
+  return'';
+}
 function czClear(){S.me.f.cz=null;S.cpu.f.cz=null}
 function czPut(p,k){
   const o=opp(p),both=CZ_BOTH.includes(k),had=czAny(S.me)||czAny(S.cpu);
   czClear();const until=S.turnNo+(both?2:1);
   if(both){S.me.f.cz={k,until};S.cpu.f.cz={k,until}}else o.f.cz={k,until};
-  log(`呪い：${both?'お互い':o.name}は「${CZ_TEXT[k]}」（${both?'2ターン':'次のターン'}）。${had?'前の呪いは消えた。':''}`,whoOf(p));
+  log(`呪い：${both?'お互い':o.name}は「${CZ_TEXT[k]}」（${both?'次の自分のターンの終わりまで':'次の相手ターン'}）。${had?'前の呪いは消えた。':''}`,whoOf(p));
 }
 function learnNot(p,n,lab='共鳴'){
   const o=opp(p),k=K(p);
   if(czOn(p,'blind')){log(`${lab}：呪いで、${p.name}は心臓ではない種類を知れなかった。`,whoOf(p));return}
-  const pool=shuffle(typesOf(o).filter(t=>t!==o.heart.type&&!k.excluded.has(t)&&(!k.allowed||k.allowed.has(t)))).slice(0,n);
+  // 山札を見て枚数から消えた候補（探偵など）は、もう知っている種類なので選ばない
+  const pw=probs(p).w,pool=shuffle(typesOf(o).filter(t=>t!==o.heart.type&&!k.excluded.has(t)&&(!k.allowed||k.allowed.has(t))&&pw[t]>0)).slice(0,n);
   pool.forEach(t=>k.excluded.add(t));
   if(pool.length)log(`${lab}：${o.name}の心臓は ${pool.map(t=>'〈'+N(t)+'〉').join('')} ではない。`,whoOf(p));
 }
 function giveAway(p,n){
   const o=opp(p),k=K(o);
-  const pool=shuffle(typesOf(p).filter(t=>t!==p.heart.type&&!k.excluded.has(t)&&(!k.allowed||k.allowed.has(t)))).slice(0,n);
+  const pw=probs(o).w,pool=shuffle(typesOf(p).filter(t=>t!==p.heart.type&&!k.excluded.has(t)&&(!k.allowed||k.allowed.has(t))&&pw[t]>0)).slice(0,n);
   pool.forEach(t=>k.excluded.add(t));
   if(pool.length)log(`コスト：${p.name}の心臓は ${pool.map(t=>'〈'+N(t)+'〉').join('')} ではないと${o.name}に知られた。`,whoOf(p));
 }
@@ -3089,7 +3121,7 @@ async function playCard0(p,c,copy=false){
   act({who:w,kind:'play',k:c.type,res:R,copy:!!copy});
   if(R){log(`共鳴！（${at}の属性）`,w);await fxRes()}
   await payCost(p,c,R);await candFx();
-  if(copy&&czBlock(p,c.type,true)){log(`${czBlock(p,c.type,true)}ので、効果は出なかった。`,w);render();return}
+  if(copy&&useBlock(p,c.type,true)){log(`${useBlock(p,c.type,true)}ので、効果は出なかった。`,w);render();return}
   if(p.f.watched){
     const same=C[c.type].cat===C[p.heart.type].cat;const k=K(o);
     if(same)narrow(o,typesOf(p).filter(t=>C[t].cat===C[c.type].cat));else typesOf(p).filter(t=>C[t].cat===C[c.type].cat).forEach(t=>k.excluded.add(t));
@@ -3107,7 +3139,7 @@ async function playCard0(p,c,copy=false){
   if(C[c.type].cat==='atk'&&o.f.atkWard){log(`${o.name}の盾持ちに阻まれた。`);render();return}
   if(C[c.type].set){draw(p,1);log('伏せずに使ったので、1枚引いた。',w);render();return}
   switch(c.type){
-    case 'seer':judge(p,await chooseTypes(p,2,'占い師：2種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));if(R){draw(p,1);learnNot(p,1)}break;
+    case 'seer':judge(p,await chooseTypes(p,2,'占い師：1〜2種類を選ぶ','相手の心臓がこの中にあるかを判定します。1つだけ選ぶこともできます。',1));if(R){draw(p,1);learnNot(p,1)}break;
     case 'astrologer':judge(p,await chooseTypes(p,3,'占星術師：3種類を選ぶ','相手の心臓がこの中にあるかを判定します。'));if(R)draw(p,1);break;
     case 'medium':{
       const pw=probs(p).w,cats=[...new Set(typesOf(o).map(t=>C[t].cat))];
@@ -3158,10 +3190,11 @@ async function playCard0(p,c,copy=false){
     case 'baker':{
       draw(p,2);break;}
     case 'alchemist':{
+      if(p.hand.length<2){log('捨てるカードが2枚ないので、効果は出なかった。',w);break}
       let xs;
       if(p.isCpu)xs=p.hand.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>a[1]-b[1]).slice(0,2).map(e=>e[0]);
-      else xs=p.hand.length?(render(),await pickCards(p.hand,'錬金術師：捨てるカードを選ぶ','0〜2枚選んでください。その後3枚引きます。',0,2)):[];
-      xs.forEach(x=>{toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`,w)});draw(p,R?4:3);break;}
+      else{render();xs=await pickCards(p.hand,'錬金術師：捨てるカードを2枚選ぶ',`2枚選んで捨てます。その後${R?5:4}枚引きます。`,2,2)}
+      xs.forEach(x=>{toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`,w)});draw(p,R?5:4);break;}
     case 'sage':{
       const top=p.deck.slice(-3).reverse();if(!top.length)break;
       const n=2;
@@ -3215,7 +3248,8 @@ async function playCard0(p,c,copy=false){
       const pairs=[];for(let i=0;i<cats.length;i++)for(let j=i+1;j<cats.length;j++)pairs.push([cats[i],cats[j]]);
       let pr;
       if(p.isCpu)pr=pairs.sort((a,b)=>Math.abs(wt(a[0])+wt(a[1])-.5)-Math.abs(wt(b[0])+wt(b[1])-.5))[0];
-      else pr=await by(p,()=>pickOption('祈祷師：系統を2つ選ぶ','相手の心臓がこのどちらかの系統かを判定します。',pairs.map(x=>({label:x.map(y=>CAT[y]).join('・'),desc:`候補：${typesOf(o).filter(t=>x.includes(C[t].cat)&&pw[t]>0).map(N).join('・')||'なし'}`,value:x}))));
+      else if(cats.length<=2)pr=cats.slice(0,2);
+      else pr=await by(p,()=>pickMulti('祈祷師：系統を2つ選ぶ','選んだ2つの系統のどちらかに、相手の心臓があるかを判定します。',cats.map(x=>({label:CAT[x],desc:`候補：${typesOf(o).filter(t=>C[t].cat===x&&pw[t]>0).map(N).join('・')||'なし'}`,value:x})),2));
       const group=typesOf(o).filter(t=>pr.includes(C[t].cat)),yes=pr.includes(C[o.heart.type].cat);
       if(yes)narrow(p,group);else group.forEach(t=>K(p).excluded.add(t));
       log(`祈祷：${o.name}の心臓は「${pr.map(y=>CAT[y]).join('・')}」のどちらか${yes?'である':'ではない'}。`,w);
@@ -3271,7 +3305,10 @@ async function resolveHit(p,o){
   render();
   if(o.life<=0){await gameOver(p);return'over'}
   if(p.life<=0){await gameOver(o);return'over'}
-  await rebuild(o);
+  // 選び直しのあいだは「選ぶ人の番」として見せ、持ち時間も選ぶ人のために新しく数える（選び終わって次のターンが始まると、また90秒から）
+  const g=S;g.picking=o;if(g.online&&!g.guest){g.deadline=Date.now()+TURN_MS;g.timeUpAt=0}render();
+  try{await rebuild(o)}finally{g.picking=null}
+  if(S===g)render();
   if(!S.sim&&dmg>0)await fxRound();
   if(guarded){for(let i=0;i<3&&o.hand.length;i++){const x=rand(o.hand);toDiscard(o,x);log(`用心棒の反動：${o.name}は〈${N(x.type)}〉を捨てた。`)}render()}
   return'hit';
@@ -3349,7 +3386,7 @@ function cpuScore(p,c){
   return s+Math.random()*1.4;
 }
 function cpuGuessPick(p){
-  if(S.tut&&S.turnNo<12&&!p.f.mustGuess)return null;
+  if(S.tut&&S.turnNo<16&&!p.f.mustGuess)return null;
   const ent=ranked(p);const pr=ent[0][1];if(p.f.mustGuess)return ent[0][0];if(!pr)return null;const h=p.hand.length;
   if(pr>=.4||(pr>=.25&&h>=5)||(p.f.safe&&pr>=.1)||(p.f.guesses>1&&pr>=.2)||(pr>=.16&&h>=8))return ent[0][0];
   return null;
@@ -3357,7 +3394,7 @@ function cpuGuessPick(p){
 async function cpuTurn(p,plays,g){
   await sleep(900);
   if(g.tut&&TUT.on&&TUT.bluffWait&&opp(p).setCard&&!C[opp(p).setCard.type].set){TUT.bluffWait=false;log(`${p.name}は伏せカードを警戒して、カードを使わなかった。`,'cpu');return}
-  if(g.tut&&g.turnNo===2){const w=p.hand.find(c=>c.type==='wolf');if(w){if(p.f.req>0)p.f.req--;await playCard(p,w);await sleep(800)}return}
+  if(g.tut&&g.turnNo===6){const w=p.hand.find(c=>c.type==='wolf');if(w){if(p.f.req>0)p.f.req--;await playCard(p,w);await sleep(800)}return}
   if(g.tut&&TUT.on){const c=p.hand.find(x=>x.type==='prophet'||x.type==='baker'||x.type==='sage');if(c){if(p.f.req>0)p.f.req--;await playCard(p,c);await sleep(800)}return}
   const use=()=>{if(p.f.req>0)p.f.req--;else p.f.opt--};
   const freeSetNow=async()=>{
@@ -3378,7 +3415,7 @@ async function cpuTurn(p,plays,g){
   while(!g.over&&p.hand.length&&(p.f.req>0||p.f.opt>0)){
     // ブラフ伏せ：伏せ枠が空いていれば、たまに一番いらないカードを伏せる
     if(!p.setCard&&p.f.req>0&&p.hand.length>2&&Math.random()<.15){use();await doSet(p,worst(p));await sleep(300);continue}
-    const opts=p.hand.filter(h=>!(p.f.setFree===0&&RULES.freeSet&&C[h.type].set)&&(C[h.type].set||!czBlock(p,h.type))).map(h=>[h,C[h.type].set&&p.setCard?1.5+(p.lastAttr===C[h.type].attr?0:.3):cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
+    const opts=p.hand.filter(h=>!(p.f.setFree===0&&RULES.freeSet&&C[h.type].set)&&(C[h.type].set||!useBlock(p,h.type))).map(h=>[h,C[h.type].set&&p.setCard?1.5+(p.lastAttr===C[h.type].attr?0:.3):cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]);
     if(!opts.length)break;
     const [c,sc]=opts[0];
     if(p.f.req<=0&&sc<2)break;
@@ -3418,7 +3455,7 @@ async function useAs(P,c,asSet){
   if(S.cur!==P||S.busy||!P.hand.includes(c))return;
   const isSet=asSet||C[c.type].set,f=P.f;
   if(isSet?!canSetIn(P,S.phase):S.phase!=='play')return;
-  if(!isSet&&czBlock(P,c.type))return;
+  if(!isSet&&useBlock(P,c.type))return;
   S.busy=true;
   if(isSet&&RULES.freeSet)f.setFree--;else if(f.req>0)f.req--;else f.opt--;
   if(isSet)await doSet(P,c);else await playCard(P,c);
@@ -3459,7 +3496,6 @@ async function runTurn(p){
   p.f.blocked=!!p.f.noGuess||czOn(p,'kotodama');p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;if(czOn(p,'kotodama'))log(`呪い：${p.name}はこのターン宣言できない。`);p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
   p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;p.f.played=0;
   if(bluffWin&&!p.f.boosted){p.f.opt++;p.f.boosted=true}
-  if(g.tut&&g.turnNo===1&&p===g.me){p.f.opt=2;p.f.boosted=true}
   const plays=p.f.req;
   let nd=1+(p.f.extraDraw||0)+(p.f.nextDraw||0);p.f.extraDraw=0;p.f.nextDraw=0;if(p.f.skipDraw){nd=Math.max(0,nd-1);p.f.skipDraw=false;log(`${p.name}は夢魔の効果で、はじめの1枚を引けない。`)}if(p.f.noDraw){p.f.poisoned=true;p.f.noDraw=false;log(`${p.name}は毒師の効果で、このターンはカードを一切引けない。`)}
   g.phase=p.isCpu?'cpu':'none';render();
@@ -3550,19 +3586,23 @@ const myTurn=t=>S&&S.cur===S.me&&S.turnNo===t;
 const inHand=k=>S&&S.me.hand.some(c=>c.type===k);
 const TUT_STEPS=[
  {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',allow:{},sel:'.btMid',text:'あなたのターンです。まん中の「推理の状況」に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を減らしていきます。'},
- {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>myPlayed('seer')||!myTurn(1),allow:{cards:['seer'],btns:['play'],types:['wolf','pack']},sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を2つ選ぶと、相手の心臓がその中にあるかがわかります。今回は<b>〈人狼〉と〈群狼〉</b>を選んでください。'},
- {when:()=>myTurn(1)&&!S.busy,skip:()=>!inHand('stargazer'),done:()=>myPlayed('stargazer')||!myTurn(1),allow:{cards:['stargazer'],btns:['play']},sel:'.hc[aria-label="星読み"]',text:'判定の結果で、表のマスが消えたり（候補から外れた）残ったりします。次は<b>〈星読み〉</b>を使おう。占い師と同じ<b>「月」の属性</b>なので<b>共鳴</b>して、効果が上乗せされます（光っているのが共鳴できるカード）。'},
- {when:()=>myTurn(1)&&!S.busy,skip:()=>!inHand('silencer'),done:()=>!!S.me.setCard||!myTurn(1),allow:{cards:['silencer'],btns:['set']},sel:'.hc[aria-label="口封じ"]',text:'最後に<b>〈口封じ〉</b>をタップして「伏せる」を押そう。伏せたカードは<b>相手のターンに自動で発動</b>します。口封じは、相手が使ったカードを1回無効にします。'},
- {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'宣言（心臓を当てる）はまだ早いので、「宣言に進む」→「ターン終了」を押そう。'},
+ {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>myPlayed('seer')||!myTurn(1),allow:{cards:['seer'],btns:['play'],types:['wolf','pack']},sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を選ぶと、相手の心臓がその中にあるかがわかります。今回は<b>〈人狼〉と〈群狼〉</b>を選んでください。'},
+ {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'判定の結果で、表のマスが消えました（候補から外れた）。カードを使えるのは<b>1ターンに1枚</b>です。宣言（心臓を当てる）はまだ早いので、「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===2,done:()=>myTurn(3),text:'相手のターンです。相手がどう動くか見ていよう。'},
- {when:()=>myTurn(3)&&PH()==='play'&&!S.busy,allow:{},btn:'次へ',sel:'.oppLast',text:'相手は〈人狼〉で手札を捨てさせようとしましたが、<b>伏せていた口封じが発動して無効</b>にしました！ 相手が前のターンに何をしたかは、相手の欄の<b>「前のターン」</b>で確認できます。'},
- {when:()=>myTurn(3)&&!S.busy,allow:{},btn:'次へ',sel:'.disBtn',text:'<b>捨て札</b>をタップすると、捨てられたカードの一覧が見られます。捨て札の数で効果が変わるカードもあるので、ときどき確認しよう。カードを<b>長押し</b>すると効果の説明も見られます。'},
- {when:()=>myTurn(3)&&!S.busy,skip:()=>!inHand('greatdet'),done:()=>myPlayed('greatdet')||!myTurn(3),allow:{cards:['greatdet'],btns:['play']},sel:'.hc[aria-label="名探偵"]',text:'手札に来た<b>〈名探偵〉</b>は、デッキに1枚だけの強力な<b>シングルカード</b>。相手の心臓を含む5種類まで候補を絞れます。使ってみよう。'},
- {when:()=>S.turnNo>=3&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>6,allow:{btns:['skip','guess'],types:['baker']},sel:'#bSkip,#bGuess',text:'候補が2つまで絞れました。残っているマスのどちらかが相手の心臓です。「宣言に進む」→<b>「心臓を宣言」</b>を押して、今回は<b>〈パン屋〉</b>と宣言してみよう（外れると手札を2枚捨てます）。'},
+ {when:()=>myTurn(3)&&PH()==='play'&&!S.busy,skip:()=>!inHand('stargazer'),done:()=>myPlayed('stargazer')||!myTurn(3),allow:{cards:['stargazer'],btns:['play']},sel:'.hc[aria-label="星読み"]',text:'今度は<b>〈星読み〉</b>を使おう。前のターンに使った占い師と同じ<b>「月」の属性</b>なので<b>共鳴</b>して、効果が上乗せされます（光っているのが共鳴できるカード）。'},
+ {when:()=>myTurn(3)&&!S.busy,done:()=>!myTurn(3),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'共鳴で、候補がさらに減りました。まだ候補が多いので、今回も「ターン終了」を押そう。'},
+ {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===4,done:()=>myTurn(5),text:'相手のターンです。'},
+ {when:()=>myTurn(5)&&PH()==='play'&&!S.busy,skip:()=>!inHand('silencer'),done:()=>!!S.me.setCard||!myTurn(5),allow:{cards:['silencer'],btns:['set']},sel:'.hc[aria-label="口封じ"]',text:'カードは、使うかわりに<b>伏せる</b>こともできます（伏せるのも「1ターンに1枚」のうちに入ります）。<b>〈口封じ〉</b>をタップして「伏せる」を押そう。伏せたカードは<b>相手のターンに自動で発動</b>します。口封じは、相手が使ったカードを1回無効にします。'},
+ {when:()=>myTurn(5)&&!S.busy,done:()=>!myTurn(5),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'伏せられました。「ターン終了」を押して、相手の様子を見よう。'},
+ {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===6,done:()=>myTurn(7),text:'相手のターンです。伏せたカードがどうなるか見ていよう。'},
+ {when:()=>myTurn(7)&&PH()==='play'&&!S.busy,allow:{},btn:'次へ',sel:'.oppLast',text:'相手は〈人狼〉で手札を捨てさせようとしましたが、<b>伏せていた口封じが発動して無効</b>にしました！ 相手が前のターンに何をしたかは、相手の欄の<b>「前のターン」</b>で確認できます。'},
+ {when:()=>myTurn(7)&&!S.busy,allow:{},btn:'次へ',sel:'.disBtn',text:'<b>捨て札</b>をタップすると、捨てられたカードの一覧が見られます。捨て札の数で効果が変わるカードもあるので、ときどき確認しよう。カードを<b>長押し</b>すると効果の説明も見られます。'},
+ {when:()=>myTurn(7)&&!S.busy,skip:()=>!inHand('greatdet'),done:()=>myPlayed('greatdet')||!myTurn(7),allow:{cards:['greatdet'],btns:['play']},sel:'.hc[aria-label="名探偵"]',text:'手札の<b>〈名探偵〉</b>は、デッキに1枚だけの強力な<b>シングルカード</b>。相手の心臓を含む5種類まで、いっきに候補を絞れます。使ってみよう。'},
+ {when:()=>S.turnNo>=7&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>10,allow:{btns:['skip','guess'],types:['baker']},sel:'#bSkip,#bGuess',text:'候補がここまで絞れました。消えずに残っているマスの中に、相手の心臓があります。<b>「心臓を宣言」</b>を押して、今回は<b>〈パン屋〉</b>と宣言してみよう（外れると手札を2枚捨てます）。'},
  {allow:{},when:()=>!!lastGuess()&&!S.busy,btn:'次へ',textFn:()=>lastGuess().r==='hit'?'<b>的中！</b> 相手のライフが1減りました（タコの心臓が1つ止まります）。当てられた側は、全部のカードを混ぜ直して心臓を選び直します。これを<b>3回</b>当てたら勝ちです。':'外れ…。でも外れた種類は候補から消えました。残りの候補から、次のターンにもう一度宣言しよう。'},
- {when:()=>S.cur===S.me&&S.turnNo>=5&&PH()==='play'&&!S.busy,enter:tutRaidSetup,done:()=>tutActed('raid')||!myTurnAt(),allow:{cards:['pack'],btns:['play']},sel:'.hc[aria-label="群狼"]',text:'勝ち方はもう1つあります。<b>攻撃系のカード</b>で相手の手札を<b>0枚</b>にすると<b>「襲撃」</b>になり、相手のライフが1減ります。練習のため、相手の手札を1枚にしました。<b>〈群狼〉</b>を使って0枚にしよう。'},
+ {when:()=>S.cur===S.me&&S.turnNo>=9&&PH()==='play'&&!S.busy,enter:tutRaidSetup,done:()=>tutActed('raid')||!myTurnAt(),allow:{cards:['pack'],btns:['play']},sel:'.hc[aria-label="群狼"]',text:'勝ち方はもう1つあります。<b>攻撃系のカード</b>で相手の手札を<b>0枚</b>にすると<b>「襲撃」</b>になり、相手のライフが1減ります。練習のため、相手の手札を1枚にしました。<b>〈群狼〉</b>を使って0枚にしよう。'},
  {allow:{},when:()=>tutActed('raid')&&!S.busy,btn:'次へ',text:'<b>襲撃成功！</b> 宣言しなくてもライフを削れました。襲撃された側は、<b>心臓はそのまま</b>で手札が5枚になるまで引き直します。襲撃したターンはそこで終わります。'},
- {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
+ {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません。これも1ターンに1枚のうちに入ります）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
  {allow:{btns:['skip','end']},when:()=>S.cur===S.me&&!S.busy,done:()=>S.cur!==S.me,sel:'#bSkip,#bEnd',text:'伏せられました。このまま「宣言に進む」→「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu,done:()=>S.cur===S.me&&PH()==='play'&&!S.busy,text:'相手のターンです。あなたの伏せカードを警戒しているようです…。'},
  {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。さらに、<b>相手の心臓ではない種類を1つ</b>知りました。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類も1つわかります。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
@@ -3847,6 +3887,7 @@ function render0(){
   if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
+  if(S.picking&&!S.over)phase=S.picking===me&&!SP?'新しい心臓を選んでください':`${S.picking===me?MYN():OPN()}が新しい心臓を選んでいます…`;
   if(!SP)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
   const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
   const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
@@ -3859,7 +3900,7 @@ function render0(){
   $('#app').innerHTML=`<div class="bt">
   <header class="btTop">
     <div class="btRound"><span>ROUND</span><b>${S.round||1}</b><span>${S.turnNo?S.turnNo+'ターン':''}${wn?`・観戦${wn}人`:''}</span></div>
-    <div class="btTurn ${S.over?'':S.cur===me?'me':S.cur?'op':''}">${S.over?'対戦終了':S.cur?(S.cur===me?(SP?MYN()+'のターン':'あなたのターン'):OPN()+'のターン'):'心臓を選ぶ'}</div>
+    <div class="btTurn ${S.over?'':S.picking?(S.picking===me?'me':'op'):S.cur===me?'me':S.cur?'op':''}">${S.over?'対戦終了':S.picking?(S.picking===me?(SP?MYN()+'が心臓を選ぶ':'心臓を選ぶ'):OPN()+'が心臓を選ぶ'):S.cur?(S.cur===me?(SP?MYN()+'のターン':'あなたのターン'):OPN()+'のターン'):'心臓を選ぶ'}</div>
     <div class="btIcons"><button type="button" class="ib" id="bLog" aria-label="記録を見る">${BIC.log}<span>記録</span></button><button type="button" class="ib" id="bMenu" aria-label="メニュー" aria-expanded="${BTMENU}">${BIC.menu}<span>メニュー</span></button></div>
     <div class="btMenuBack" id="bMenuBack" ${BTMENU?'':'hidden'}></div>
     <div class="btMenu" role="menu" ${BTMENU?'':'hidden'}>
@@ -3895,7 +3936,7 @@ function render0(){
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}</div>
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」＝伏せ札のふりをして伏せる。次の相手ターンに相手がカードを使わなければ成功：手札に戻り、1枚多く使え、相手の心臓ではない種類を1つ知る。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
     ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
-      <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set&&!czBlock(me,S.sel.type)?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':S.sel&&czBlock(me,S.sel.type)?'呪いで使えない':'使う'}</button>
+      <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set&&!useBlock(me,S.sel.type)?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':S.sel&&czBlock(me,S.sel.type)?'呪いで使えない':S.sel&&useBlock(me,S.sel.type)?'今は使えない':'使う'}</button>
       <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
       ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
       <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
@@ -4225,7 +4266,7 @@ const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
   on(){return!!(RANK_CFG.url&&RANK_CFG.key)},
   uid(){return LADDER.user&&LADDER.user.id||null},
-  rated(){return!!(LADDER.uid()&&NET.oppUid&&NET.oppUid!==LADDER.uid())},
+  rated(){return!!(NET.ranked&&LADDER.uid()&&NET.oppUid&&NET.oppUid!==LADDER.uid())},
   lib(){return window.supabase?Promise.resolve():new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc)})},
   async init(){
     if(!LADDER.on())return;
@@ -4290,7 +4331,7 @@ function rankCardHTML(){
   const st=LADDER.state;
   if(st==='loading')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">読み込み中…</p></div>`;
   if(st==='err')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">${esc(LADDER.err)}</p><div class="btns"><button type="button" class="b small" id="rkRetry">もう一度</button></div></div>`;
-  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、友達との対戦がレート戦になり、戦績とランクが記録されます（おたがいログインしているときだけ）。</p><div class="btns" data-gsi><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div>${GSI.err?`<p class="note gsiErr">${esc(GSI.err)}</p>`:''}</div>`;
+  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、ランクマッチで対戦でき、戦績とランクが記録されます（友達との対戦は、ランクと戦績に関係しません）。</p><div class="btns" data-gsi><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div>${GSI.err?`<p class="note gsiErr">${esc(GSI.err)}</p>`:''}</div>`;
   const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0,rk=rankOf(p.rp);
   const ladder=TIERS.map((t,i)=>`<i class="${i<rk.i?'done':i===rk.i?'cur':''}" style="--tc:${t[1]}" title="${t[0]}"></i>`).join('');
   return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
@@ -4397,6 +4438,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:63,d:'2026-11-12',t:'ルールと不具合の直し：友達との対戦はランクと戦績に関係しなくなりました／心臓を当てたあとは、すぐ相手が心臓を選ぶ番になり、選び終わってから90秒を数えます／占い師は「2つまで」選べます／錬金術師は「ほかに手札が2枚以上あるときだけ使え、2枚捨てて4枚引く（共鳴で5枚）」に変更／祈祷師は系統を2つ押して選ぶ形に／妖狐は化けるカードがないときは使えません／パックのカードは説明が長くても絵が消えません／チュートリアルを正規のルール（1ターンに1枚）に直しました／狼少年と呪いの説明文をはっきりさせました。'},
   {id:62,d:'2026-11-11',t:'効果音をさらに作り直しました。勝ったとき・負けたときの音は短く静かな合図に、ほかの音も短く整った音に替え、音楽と効果音の大きさをそろえました。'},
   {id:61,d:'2026-11-11',t:'音楽と効果音の音量を、それぞれバーで変えられるようになりました（設定と、対戦中のメニュー）。設定のアイコンも歯車に描き直しました。'},
   {id:60,d:'2026-11-11',t:'カードの効果やコストで心臓の候補が絞られると、候補の盤面が出て、消えた候補がつぶれる演出が入るようになりました（音つき）。'},
@@ -4658,12 +4700,13 @@ function onlineLoad(){
 function askDefault(q){
   if(q.k==='opt')return q.opts&&q.opts[0]?q.opts[0].value:null;
   if(q.k==='cards')return q.cards.slice(0,Math.max(q.min||0,Math.min(1,q.max||1))).map(c=>c[0]);
+  if(q.k==='multi')return q.opts.slice(0,q.count).map(o=>o.value);
   if(q.k==='types'){if(q.cancelable)return null;const t=S[q.target];return shuffle(typesOf(t)).slice(0,q.count)}
   return null;
 }
 function timeUpTick(){
   if(!S||!S.online||S.guest||S.over||S.paused||!S.deadline||Date.now()<S.deadline)return;
-  if(!S.timeUpAt){S.timeUpAt=Date.now();log(`時間切れ（${S.cur?S.cur.name:'心臓選び'}）。自動で進めます。`,'sys');SFX.miss&&SFX.miss()}
+  if(!S.timeUpAt){S.timeUpAt=Date.now();log(`時間切れ（${S.picking?S.picking.name+'の心臓選び':S.cur?S.cur.name:'心臓選び'}）。自動で進めます。`,'sys');SFX.miss&&SFX.miss()}
   modalAuto();
   for(const id of Object.keys(NET.asks)){const q=NET.askQ[id],f=NET.asks[id];delete NET.asks[id];delete NET.askQ[id];NET.send({t:'askEnd',id:+id});if(f)f(q?askDefault(q):null)}
   if(!S.busy&&S.cur&&S.turnNo){const P=S.cur;
@@ -4788,7 +4831,7 @@ function netSnap(spec,full){
   secret(S.me).forEach(c=>{if(c&&!gk.has(c.id))hide.add(c.id)});
   if(spec)secret(S.cpu).forEach(c=>{if(c&&!S.know.me.known.has(c.id))hide.add(c.id)});
   const logs=spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
-  return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,me:P(S.me),cpu:P(S.cpu),
+  return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,pick:S.picking?whoOf(S.picking):null,me:P(S.me),cpu:P(S.cpu),
     cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,acts:(S.acts||[]).slice(-40),logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
 }
 function hostCmd(m){
@@ -4822,7 +4865,7 @@ function guestApply(sn){
   if(old)['_shownLife','_lfFrom','_lfT0'].forEach(k=>{pl.me[k]=old.me[k];pl.cpu[k]=old.cpu[k]})
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:swR(a.who)})),last:old?old.last:null,
-    turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,
+    turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,picking:sn.pick?pl[swR(sn.pick)]:null,
     seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});
@@ -4841,8 +4884,9 @@ async function guestAsk(m){
   const P=r=>r?S[swR(r)]:null;
   let v=null;
   NET.askOpen=m.id;
-  if(m.k==='types')v=await pickTypes(P(m.target),m.count,m.title,m.sub,m.cancelable,P(m.viewer));
+  if(m.k==='types')v=await pickTypes(P(m.target),m.count,m.title,m.sub,m.cancelable,P(m.viewer),m.min||m.count);
   else if(m.k==='opt')v=await pickOption(m.title,m.sub,m.opts);
+  else if(m.k==='multi')v=await pickMulti(m.title,m.sub,m.opts,m.count);
   else if(m.k==='cards'){const cs=m.cards.map(([id,type])=>({id,type}));v=await pickCards(cs,m.title,m.sub,m.min,m.max);if(v!==KILL)v=v.map(c=>c.id)}
   if(NET.askOpen===m.id)NET.askOpen=null;
   if(v===KILL)return;
@@ -4978,12 +5022,12 @@ function renderOnline(){
     const me=NET.ready.me,op=NET.ready.cpu;
     body=`<div class="onCard"><p class="onBig">${esc(NET.opp||'相手')} さんとつながりました</p>
       <div class="onStat"><span>あなた：<b>${me?'デッキ準備OK':'デッキ準備中'}</b></span><span>${esc(NET.opp||'相手')}：<b>${op?'デッキ準備OK':'デッキ準備中'}</b></span></div>
-      ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:LADDER.uid()?`${esc(NET.opp||'相手')}さんがログインしていないので、ランクに関係しない対戦になります。`:'あなたがログインしていないので、ランクに関係しない対戦になります（メニューからGoogleでログインできます）。'}</p>`:''}
+      ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:'友達との対戦は、ランクと戦績に関係しません。'}</p>`:''}
       ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p>`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
           ${deckLegal(freeDeck())?`<button type="button" class="mi main" id="oMine"><b>自分のデッキで対戦</b><span>${catSummary(freeDeck().types)}・シングル〈${N(freeDeck().single)}〉（ホームの「デッキ編成」で編集）</span></button>`:''}
           <button type="button" class="mi ${deckLegal(freeDeck())?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
-          ${NET.ranked?'':`<button type="button" class="mi" id="oDraft"><b>パックを${DRAFT_N}つ開けて組む</b><span>その場で開けたカードから13種とシングル1枚を選びます。持っていないカードも使えます（ランクには関係しません）</span></button>`}
+          ${NET.ranked?'':`<button type="button" class="mi" id="oDraft"><b>パックを${DRAFT_N}つ開けて組む</b><span>その場で開けたカードから13種とシングル1枚を選びます。持っていないカードも使えます</span></button>`}
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${NET.lastDeck.draft?'パックで組んだデッキ・':''}${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
   }else if(st==='opening'||st==='joining'){
     body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div>${triviaHTML()}</div>`
