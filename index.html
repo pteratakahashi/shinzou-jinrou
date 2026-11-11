@@ -1932,7 +1932,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111102610';
+const APP_VER='20261111102621';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2612,7 +2612,7 @@ function showRulesOverlay(){
   ov.querySelectorAll('.rOvCards .cardBtn').forEach(b=>b.onclick=()=>showCardInfo(b.dataset.card));
 }
 
-/* ================= draft（友達と対戦：6パックを開けて組む） ================= */
+/* ================= draft（友達と対戦：7パックを開けて組む） ================= */
 // おまかせ構築とCPU用の優先順（シミュレーションの勝率順。2026-11-09 呪い追加後に CPU どうし12,000試合・ランダムデッキで取り直し）
 const RANK=['diviner',  'stargazer',  'seer',  'prophet',  'medium',  'astrologer',  'necro',  'wolf',  'nekomata',  'silencer',  'clairvoy',  'pack',  'bodyguard',  'fox',  'alpha',  'watchdog',  'decoy',  'villager',  'gatekeeper',  'executioner',  'detective',  'confessor',  'bastion',  'madman',  'mason',  'hunter',  'fortune',  'inquisitor',  'cursewolf',  'twins',  'innkeeper',  'wererat',  'kidnapper',  'gravedigger',  'reflect',  'ghoul',  'knight',  'witch',  'lookout',  'chief',  'drummer',  'nightmare',  'warder',  'apprentice',  'sentinel',  'dispel',  'shieldbearer',  'priest',  'phantom',  'seal',  'vampire',  'baker',  'fangpull',  'kotodama',  'tactician',  'messenger',  'sage',  'watchman',  'bard',  'cleric',  'howler',  'assassin',  'trapper',  'elder',  'spy',  'exorcist',  'nun',  'poisoner',  'thirst',  'chain',  'peddler',  'blind',  'alchemist',  'banker',  'listener',  'cryboy',  'gambler',  'mute',  'tracker',  'berserker'];
 const RANK1=['greatdet',  'teller',  'oracle',  'mirror',  'greatwolf',  'curser',  'saint',  'whitewolf',  'moonqueen',  'timewitch'];
@@ -2626,8 +2626,8 @@ function genDraftPack(single){
   const Cp=NORMAL.filter(c=>c.r==='S'||c.r==='C'),Rp=NORMAL.filter(c=>c.r==='R');
   return[rand(Cp),rand(Cp),rand(Cp),Math.random()<.3?rand(Rp):rand(Cp),rand(Rp),single?C[single]:(Math.random()<.3?rand(Rp):rand(Cp))].map(c=>c.k);
 }
-// シングルは6パック全体で1枚保証、ときどき2〜3枚
-const DRAFT_N=6,DRAFT_IX=[...Array(DRAFT_N).keys()];
+// シングルは7パック全体で1枚保証、ときどき2〜3枚
+const DRAFT_N=7,DRAFT_IX=[...Array(DRAFT_N).keys()];
 function draftSingles(){const x=Math.random(),n=x<.6?1:x<.9?2:3,at=shuffle([...DRAFT_IX]).slice(0,n),ss=shuffle(SINGLE.map(c=>c.k));return DRAFT_IX.map(i=>{const j=at.indexOf(i);return j<0?null:ss[j]})}
 function newDraft(){const sg=draftSingles();return{packs:sg.map(genDraftPack),i:0,cur:null,pool:[],singles:[],deck:{types:[],single:null},stage:'open',filled:[]}}
 function addPulls(d,ks){ks.forEach(k=>{const arr=C[k].single?d.singles:d.pool;if(!arr.includes(k))arr.push(k)})}
@@ -4337,7 +4337,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:58,d:'2026-11-11',t:'友達と対戦に「パックを6つ開けて組む」が戻ってきました。その場で開けたカードからデッキを組むので、持っていないカードも使えます（この対戦はランクに関係しません）。'},
+  {id:58,d:'2026-11-11',t:'友達と対戦に「パックを7つ開けて組む」が戻ってきました。その場で開けたカードからデッキを組むので、持っていないカードも使えます（この対戦はランクに関係しません）。'},
   {id:57,d:'2026-11-11',t:'見た目を全部作り替えました。太い金ぶち・縁どり文字・大きなボタンをやめて、細い線と明朝体の落ちついた雰囲気に。スマホ・タブレット・PCのホーム、カード、ショップ、対戦画面まで、すべて同じ雰囲気でそろえています。'},
   {id:56,d:'2026-11-11',t:'音楽を、長く遊んでも疲れない落ちついた曲に替えました。ホーム2曲・対戦3曲からランダムに流れます。カードを引く音・出す音・めくる音・ターンの音も、すっきりした音に作り直しました。'},
   {id:55,d:'2026-11-11',t:'音をすべて作り直しました。ホーム・対戦・残りライフ1の音楽は、このゲームのために作ったオーケストラの曲に。カードを出す音、心臓が割れる音、襲撃、勝ち負けの曲など、効果音も重みのある音に入れ替えました。'},
