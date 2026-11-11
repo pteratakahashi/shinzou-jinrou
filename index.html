@@ -1714,7 +1714,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111032704';
+const APP_VER='20261111060108';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1773,154 +1773,94 @@ const FXC=(()=>{
 function quake(){if(RM)return;const a=document.getElementById('app');a.classList.remove('quake');void a.offsetWidth;a.classList.add('quake')}
 function screenFlash(kind){if(RM)return;const f=document.getElementById('flash');f.className='';void f.offsetWidth;f.className=kind}
 const sndOn=()=>SV.sound!==false;
+/* ---- 効果音（2026-11-11 作り替え）----
+   音はすべて ElevenLabs で作ったこのゲーム用のオリジナル（audio/NAME.mp3。作り方は ~/shinzou-jinrou/audio の gen_audio.py → finish_audio.py）。
+   ページを開いたら先に読みこみ、最初のタップで音の出口（AudioContext）を作って使える形にする。圧縮（コンプレッサー）と残響を通す */
 const SFX=(()=>{
-  // ★2026-11-01 音を厚くした：コンプレッサーと残響（リバーブ）を通し、風切り音・衝撃音・金管風の和音・きらめきを重ねる
-  let ac=null,bus=null;
-  function ctx(){if(!sndOn())return null;if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();build(ac)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
+  // 名前: 音量
+  const VOL={ui:.3,tab:.42,select:.5,draw:.5,flip:.6,set:.7,coin:.6,res:.55,
+    play_info:.8,play_atk:.8,play_grd:.8,play_sup:.8,play_cur:.8,rare:.6,legend:.9,pack:.8,
+    call:.8,hit:1,miss:.7,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
+    turn_me:.6,turn_cpu:.7,round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
+  let ac=null,bus=null;const raw={},buf={};
+  for(const n in VOL)fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;raw[n]=ab;if(ac)dec(n)}).catch(()=>{});
+  function dec(n){const ab=raw[n];if(!ab)return;delete raw[n];try{ac.decodeAudioData(ab,b=>{buf[n]=b},()=>{})}catch(e){}}
+  function ctx(){if(!sndOn())return null;if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();build(ac);for(const n in raw)dec(n)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
   function build(a){
-    const comp=a.createDynamicsCompressor();comp.threshold.value=-16;comp.knee.value=10;comp.ratio.value=4;comp.attack.value=.003;comp.release.value=.22;
-    const master=a.createGain();master.gain.value=.95;comp.connect(master).connect(a.destination);
-    const len=Math.floor(a.sampleRate*2.2),ir=a.createBuffer(2,len,a.sampleRate);
+    const comp=a.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=10;comp.ratio.value=3.5;comp.attack.value=.004;comp.release.value=.22;
+    const master=a.createGain();master.gain.value=.9;comp.connect(master).connect(a.destination);
+    const len=Math.floor(a.sampleRate*2.6),ir=a.createBuffer(2,len,a.sampleRate);
     for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3)}
-    const conv=a.createConvolver();conv.buffer=ir;const wet=a.createGain();wet.gain.value=.32;conv.connect(wet).connect(comp);
+    const conv=a.createConvolver();conv.buffer=ir;const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3200;const wet=a.createGain();wet.gain.value=.3;conv.connect(lp).connect(wet).connect(comp);
     bus={dry:comp,rev:conv};
   }
-  function out(node,wet){node.connect(bus.dry);if(wet>0){const s=ac.createGain();s.gain.value=wet;node.connect(s).connect(bus.rev)}}
-  function env(gn,t,vol,d,att){gn.gain.setValueAtTime(.0001,t);gn.gain.exponentialRampToValueAtTime(vol,t+Math.max(.003,att));gn.gain.exponentialRampToValueAtTime(.0008,t+d)}
-  function tone(f,d,type='sine',vol=.12,when=0,slide=0,wet=.3,att=.004){const a=ctx();if(!a)return;const t=a.currentTime+when;const o=a.createOscillator(),gn=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+d);env(gn,t,vol,d,att);o.connect(gn);out(gn,wet);o.start(t);o.stop(t+d+.05)}
-  function nbuf(a,d){const b=a.createBuffer(1,Math.max(1,Math.floor(a.sampleRate*d)),a.sampleRate);const ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;return b}
-  function noise(d,vol=.1,when=0,hp=800,wet=.25){const a=ctx();if(!a)return;const t=a.currentTime+when;const src=a.createBufferSource();src.buffer=nbuf(a,d);const f=a.createBiquadFilter();f.type='highpass';f.frequency.value=hp;const gn=a.createGain();env(gn,t,vol,d,.004);src.connect(f).connect(gn);out(gn,wet);src.start(t)}
-  // 風切り音：帯域を動かすノイズ
-  function whoosh(d,f1,f2,vol=.15,when=0,q=1.4,wet=.3){const a=ctx();if(!a)return;const t=a.currentTime+when;const src=a.createBufferSource();src.buffer=nbuf(a,d);const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=q;f.frequency.setValueAtTime(f1,t);f.frequency.exponentialRampToValueAtTime(f2,t+d);const gn=a.createGain();env(gn,t,vol,d,d*.6);src.connect(f).connect(gn);out(gn,wet);src.start(t)}
-  // 衝撃音：低い正弦の急降下＋打撃のクリック
-  function boom(vol=.5,when=0,f=110,d=.6){tone(f,d,'sine',vol,when,.28,.4,.002);tone(f*2,d*.4,'triangle',vol*.35,when,.3,.2,.002);noise(.05,vol*.5,when,2500,.1)}
-  // 和音：少しずらした二本の波を重ね、ローパスで角を落とす（金管・聖歌風）
-  function chord(fs,d,type='sawtooth',vol=.05,when=0,att=.02,lp=2400,wet=.45){const a=ctx();if(!a)return;const t=a.currentTime+when;const f=a.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(lp*.4,t);f.frequency.exponentialRampToValueAtTime(lp,t+Math.max(.02,att*1.5));const gn=a.createGain();env(gn,t,vol,d,att);f.connect(gn);out(gn,wet);fs.forEach(fr=>[-6,6].forEach(dt=>{const o=a.createOscillator();o.type=type;o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+d+.05)}))}
-  function shimmer(base=2093,n=6,when=0,vol=.035){for(let i=0;i<n;i++)tone(base*Math.pow(2,[0,4,7,12,16,19,24][i%7]/12),.5,'sine',vol,when+i*.045,0,.7)}
-  const st=(f,n)=>f*Math.pow(2,n/12);
+  // n を鳴らす。v 音量の倍率、when 何秒後、rate 速さ（高さ）、wet 残響の量
+  function p(n,{v=1,when=0,rate=1,wet=.12}={}){const a=ctx();if(!a||!buf[n])return;
+    const src=a.createBufferSource(),g=a.createGain();src.buffer=buf[n];src.playbackRate.value=rate;g.gain.value=(VOL[n]||.6)*v;
+    src.connect(g);g.connect(bus.dry);if(wet>0){const w=a.createGain();w.gain.value=wet;g.connect(w).connect(bus.rev)}
+    src.start(a.currentTime+when)}
   return{
-    tone,noise,ctx,whoosh,boom,chord,shimmer,
-    unlock(){ctx()},
-    ui(){tone(1500,.035,'triangle',.03,0,0,.1)},
-    select(){tone(880,.06,'sine',.05,0,0,.2);tone(1320,.08,'sine',.035,.03,0,.3)},
-    draw(n=1){for(let i=0;i<Math.min(n,4);i++){whoosh(.16,900,4200,.11,i*.09,1.1,.15);tone(2400,.03,'triangle',.025,i*.09+.12,0,.1)}},
-    flip(){whoosh(.14,700,3200,.1,0,1.2,.15);tone(1800,.04,'triangle',.03,.1,0,.2)},
-    play(cat,r='C'){
-      whoosh(.32,350,3800,.16,0,1.3,.25);
-      boom(cat==='atk'?.6:.45,.3,cat==='atk'?85:120,.55);
-      if(cat==='info'){tone(1568,.7,'sine',.06,.32,0,.6);tone(2349,.6,'sine',.04,.38,0,.6)}
-      else if(cat==='atk'){tone(160,.45,'sawtooth',.08,.3,.4,.3);noise(.35,.14,.3,600,.3)}
-      else if(cat==='grd'){tone(660,.8,'triangle',.07,.32,0,.6);tone(990,.7,'triangle',.05,.35,0,.6);tone(1485,.5,'sine',.03,.38,0,.6)}
-      else if(cat==='sup'){[0,4,7,12].forEach((n,i)=>tone(st(784,n),.5,'triangle',.05,.32+i*.05,0,.5))}
-      else chord([st(440,0),st(440,3),st(440,7)],1,'triangle',.05,.3,.05,2000);
-      if(r==='R')shimmer(2093,5,.35,.03);
-      if(r==='L'){shimmer(2637,7,.35,.035);chord([220,277,330,440],1.6,'sawtooth',.045,.3,.08,1800)}
-    },
-    legend(){whoosh(.6,200,5000,.18,0,1,.4);chord([st(220,0),st(220,4),st(220,7),st(220,12)],2,'sawtooth',.05,.05,.35,1600,.6);chord([st(440,7),st(440,12)],1.6,'triangle',.04,.25,.3,3000,.7);boom(.7,.5,70,1.2);tone(1760,1.4,'sine',.05,.55,0,.8);shimmer(2637,7,.6,.035)},
-    rare(){shimmer(2093,6,0,.04);chord([523,659,784],.9,'triangle',.04,0,.03,3000,.6)},
-    hit(){noise(.9,.22,0,1200,.4);boom(.85,0,75,1.1);tone(55,1.4,'sine',.25,0,.6,.3);[2100,2900,3700].forEach((f,i)=>tone(f,.6,'triangle',.03,.02+i*.03,.8,.6));whoosh(.25,5000,400,.15,0,2,.2)},
-    miss(){tone(220,.12,'square',.05,0,0,.15);tone(165,.3,'square',.05,.13,0,.2);noise(.12,.05,.13,300,.1)},
-    res(n=1){[0,4,7,12,16].slice(0,Math.min(5,1+n)).forEach((x,i)=>tone(st(660,x),.45,'sine',.07,i*.06,0,.5));shimmer(2637,4,.2,.025)},
-    trap(){whoosh(.25,600,4000,.12,0,1.2,.3);tone(1046,.4,'square',.04,.05,0,.4);tone(1568,.6,'square',.035,.12,0,.5);chord([523,784,1046],.9,'triangle',.04,.15,.02,3500,.6)},
-    turn(who){whoosh(.3,300,3000,.12,0,1.2,.25);if(who==='cpu'){chord([st(147,0),st(147,7),st(147,12)],.25,'sawtooth',.06,.05,.01,2200);chord([st(175,0),st(175,7),st(175,12)],.7,'sawtooth',.06,.28,.01,2600);boom(.35,.28,80,.5);tone(st(175,19),.4,'triangle',.03,.3,0,.4)}else{chord([392,494,587],.4,'sawtooth',.05,.05,.02,2400);chord([523,659,784],.9,'sawtooth',.055,.3,.02,2800);tone(1046,.6,'triangle',.035,.3,0,.5)}},
-    set(){whoosh(.15,2400,600,.12,0,1.2,.2);boom(.25,.12,160,.25)},
-    call(){tone(110,1,'sawtooth',.05,0,0,.3,.3);tone(440,.12,'square',.04,0,0,.3);tone(440,.12,'square',.04,.14,0,.3);tone(660,.25,'square',.04,.28,0,.4)},
-    win(){const seq=[[392,494,587],[440,554,659],[523,659,784,1046]];seq.forEach((c,i)=>chord(c,i===2?1.8:.35,'sawtooth',.06,i*.22,.02,3000,.5));shimmer(2093,7,.5,.04);boom(.5,.44,90,1)},
-    lose(){[[220,262,330],[196,233,294],[165,196,247]].forEach((c,i)=>chord(c,i===2?2:.6,'sawtooth',.05,i*.45,.05,1200,.6));boom(.5,.9,55,1.6)},
-    pack(){whoosh(.7,200,5000,.14,0,.9,.4);shimmer(1568,6,.35,.035);boom(.35,.6,120,.5)}
+    p,ctx,unlock(){ctx()},
+    ui(){p('ui',{wet:0})},tab(){p('tab',{wet:0})},
+    select(){p('select',{wet:.05})},
+    draw(n=1){for(let i=0;i<Math.min(n,4);i++)p('draw',{when:i*.11,rate:1+i*.04,wet:.05})},
+    flip(){p('flip',{wet:.08})},
+    set(){p('set')},
+    play(cat,r='C'){p({info:'play_info',atk:'play_atk',grd:'play_grd',sup:'play_sup',cur:'play_cur'}[cat]||'play_sup',{wet:.2});if(r==='R'||r==='L')p('rare',{v:.7,when:.35,wet:.3})},
+    legend(){p('legend',{wet:.3})},
+    rare(){p('rare',{wet:.3})},
+    hit(){p('hit',{wet:.25})},
+    miss(){p('miss')},
+    res(n=1){p('res',{rate:1+Math.min(3,n-1)*.12,wet:.3})},
+    coin(){p('coin',{wet:.05})},
+    trap(){p('trap',{wet:.25})},guard(){p('guard',{wet:.25})},raid(){p('raid',{wet:.2})},shatter(){p('shatter',{wet:.3})},heart(){p('heart',{wet:.1})},
+    turn(who){p(who==='cpu'?'turn_cpu':'turn_me',{wet:.2})},
+    call(){p('call',{wet:.3})},
+    round(fin){p(fin?'final':'round',{wet:.3})},match(){p('match',{wet:.3})},ko(){p('ko',{wet:.3})},
+    win(){p('jingle_win',{wet:0})},
+    lose(){p('jingle_lose',{wet:0})},
+    pack(){p('pack',{wet:.25})}
   };
 })();
-/* ---- BGM ----
-   音源ファイルを使わず、ブラウザの中で合成して鳴らすオリジナル曲。
-   menu：夜の村（オルゴールのアルペジオ＋やわらかいパッド）／battle：緊張感のある刻み（低音の8分＋はじく音＋軽い打楽器）
-   どちらかのライフが1になると battle は打楽器が増えて少し速くなる。 */
+/* ---- BGM（2026-11-11 作り替え）----
+   ElevenLabs で作ったこのゲーム用のオリジナル曲（audio/bgm_NAME.mp3）。menu：赤い月の村／battle：対戦／crisis：どちらかのライフが1。
+   曲は頭から鳴らし、BGM_LOOP の s〜e（秒）を継ぎ目なく繰り返す（位置は ~/shinzou-jinrou/audio/finish_audio.py が決める）。
+   曲は使うときに読みこみ、使わなくなったら手放す（スマホのメモリを食わないように） */
+const BGM_LOOP={"battle":{"s":21.2402,"e":85.5613},"crisis":{"s":24.1502,"e":66.2701},"menu":{"s":17.7467,"e":89.7594}};
 const bgmOn=()=>SV.bgm!==false;
 const BGM=(()=>{
-  let ac=null,out=null,rev=null,timer=0,song=null,step=0,next=0,want=null,hot=false,fadeT=0;
-  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  let ac=null,out=null,cur=null,want=null,hot=false;const buf={},pend={};
   function ctx(){
-    if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();
-      out=ac.createGain();out.gain.value=0;
-      const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=5200;
-      const len=Math.floor(ac.sampleRate*2.6),ir=ac.createBuffer(2,len,ac.sampleRate);
-      for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
-      rev=ac.createConvolver();rev.buffer=ir;const wet=ac.createGain();wet.gain.value=.35;
-      out.connect(lp).connect(ac.destination);rev.connect(wet).connect(lp);
-    }catch(e){return null}}
+    if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();out=ac.createGain();out.gain.value=vol();out.connect(ac.destination)}catch(e){return null}}
     if(ac.state==='suspended')ac.resume();return ac;
   }
-  const vol=()=>(SV.bgmVol==null?.55:SV.bgmVol)*.5;
-  function voice(t,m,d,{type='triangle',v=.1,att=.005,rel=null,wet=.3,lp=0,det=0}={}){
-    const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(mtof(m),t);if(det)o.detune.value=det;
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+(rel||d));
-    let n=o.connect(g);if(lp){const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;n=g.connect(f)}
-    n.connect(out);if(wet){const s=ac.createGain();s.gain.value=wet;n.connect(s).connect(rev)}
-    o.start(t);o.stop(t+(rel||d)+.05);
+  const vol=()=>(SV.bgmVol==null?.55:SV.bgmVol)*.55;
+  const track=()=>want==='battle'&&hot?'crisis':want;
+  function load(n){return buf[n]?Promise.resolve():pend[n]||(pend[n]=fetch('audio/bgm_'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>ac.decodeAudioData(ab,res,rej))).then(b=>{buf[n]=b;delete pend[n]}).catch(()=>{delete pend[n]}))}
+  function fadeOut(c,sec){if(!c)return;const t=ac.currentTime;c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+sec);try{c.src.stop(t+sec+.05)}catch(e){}}
+  function sync(){
+    const n=track();
+    if(!bgmOn()||!n){if(ac&&cur){fadeOut(cur,.6);cur=null}return}
+    if(!ctx())return;
+    if(cur&&cur.name===n)return;
+    if(!buf[n]){load(n).then(()=>{if(buf[n]&&track()===n)sync()});return}
+    fadeOut(cur,n==='crisis'?.5:.9);
+    const src=ac.createBufferSource(),g=ac.createGain(),L=BGM_LOOP[n],t=ac.currentTime;
+    src.buffer=buf[n];src.loop=true;src.loopStart=L.s;src.loopEnd=L.e;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+(n==='crisis'?.5:1.2));
+    src.connect(g).connect(out);src.start(t,n==='crisis'?L.s:0);cur={name:n,src,g};
+    // いらない曲を手放し、次に要りそうな曲を先に読む
+    if(want==='battle'){delete buf.menu;load('crisis')}else{delete buf.battle;delete buf.crisis}
   }
-  let nb=null;function noise(t,d,v,hp){if(!nb){nb=ac.createBuffer(1,ac.sampleRate*.5,ac.sampleRate);const c=nb.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1}
-    const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=nb;f.type='highpass';f.frequency.value=hp;
-    g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f).connect(g).connect(out);s.start(t);s.stop(t+d+.02)}
-  function kick(t,v=.5){const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(42,t+.18);
-    g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.3);o.connect(g).connect(out);o.start(t);o.stop(t+.32)}
-
-  // 曲データ：和音（ルートと構成音）を小節ごとに
-  const SONGS={
-    menu:{bpm:76,steps:16,chords:[[50,[62,65,69,72]],[46,[58,62,65,69]],[48,[60,64,67,72]],[45,[57,61,64,69]],[50,[62,65,69,74]],[43,[55,58,62,67]],[45,[57,60,64,69]],[45,[57,61,64,67]]],
-      play(i,t,sp,ch){const [root,ns]=ch;
-        if(i===0){voice(t,root-12,sp*16,{type:'sine',v:.16,att:.4,rel:sp*16,wet:.2});ns.forEach((n,k)=>voice(t,n-12,sp*16,{type:'triangle',v:.025,att:1.2,rel:sp*16,wet:.6,det:k%2?6:-6}))}
-        const arp=[0,1,2,3,2,1,2,3];if(i%2===0){const n=ns[arp[(i/2)%8]]+12;voice(t,n,sp*3,{type:'sine',v:.07,att:.004,rel:sp*5,wet:.55});voice(t,n+12,sp*2,{type:'triangle',v:.012,att:.004,rel:sp*3,wet:.6})}
-        if(i===14&&Math.random()<.5)voice(t,ns[3]+24,sp*2,{type:'sine',v:.03,att:.004,rel:sp*6,wet:.8});
-      }},
-    crisis:null,
-    battle:{bpm:112,steps:16,chords:[[45,[57,60,64]],[45,[57,60,64]],[41,[53,57,60]],[43,[55,59,62]],[45,[57,60,64]],[45,[57,60,64]],[48,[60,64,67]],[40,[52,56,59]]],
-      play(i,t,sp,ch,hot){const [root,ns]=ch;
-        if(i%2===0)voice(t,root-12+(i%4===2?12:0),sp*1.6,{type:'sawtooth',v:.07,att:.003,rel:sp*1.4,wet:.05,lp:700});
-        if(i===0)ns.forEach((n,k)=>voice(t,n,sp*16,{type:'sawtooth',v:.012,att:.6,rel:sp*15,wet:.5,lp:1400,det:k%2?8:-8}));
-        const pl=[0,null,2,null,1,null,2,1,0,null,2,null,1,2,null,0];if(pl[i]!=null)voice(t,ns[pl[i]]+12,sp,{type:'square',v:.022,att:.002,rel:sp*.9,wet:.25,lp:2600});
-        if(!hot){
-          if(i===0||i===8)kick(t,.42);
-          if(i===4||i===12)noise(t,.12,.09,1800);
-          if(i%4===2)noise(t,.03,.035,7000);
-          if(i===0&&(step/16|0)%4===3)voice(t,ns[2]+24,sp*6,{type:'triangle',v:.03,att:.05,rel:sp*8,wet:.6});
-        }else{
-          // 残りライフ1：心臓の鼓動（ドクン、ドクン）・低音の連打・不協和な高音の震え
-          if(i===0||i===8){kick(t,.55);voice(t,root-24,sp*2,{type:'sine',v:.18,att:.004,rel:sp*2.5,wet:.1})}
-          if(i===2||i===10){kick(t,.38);voice(t,root-24,sp*1.5,{type:'sine',v:.12,att:.004,rel:sp*2,wet:.1})}
-          if(i%2===1)voice(t,root-12,sp*.8,{type:'sawtooth',v:.035,att:.002,rel:sp*.7,wet:0,lp:500});
-          if(i===4||i===12)noise(t,.14,.1,1500);
-          noise(t,.02,.025,8000);
-          if(i===0){const hi=ns[0]+24;voice(t,hi,sp*16,{type:'triangle',v:.018,att:.3,rel:sp*16,wet:.7,det:10});voice(t,hi+1,sp*16,{type:'triangle',v:.014,att:.3,rel:sp*16,wet:.7,det:-10})}
-          if(i===12&&(step/16|0)%2===1)voice(t,ns[1]+24,sp*4,{type:'square',v:.016,att:.01,rel:sp*4,wet:.5,lp:3000});
-        }
-      }},
-  };
-  SONGS.crisis={bpm:112,steps:16,chords:[[45,[57,60,63]],[46,[58,61,64]],[45,[57,60,63]],[44,[56,59,62]],[45,[57,60,64]],[46,[58,62,65]],[44,[56,59,62]],[40,[52,56,59]]],play:(i,t,sp,ch)=>SONGS.battle.play(i,t,sp,ch,true)};
-  function tick(){
-    if(!ac||!song)return;
-    const s=(song==='battle'&&hot)?SONGS.crisis:SONGS[song],bpm=s.bpm*(song==='battle'&&hot?1.12:1),sp=60/bpm/4;
-    while(next<ac.currentTime+.18){
-      const bar=Math.floor(step/s.steps)%s.chords.length,i=step%s.steps;
-      try{s.play(i,next,sp,s.chords[bar],hot)}catch(e){}
-      next+=sp;step++;
-    }
-  }
-  function fadeTo(v,sec){if(!ac)return;const g=out.gain,t=ac.currentTime;g.cancelScheduledValues(t);g.setValueAtTime(Math.max(.0001,g.value),t);g.linearRampToValueAtTime(Math.max(.0001,v),t+sec)}
-  function start(name){
-    if(!bgmOn()||!ctx())return;
-    if(song===name){fadeTo(vol(),.6);return}
-    clearTimeout(fadeT);
-    const go=()=>{song=name;step=0;next=ac.currentTime+.08;clearInterval(timer);timer=setInterval(tick,25);fadeTo(vol(),1.2)};
-    if(song){fadeTo(0,.5);fadeT=setTimeout(go,520)}else go();
-  }
-  function stop(sec=.6){if(!ac)return;fadeTo(0,sec);clearTimeout(fadeT);fadeT=setTimeout(()=>{clearInterval(timer);song=null},sec*1000+50)}
+  function master(v,sec){if(!ac)return;const g=out.gain,t=ac.currentTime;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(v,t+sec)}
   return{
-    set(name){want=name;if(!bgmOn()||!ac)return;name?start(name):stop()},
-    unlock(){if(bgmOn()&&want&&(!ac||!song))start(want)},
-    hot(v){v=!!v;if(v&&!hot&&ac&&song==='battle'){const t=ac.currentTime;const o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(880,t+1.4);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+1.2);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=1800;o.connect(g).connect(f).connect(out);o.start(t);o.stop(t+1.6)}hot=v},
-    toggle(){SV.bgm=!bgmOn();save();if(bgmOn()){if(want)start(want)}else stop(.3)},
-    volume(v){SV.bgmVol=v;save();if(song)fadeTo(vol(),.15)},
-    duck(on){if(song)fadeTo(on?0:vol(),.25)},
-    get name(){return song}
+    set(name){want=name;if(!name)hot=false;if(ac)sync()},
+    unlock(){if(bgmOn()&&want&&(!ac||!cur))sync()},
+    hot(v){v=!!v;if(v===hot)return;hot=v;if(v&&want==='battle')SFX.heart();if(ac)sync()},
+    toggle(){SV.bgm=!bgmOn();save();sync()},
+    volume(v){SV.bgmVol=v;save();master(vol(),.15)},
+    duck(on){master(on?0:vol(),.25)},
+    get name(){return cur&&cur.name}
   };
 })();
 document.addEventListener('pointerdown',()=>BGM.unlock(),{passive:true});
@@ -1949,42 +1889,23 @@ document.addEventListener('visibilitychange',()=>BGM.duck(document.hidden));
 
 document.addEventListener('pointerdown',()=>SFX.unlock(),{passive:true});
 // 操作音：手札を選ぶ音・ボタンの音
-document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;if(t.closest('.hc'))SFX.select();else if(t.closest('.flip'))return;else if(t.closest('button'))SFX.ui()},true);
+document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;if(t.closest('.hc'))SFX.select();else if(t.closest('.flip'))return;else if(t.closest('.tabBar,.hmB,.hmMain'))SFX.tab();else if(t.closest('button'))SFX.ui()},true);
 // 手札のカードは指の位置で傾く（マスターデュエル風）
 document.addEventListener('pointermove',e=>{if(RM||e.pointerType!=='mouse')return;const h=e.target.closest&&e.target.closest('.hc');document.querySelectorAll('.hc[style*="--rx"]').forEach(x=>{if(x!==h){x.style.removeProperty('--rx');x.style.removeProperty('--ry')}});if(!h)return;const r=h.getBoundingClientRect();h.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*18+'deg');h.style.setProperty('--rx',(.5-(e.clientY-r.top)/r.height)*14+'deg')},{passive:true});
 // 背景の火の粉
 (()=>{if(RM)return;const d=document.getElementById('dust');if(!d)return;let h='';for(let i=0;i<22;i++)h+=`<i style="left:${Math.random()*100}%;--dx:${(Math.random()-.5)*120}px;animation-duration:${14+Math.random()*16}s;animation-delay:${-Math.random()*30}s;opacity:${.3+Math.random()*.6}"></i>`;d.innerHTML=h})();
 function hitstop(ms=110){if(RM)return;document.body.classList.add('hitstop');setTimeout(()=>document.body.classList.remove('hitstop'),ms)}
 
-// 声の代わりに、場面ごとの効果音（ジングル）を鳴らす
-const VOICE=(()=>{
-  const T=(...a)=>SFX.tone(...a),Nz=(...a)=>SFX.noise(...a);
-  function sweep(f1,f2,d,type='sawtooth',vol=.1,when=0){const a=SFX.ctx();if(!a)return;const t=a.currentTime+when;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0008,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.03)}
-  const J={
-    gong(){T(98,1.6,'sine',.22);T(196,1.2,'sine',.08);T(147,1.4,'triangle',.06,.01);Nz(.25,.08,0,120)},
-    fight(){[0,7,12].forEach((st,i)=>T(262*Math.pow(2,st/12),.22,'sawtooth',.07,i*.06));T(523,.6,'square',.05,.2)},
-    final(){T(82,1.8,'sine',.24);T(82,1.8,'sine',.2,.45);T(110,1.4,'sawtooth',.05,.45);Nz(.3,.1,.45,100)},
-    shatter(){Nz(.5,.22,0,2500);for(let i=0;i<14;i++)T(1800+Math.random()*2600,.25+Math.random()*.3,'triangle',.035,Math.random()*.25);sweep(600,90,.7,'sawtooth',.08,.05)},
-    raid(){Nz(.22,.16,0,900);sweep(1600,140,.3,'sawtooth',.08);T(70,.5,'sine',.2,.12)},
-    trap(){T(1046,.35,'square',.05);T(1568,.5,'square',.04,.06);T(523,.6,'triangle',.06,.12)},
-    guard(){T(660,.4,'triangle',.08);T(990,.5,'triangle',.06,.05);Nz(.15,.06,0,4000)},
-    res(n){const base=[0,4,7,12,16,19,24];base.slice(0,Math.min(7,2+n)).forEach((st,i)=>T(784*Math.pow(2,st/12),.35,'sine',.06,i*.05));if(n>=2)sweep(400,1600,.5,'triangle',.04)},
-    ko(){T(55,2.2,'sine',.3);sweep(400,40,1.2,'sawtooth',.12);Nz(.8,.2,0,60);Nz(.4,.12,.1,1500)}
-  };
-  return{say(t){if(!sndOn())return;try{
-    if(/^Round one/.test(t)){J.gong();setTimeout(J.fight,700)}
-    else if(/^Round/.test(t))J.gong();
-    else if(/^Final/.test(t))J.final();
-    else if(/^Heart/.test(t))J.shatter();
-    else if(/^Raid/.test(t))J.raid();
-    else if(/^Trap/.test(t))J.trap();
-    else if(/^Guard/.test(t))J.guard();
-    else if(/^Great combo/.test(t))J.res(3);
-    else if(/^Combo/.test(t))J.res(2);
-    else if(/^Resonance/.test(t))J.res(1);
-    else if(/^K\.O/.test(t))J.ko();
-  }catch(e){}}};
-})();
+// 声の代わりに、場面ごとの効果音を鳴らす
+const VOICE={say(t){if(!sndOn())return;
+  if(/^Round one/.test(t)||/^Round/.test(t))SFX.round();
+  else if(/^Final/.test(t))SFX.round(true);
+  else if(/^Heart/.test(t))SFX.shatter();
+  else if(/^Raid/.test(t))SFX.raid();
+  else if(/^Guard/.test(t))SFX.guard();
+  else if(/^Resonance/.test(t))SFX.res(2);
+  else if(/^K\.O/.test(t))SFX.ko();
+}};
 const OCTO_BODY="<rect x=\"11\" y=\"0\" width=\"10\" height=\"1\" fill=\"#220c1c\"/><rect x=\"9\" y=\"1\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"11\" y=\"1\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"12\" y=\"1\" width=\"2\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"14\" y=\"1\" width=\"7\" height=\"1\" fill=\"#cd5468\"/><rect x=\"21\" y=\"1\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"2\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"9\" y=\"2\" width=\"7\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"16\" y=\"2\" width=\"7\" height=\"1\" fill=\"#cd5468\"/><rect x=\"23\" y=\"2\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"3\" width=\"9\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"16\" y=\"3\" width=\"8\" height=\"1\" fill=\"#cd5468\"/><rect x=\"24\" y=\"3\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"3\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"4\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"4\" width=\"10\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"16\" y=\"4\" width=\"9\" height=\"1\" fill=\"#cd5468\"/><rect x=\"25\" y=\"4\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"26\" y=\"4\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"5\" width=\"10\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"15\" y=\"5\" width=\"10\" height=\"1\" fill=\"#cd5468\"/><rect x=\"25\" y=\"5\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"27\" y=\"5\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"5\" y=\"6\" width=\"9\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"14\" y=\"6\" width=\"11\" height=\"1\" fill=\"#cd5468\"/><rect x=\"25\" y=\"6\" width=\"3\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"6\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"7\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"7\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"5\" y=\"7\" width=\"8\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"13\" y=\"7\" width=\"11\" height=\"1\" fill=\"#cd5468\"/><rect x=\"24\" y=\"7\" width=\"4\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"7\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"8\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"8\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"6\" y=\"8\" width=\"5\" height=\"1\" fill=\"#f69ca6\"/><rect x=\"11\" y=\"8\" width=\"13\" height=\"1\" fill=\"#cd5468\"/><rect x=\"24\" y=\"8\" width=\"4\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"8\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"2\" y=\"9\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"9\" width=\"20\" height=\"1\" fill=\"#cd5468\"/><rect x=\"23\" y=\"9\" width=\"6\" height=\"1\" fill=\"#922e4e\"/><rect x=\"29\" y=\"9\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"2\" y=\"10\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"10\" width=\"19\" height=\"1\" fill=\"#cd5468\"/><rect x=\"22\" y=\"10\" width=\"7\" height=\"1\" fill=\"#922e4e\"/><rect x=\"29\" y=\"10\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"11\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"11\" width=\"17\" height=\"1\" fill=\"#cd5468\"/><rect x=\"21\" y=\"11\" width=\"7\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"11\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"12\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"12\" width=\"15\" height=\"1\" fill=\"#cd5468\"/><rect x=\"19\" y=\"12\" width=\"9\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"12\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"13\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"13\" width=\"4\" height=\"1\" fill=\"#cd5468\"/><rect x=\"8\" y=\"13\" width=\"3\" height=\"1\" fill=\"#220c1c\"/><rect x=\"11\" y=\"13\" width=\"7\" height=\"1\" fill=\"#cd5468\"/><rect x=\"18\" y=\"13\" width=\"3\" height=\"1\" fill=\"#922e4e\"/><rect x=\"21\" y=\"13\" width=\"3\" height=\"1\" fill=\"#220c1c\"/><rect x=\"24\" y=\"13\" width=\"4\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"13\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"14\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"14\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"7\" y=\"14\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"14\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"9\" y=\"14\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"10\" y=\"14\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"11\" y=\"14\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"14\" width=\"3\" height=\"1\" fill=\"#cd5468\"/><rect x=\"15\" y=\"14\" width=\"5\" height=\"1\" fill=\"#922e4e\"/><rect x=\"20\" y=\"14\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"14\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"22\" y=\"14\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"23\" y=\"14\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"24\" y=\"14\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"25\" y=\"14\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"27\" y=\"14\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"15\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"15\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"7\" y=\"15\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"15\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"9\" y=\"15\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"10\" y=\"15\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"11\" y=\"15\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"15\" width=\"8\" height=\"1\" fill=\"#922e4e\"/><rect x=\"20\" y=\"15\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"15\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"22\" y=\"15\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"23\" y=\"15\" width=\"1\" height=\"1\" fill=\"#faf6ec\"/><rect x=\"24\" y=\"15\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"25\" y=\"15\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"26\" y=\"15\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"16\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"16\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"8\" y=\"16\" width=\"3\" height=\"1\" fill=\"#220c1c\"/><rect x=\"11\" y=\"16\" width=\"10\" height=\"1\" fill=\"#922e4e\"/><rect x=\"21\" y=\"16\" width=\"3\" height=\"1\" fill=\"#220c1c\"/><rect x=\"24\" y=\"16\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"16\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"17\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"17\" width=\"7\" height=\"1\" fill=\"#922e4e\"/><rect x=\"15\" y=\"17\" width=\"2\" height=\"1\" fill=\"#6e1e32\"/><rect x=\"17\" y=\"17\" width=\"7\" height=\"1\" fill=\"#922e4e\"/><rect x=\"24\" y=\"17\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"18\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"18\" width=\"14\" height=\"1\" fill=\"#cd5468\"/><rect x=\"20\" y=\"18\" width=\"6\" height=\"1\" fill=\"#922e4e\"/><rect x=\"26\" y=\"18\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"19\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"19\" width=\"13\" height=\"1\" fill=\"#cd5468\"/><rect x=\"20\" y=\"19\" width=\"5\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"19\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"20\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"5\" y=\"20\" width=\"17\" height=\"1\" fill=\"#cd5468\"/><rect x=\"22\" y=\"20\" width=\"5\" height=\"1\" fill=\"#922e4e\"/><rect x=\"27\" y=\"20\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"21\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"21\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"6\" y=\"21\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"7\" y=\"21\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"9\" y=\"21\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"11\" y=\"21\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"12\" y=\"21\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"13\" y=\"21\" width=\"5\" height=\"1\" fill=\"#cd5468\"/><rect x=\"18\" y=\"21\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"19\" y=\"21\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"20\" y=\"21\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"22\" y=\"21\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"23\" y=\"21\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"25\" y=\"21\" width=\"3\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"21\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"2\" y=\"22\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"22\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"5\" y=\"22\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"6\" y=\"22\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"22\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"10\" y=\"22\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"11\" y=\"22\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"13\" y=\"22\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"14\" y=\"22\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"15\" y=\"22\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"22\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"18\" y=\"22\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"19\" y=\"22\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"22\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"22\" y=\"22\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"24\" y=\"22\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"26\" y=\"22\" width=\"3\" height=\"1\" fill=\"#922e4e\"/><rect x=\"29\" y=\"22\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"1\" y=\"23\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"2\" y=\"23\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"3\" y=\"23\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"4\" y=\"23\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"23\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"23\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"9\" y=\"23\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"10\" y=\"23\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"23\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"13\" y=\"23\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"14\" y=\"23\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"23\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"18\" y=\"23\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"19\" y=\"23\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"20\" y=\"23\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"22\" y=\"23\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"24\" y=\"23\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"26\" y=\"23\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"28\" y=\"23\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"30\" y=\"23\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"0\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"1\" y=\"24\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"2\" y=\"24\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"3\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"24\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"8\" y=\"24\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"9\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"11\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"24\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"13\" y=\"24\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"14\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"18\" y=\"24\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"19\" y=\"24\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"20\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"22\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"23\" y=\"24\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"28\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"29\" y=\"24\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"31\" y=\"24\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"0\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"1\" y=\"25\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"2\" y=\"25\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"3\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"25\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"8\" y=\"25\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"9\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"11\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"25\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"13\" y=\"25\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"14\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"18\" y=\"25\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"19\" y=\"25\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"20\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"22\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"23\" y=\"25\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"28\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"29\" y=\"25\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"31\" y=\"25\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"0\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"1\" y=\"26\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"2\" y=\"26\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"3\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"6\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"26\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"8\" y=\"26\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"9\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"11\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"26\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"13\" y=\"26\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"14\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"18\" y=\"26\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"19\" y=\"26\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"20\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"22\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"23\" y=\"26\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"28\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"29\" y=\"26\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"31\" y=\"26\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"1\" y=\"27\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"2\" y=\"27\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"3\" y=\"27\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"4\" y=\"27\" width=\"3\" height=\"1\" fill=\"#220c1c\"/><rect x=\"7\" y=\"27\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"8\" y=\"27\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"9\" y=\"27\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"12\" y=\"27\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"13\" y=\"27\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"14\" y=\"27\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"15\" y=\"27\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"27\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"18\" y=\"27\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"19\" y=\"27\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"27\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"23\" y=\"27\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"25\" y=\"27\" width=\"3\" height=\"1\" fill=\"#220c1c\"/><rect x=\"28\" y=\"27\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"30\" y=\"27\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"2\" y=\"28\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"28\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"5\" y=\"28\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"6\" y=\"28\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"28\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"10\" y=\"28\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"11\" y=\"28\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"13\" y=\"28\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"14\" y=\"28\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"15\" y=\"28\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"28\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"18\" y=\"28\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"19\" y=\"28\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"28\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"22\" y=\"28\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"24\" y=\"28\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"26\" y=\"28\" width=\"3\" height=\"1\" fill=\"#922e4e\"/><rect x=\"29\" y=\"28\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"3\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"29\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"5\" y=\"29\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"6\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"8\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"9\" y=\"29\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"10\" y=\"29\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"11\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"13\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"14\" y=\"29\" width=\"1\" height=\"1\" fill=\"#f08c96\"/><rect x=\"15\" y=\"29\" width=\"2\" height=\"1\" fill=\"#cd5468\"/><rect x=\"17\" y=\"29\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"18\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"20\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"29\" width=\"1\" height=\"1\" fill=\"#cd5468\"/><rect x=\"22\" y=\"29\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"23\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"25\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"26\" y=\"29\" width=\"2\" height=\"1\" fill=\"#922e4e\"/><rect x=\"28\" y=\"29\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"4\" y=\"30\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"9\" y=\"30\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"13\" y=\"30\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"14\" y=\"30\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"15\" y=\"30\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"30\" width=\"1\" height=\"1\" fill=\"#922e4e\"/><rect x=\"18\" y=\"30\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"21\" y=\"30\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"26\" y=\"30\" width=\"2\" height=\"1\" fill=\"#220c1c\"/><rect x=\"14\" y=\"31\" width=\"1\" height=\"1\" fill=\"#220c1c\"/><rect x=\"17\" y=\"31\" width=\"1\" height=\"1\" fill=\"#220c1c\"/>";
 const OCTO_HEARTS=[{"n": "gl", "x": 5, "y": 7, "w": 8, "h": 7, "a": "<rect x=\"2\" y=\"0\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"5\" y=\"0\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"1\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"3\" y=\"1\" width=\"2\" height=\"1\" fill=\"#2a0610\"/><rect x=\"5\" y=\"1\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"2\" y=\"2\" width=\"2\" height=\"1\" fill=\"#ffd0d6\"/><rect x=\"4\" y=\"2\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"7\" y=\"2\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd0d6\"/><rect x=\"3\" y=\"3\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"4\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"5\" y=\"4\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"3\" y=\"5\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"5\" y=\"5\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"3\" y=\"6\" width=\"2\" height=\"1\" fill=\"#2a0610\"/>", "d": "<rect x=\"2\" y=\"0\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"5\" y=\"0\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"1\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"3\" y=\"1\" width=\"2\" height=\"1\" fill=\"#140a14\"/><rect x=\"5\" y=\"1\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\" fill=\"#6c5a68\"/><rect x=\"3\" y=\"2\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"4\" y=\"2\" width=\"3\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"7\" y=\"2\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#6c5a68\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"4\" y=\"3\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"5\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\" fill=\"#33262f\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"4\" width=\"3\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"5\" y=\"4\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"3\" y=\"5\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"5\" y=\"5\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"3\" y=\"6\" width=\"2\" height=\"1\" fill=\"#140a14\"/>"}, {"n": "gr", "x": 20, "y": 7, "w": 8, "h": 7, "a": "<rect x=\"2\" y=\"0\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"5\" y=\"0\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"1\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"3\" y=\"1\" width=\"2\" height=\"1\" fill=\"#2a0610\"/><rect x=\"5\" y=\"1\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"2\" y=\"2\" width=\"2\" height=\"1\" fill=\"#ffd0d6\"/><rect x=\"4\" y=\"2\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"7\" y=\"2\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd0d6\"/><rect x=\"3\" y=\"3\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"4\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"5\" y=\"4\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"3\" y=\"5\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"5\" y=\"5\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"3\" y=\"6\" width=\"2\" height=\"1\" fill=\"#2a0610\"/>", "d": "<rect x=\"2\" y=\"0\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"5\" y=\"0\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"1\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"3\" y=\"1\" width=\"2\" height=\"1\" fill=\"#140a14\"/><rect x=\"5\" y=\"1\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\" fill=\"#6c5a68\"/><rect x=\"3\" y=\"2\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"4\" y=\"2\" width=\"3\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"7\" y=\"2\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#6c5a68\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"4\" y=\"3\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"5\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"6\" y=\"3\" width=\"1\" height=\"1\" fill=\"#33262f\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"4\" width=\"3\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"5\" y=\"4\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"3\" y=\"5\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"5\" y=\"5\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"3\" y=\"6\" width=\"2\" height=\"1\" fill=\"#140a14\"/>"}, {"n": "sy", "x": 11, "y": 2, "w": 10, "h": 8, "a": "<rect x=\"2\" y=\"0\" width=\"2\" height=\"1\" fill=\"#2a0610\"/><rect x=\"6\" y=\"0\" width=\"2\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"1\" width=\"2\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"4\" y=\"1\" width=\"2\" height=\"1\" fill=\"#2a0610\"/><rect x=\"6\" y=\"1\" width=\"2\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"8\" y=\"1\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"2\" y=\"2\" width=\"2\" height=\"1\" fill=\"#ffd0d6\"/><rect x=\"4\" y=\"2\" width=\"5\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd0d6\"/><rect x=\"3\" y=\"3\" width=\"5\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"8\" y=\"3\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"9\" y=\"3\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"4\" width=\"5\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"7\" y=\"4\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"8\" y=\"4\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"3\" y=\"5\" width=\"3\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"6\" y=\"5\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"7\" y=\"5\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ff3b54\"/><rect x=\"5\" y=\"6\" width=\"1\" height=\"1\" fill=\"#b3172f\"/><rect x=\"6\" y=\"6\" width=\"1\" height=\"1\" fill=\"#2a0610\"/><rect x=\"4\" y=\"7\" width=\"2\" height=\"1\" fill=\"#2a0610\"/>", "d": "<rect x=\"2\" y=\"0\" width=\"2\" height=\"1\" fill=\"#140a14\"/><rect x=\"6\" y=\"0\" width=\"2\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"1\" width=\"2\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"4\" y=\"1\" width=\"2\" height=\"1\" fill=\"#140a14\"/><rect x=\"6\" y=\"1\" width=\"2\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"8\" y=\"1\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"2\" y=\"2\" width=\"2\" height=\"1\" fill=\"#6c5a68\"/><rect x=\"4\" y=\"2\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"5\" y=\"2\" width=\"4\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#6c5a68\"/><rect x=\"3\" y=\"3\" width=\"2\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"5\" y=\"3\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"6\" y=\"3\" width=\"2\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"8\" y=\"3\" width=\"1\" height=\"1\" fill=\"#33262f\"/><rect x=\"9\" y=\"3\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"4\" width=\"4\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"6\" y=\"4\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"7\" y=\"4\" width=\"1\" height=\"1\" fill=\"#33262f\"/><rect x=\"8\" y=\"4\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"3\" y=\"5\" width=\"2\" height=\"1\" fill=\"#4a3a48\"/><rect x=\"5\" y=\"5\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"6\" y=\"5\" width=\"1\" height=\"1\" fill=\"#33262f\"/><rect x=\"7\" y=\"5\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#0c060a\"/><rect x=\"5\" y=\"6\" width=\"1\" height=\"1\" fill=\"#33262f\"/><rect x=\"6\" y=\"6\" width=\"1\" height=\"1\" fill=\"#140a14\"/><rect x=\"4\" y=\"7\" width=\"2\" height=\"1\" fill=\"#140a14\"/>"}];
 // タコの心臓。失う順は 左の鰓心臓 → 右の鰓心臓 → 体心臓（まん中の大きい心臓）
@@ -2698,7 +2619,7 @@ async function fxSet(who){await fxShow(`<div class="fxcard">${backHTML('l','伏�
 async function fxTrap(k){VOICE.say('Trap card!');await fxStamp('発動','guard',k)}
 async function fxRaid(){VOICE.say('Raid!');await fxStamp('襲撃','hit')}
 async function fxRes(){VOICE.say('Resonance!',{pitch:.7});screenFlash('gold');FXC.embers('#f0c060');await fxShow(`<div class="banner res">共鳴</div>`,700);fxClear()}
-async function fxVs(){SFX.pack();await fxShow(`<div class="vs"><div class="vsSide l">${cardHTML(S.me.single,'m')}<b>${MYN()}</b><span>${catSummary(S.me.types)}</span></div><div class="vsMid">VS</div><div class="vsSide r">${cardHTML(S.cpu.single,'m')}<b>${OPN()}</b><span>${catSummary(S.cpu.types)}</span></div></div>`,1900);fxClear()}
+async function fxVs(){SFX.match();await fxShow(`<div class="vs"><div class="vsSide l">${cardHTML(S.me.single,'m')}<b>${MYN()}</b><span>${catSummary(S.me.types)}</span></div><div class="vsMid">VS</div><div class="vsSide r">${cardHTML(S.cpu.single,'m')}<b>${OPN()}</b><span>${catSummary(S.cpu.types)}</span></div></div>`,1900);fxClear()}
 async function fxFight(){VOICE.say('Round one... Fight!');await fxShow('<div class="roundWrap"><div class="roundT">ROUND 1</div><div class="roundS">FIGHT!</div></div>',1500);fxClear()}
 async function fxCutin(k,who){
   const c=C[k];SFX.legend();setTimeout(()=>{screenFlash('gold');quake()},500);
@@ -3837,7 +3758,7 @@ async function loginBonus(){
   SV.login={last:d,streak};SV.coins+=get;save();
   await modal(`<div class="lbox"><h2>ログインボーナス</h2><p>${streak}日連続ログイン！</p>
     <div class="lstrip">${LOGIN_BONUS.map((v,i)=>`<div class="lday ${i<idx?'got':i===idx?'now':''}"><span>${i+1}日目</span><b>${v}</b></div>`).join('')}</div>
-    <p class="lget">銀貨 <b>+${get}</b></p><div class="btns"><button type="button" class="b primary" id="lOk">受け取る</button></div></div>`,(m,done)=>{SFX.res&&SFX.res();m.querySelector('#lOk').onclick=()=>done()});
+    <p class="lget">銀貨 <b>+${get}</b></p><div class="btns"><button type="button" class="b primary" id="lOk">受け取る</button></div></div>`,(m,done)=>{SFX.coin();m.querySelector('#lOk').onclick=()=>done()});
   if(VIEW==='menu')renderMenu();
 }
 function missionsHTML(){
@@ -3849,7 +3770,7 @@ const coinsMini=n=>`<span class="coin sm"><i></i>${n}</span>`;
 function bindMissions(){
   document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>{
     const m=SV.daily.list[+b.dataset.claim],def=MISSIONS.find(x=>x.id===m.id);if(!def||m.claimed||m.prog<def.n)return;
-    m.claimed=true;SV.coins+=def.r;save();SFX.res&&SFX.res();
+    m.claimed=true;SV.coins+=def.r;save();SFX.coin();
     const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top+r.height/2);renderMenu();
   });
 }
@@ -3969,7 +3890,7 @@ function renderShop(){
     ${tabBarHTML('shop')}`;
   $('#toOcto').onclick=()=>{OCTO_PV=null;go('octo')};
   document.querySelectorAll('[data-alt]').forEach(b=>b.onclick=()=>{const k=b.dataset.alt;if(altOwned(k)||SV.coins<ALT_PRICE)return;SV.coins-=ALT_PRICE;SV.owned.push('alt_'+k);SV.altOff=(SV.altOff||[]).filter(x=>x!==k);save();try{SFX.legend();screenFlash('gold')}catch(e){}const y=window.scrollY;renderShop();window.scrollTo(0,y)});
-  document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.buy);if(!it||SV.owned.includes(it.id)||SV.coins<it.p)return;SV.coins-=it.p;SV.owned.push(it.id);if(it.kind==='frame')SV.equip.frame=it.id;else SV.equip.title=it.id;save();applyFrame();SFX.res&&SFX.res();const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top);renderShop()});
+  document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.buy);if(!it||SV.owned.includes(it.id)||SV.coins<it.p)return;SV.coins-=it.p;SV.owned.push(it.id);if(it.kind==='frame')SV.equip.frame=it.id;else SV.equip.title=it.id;save();applyFrame();SFX.coin();const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top);renderShop()});
   document.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const it=shopItem(b.dataset.eq);if(!it)return;const k=it.kind==='frame'?'frame':'title';SV.equip[k]=SV.equip[k]===it.id?'':it.id;save();applyFrame();renderShop()});
   bindTabBar();
 }
@@ -4193,6 +4114,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:52,d:'2026-11-11',t:'音をすべて作り直しました。ホーム・対戦・残りライフ1の音楽は、このゲームのために作ったオーケストラの曲に。カードを出す音、心臓が割れる音、襲撃、勝ち負けの曲など、効果音も重みのある音に入れ替えました。'},
   {id:54,d:'2026-11-11',t:'レジェンドのカードを、系統の色のままにしました（青＝情報、赤＝攻撃、緑＝防御…）。代わりに、絵の上で光の筋が回り、きらめきと虹の光沢が走ります。'},
   {id:53,d:'2026-11-11',t:'ホーム右のアイコンを小さく整理しました。「遊び方」は上のバーの「?」ボタンと設定の中に移りました。'},
   {id:52,d:'2026-11-11',t:'相手の手札の枚数を、数字で大きく出すようにしました（0枚のときは赤くなります）。'},
