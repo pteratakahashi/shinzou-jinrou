@@ -26,7 +26,7 @@
 <meta name="apple-mobile-web-app-title" content="心臓人狼">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;700&family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
 <style>
 /* Layout: a night-time card table. Opponent across the top, the deduction board in the middle, your hand fanned at the bottom. Single dark look by choice. */
 :root{
@@ -1594,6 +1594,97 @@ html.fit-wide .hmHelp{font-size:20px}
 .tcg.s.r-L.lg .tart::before,.tcg.s.r-L.lg .tart::after,.tcg.s.r-L.lg::before{display:none}
 @media (prefers-reduced-motion:reduce){.tcg.r-L.lg,.tcg.r-L.lg::before,.tcg.r-L.lg::after,.tcg.r-L.lg .tart::before,.tcg.r-L.lg .tart::after{animation:none}.tcg.r-L.lg::before,.tcg.r-L.lg .tart::after{opacity:.8}.tcg.r-L.lg::after{display:none}}
 body.resultOn #app .tcg.r-L.lg::before,body.resultOn #app .tcg.r-L.lg .tart::after{opacity:.8}
+
+/* ================= PC の落ちついた見た目（2026-11-11）=================
+   プテラ「PC のボタンが大きく、世界観に合っていない。読み合いが好きな層に刺さる、洗練された UI に」。
+   太い金ぶち・縁どり文字・大きな赤いボタンをやめ、細い金の線・明朝体・小さめのボタン・余白で見せる。絵を主役にする。PC（html.fit-wide）だけ */
+html.fit-wide{--rail:78px;--pcf:"Shippori Mincho B1","Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif;--hair:rgba(232,200,140,.28);--hair2:rgba(232,200,140,.6);--ivory:#efe4d2;--dim:#a8998a}
+/* 左の縦メニュー */
+html.fit-wide .tabBar{gap:2px;padding:22px 0!important;background:linear-gradient(180deg,rgba(14,5,9,.92),rgba(8,3,5,.96))!important;border-right:1px solid var(--hair)!important;border-image:none!important;box-shadow:none;backdrop-filter:blur(6px)}
+html.fit-wide .tabBar button{gap:6px;padding:13px 0;border-radius:0;font-family:var(--pcf);font-weight:500;font-size:11px;letter-spacing:.18em;color:var(--dim);transition:color .2s}
+html.fit-wide .tabBar button svg{width:20px;height:20px;stroke-width:1.2}
+html.fit-wide .tabBar button:hover{color:var(--ivory);background:none}
+html.fit-wide .tabBar button.on{color:#e8c88c;background:none}html.fit-wide .tabBar button.on svg{filter:none}
+html.fit-wide .tabBar button.on::before{left:0;top:50%;bottom:auto;width:1px;height:34px;translate:0 -50%;border-radius:0;background:#e8c88c;box-shadow:0 0 8px rgba(232,200,140,.7)}
+html.fit-wide .tabBar .tbBattle{padding:10px 0;gap:10px;color:var(--ivory)}
+html.fit-wide .tabBar .tbBattle i{position:relative;width:40px;height:40px;border-radius:0;border:0;background:none;box-shadow:none;animation:none;font-family:var(--pcf);font-weight:700;font-size:12px;letter-spacing:.1em;text-shadow:none;color:#f0c9cf}
+html.fit-wide .tabBar .tbBattle i::before{content:"";position:absolute;inset:3px;rotate:45deg;border:1px solid #c9566a;background:rgba(160,30,54,.22);transition:background .2s,box-shadow .2s;z-index:-1}
+html.fit-wide .tabBar .tbBattle:hover i::before{background:rgba(190,40,66,.5);box-shadow:0 0 14px rgba(226,58,85,.5)}
+html.fit-wide .tabBar .tbBattle span{margin:0;color:var(--dim)}
+/* 背景の暗がり：左と右をもう少し静かに */
+html.fit-wide .hm{grid-template-columns:minmax(0,1fr) clamp(290px,21vw,380px);padding-left:clamp(28px,3vw,56px);padding-right:clamp(22px,2.2vw,40px)}
+html.fit-wide .hmBg{top:0}
+html.fit-wide .hm::after{background:linear-gradient(90deg,rgba(8,3,5,.88) 0,rgba(8,3,5,.5) 24%,transparent 44%,transparent 66%,rgba(8,3,5,.86) 100%),linear-gradient(180deg,rgba(8,3,5,.9) 0,transparent 16%,transparent 62%,rgba(8,3,5,.8) 100%)}
+/* 上の帯：枠をやめて細い線1本 */
+html.fit-wide .hmTop{margin:0 calc(-1*clamp(22px,2.2vw,40px)) 0 calc(-1*clamp(28px,3vw,56px));padding:12px clamp(22px,2.2vw,40px) 12px clamp(28px,3vw,56px);gap:18px;border:0;border-bottom:1px solid var(--hair);background:linear-gradient(180deg,rgba(8,3,5,.7),rgba(8,3,5,.25));box-shadow:none;backdrop-filter:blur(3px)}
+html.fit-wide .hmAv{width:40px;height:40px;border:1px solid var(--hair2);box-shadow:0 0 0 3px rgba(0,0,0,.35)}
+html.fit-wide .hmId{flex-direction:row;align-items:center;gap:12px}
+html.fit-wide .hmId b{font-family:var(--pcf);font-weight:700;font-size:16px;letter-spacing:.08em;color:var(--ivory);text-shadow:none}
+html.fit-wide .hmId em,html.fit-wide .ptitle,html.fit-wide .prank{font-family:var(--pcf);font-weight:500;font-size:11px;letter-spacing:.1em;padding:1px 9px;border-radius:2px;background:none}
+html.fit-wide .hmId .ptitle{border-color:var(--hair);color:#d9c39a}
+html.fit-wide .hmSide{gap:20px}
+html.fit-wide .hmIc{gap:7px;padding:4px 0;border:0;border-radius:0;background:none;color:var(--dim);transition:color .2s}
+html.fit-wide .hmIc:hover{transform:none;color:#e8c88c}
+html.fit-wide .hmIc i{width:20px;height:20px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:inherit}
+html.fit-wide .hmIc svg,html.fit-wide .hmGear svg{stroke-width:1.3}
+html.fit-wide .hmIc span{font-family:var(--pcf);font-weight:500;font-size:12px;letter-spacing:.12em;text-shadow:none;color:inherit}
+html.fit-wide .hmIc .bdg{position:static;margin-left:-2px}
+html.fit-wide .bdg{min-width:16px;height:16px;padding:0 4px;border:0;border-radius:8px;font:700 10px/16px var(--pcf);background:#b3263f;box-shadow:none}
+html.fit-wide .hmTop>.coin{font-family:var(--pcf);font-weight:700;font-size:15px;letter-spacing:.06em;color:var(--ivory);padding:0 0 0 18px;border:0;border-left:1px solid var(--hair);border-radius:0;background:none;box-shadow:none;gap:8px}
+html.fit-wide .hmTop>.coin i{width:13px;height:13px;box-shadow:none;background:radial-gradient(circle at 35% 30%,#fff,#c9d0de 45%,#7d859f)}
+html.fit-wide .hmGear{width:32px;height:32px;padding:7px;border:1px solid var(--hair);border-radius:50%;background:none;box-shadow:none;color:var(--dim);transition:color .2s,border-color .2s}
+html.fit-wide .hmGear:hover{color:#e8c88c;border-color:var(--hair2)}
+html.fit-wide .hmHelp{font:500 15px var(--pcf);padding:0}
+html.fit-wide .hmHelp .bdg{top:-5px;right:-5px;position:absolute}
+/* ロゴ：縁どりをやめて明朝で */
+html.fit-wide .hmLogo{padding-top:clamp(18px,5vh,56px)}
+html.fit-wide .hmLogo small{font-family:var(--pcf);font-weight:500;font-size:12px;letter-spacing:.5em;color:#c9b08a;text-shadow:none;margin:0 0 14px 2px}
+html.fit-wide .hmLogo h1{font-family:var(--pcf);font-weight:800;font-size:clamp(46px,min(4.8vw,10vh),88px);letter-spacing:.14em;color:var(--ivory);-webkit-text-stroke:0;text-shadow:0 2px 24px rgba(0,0,0,.8)}
+html.fit-wide .hmLogo h1 span{color:#c9324c;text-shadow:0 0 28px rgba(201,50,76,.55);animation:none}
+html.fit-wide .hmLogo::after{content:"";display:block;width:clamp(180px,16vw,300px);height:1px;margin-top:18px;background:linear-gradient(90deg,var(--hair2),transparent)}
+/* タコのひとこと：白い吹き出しをやめる */
+html.fit-wide .hmMascot{width:clamp(52px,7vh,72px);height:clamp(52px,7vh,72px);animation:none;margin-bottom:6px}
+html.fit-wide .hmSay{left:calc(100% + 14px);bottom:50%;translate:0 50%;max-width:360px;padding:0 0 0 14px;border:0;border-left:1px solid var(--hair2);border-radius:0;background:none;box-shadow:none;font:500 13px/1.6 var(--pcf);letter-spacing:.06em;color:#d9cbb6;text-shadow:0 1px 6px #000}
+html.fit-wide .hmSay::before{display:none}
+/* 遊ぶボタン：小さく、線で */
+html.fit-wide .hmDock{width:clamp(320px,23vw,400px);gap:8px}
+html.fit-wide .hmBtns{gap:8px}
+html.fit-wide .hmMain,html.fit-wide .hmB,html.fit-wide .hmResume{font-family:var(--pcf);border-radius:2px;box-shadow:none;transition:background .2s,border-color .2s,color .2s,box-shadow .2s}
+html.fit-wide .hmMain{height:auto;padding:16px 22px 15px;flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;border:1px solid #b9475b;background:linear-gradient(100deg,rgba(128,22,44,.82),rgba(64,10,24,.72) 60%,rgba(30,6,12,.6));backdrop-filter:blur(4px);outline:1px solid rgba(232,200,140,.18);outline-offset:3px}
+html.fit-wide .hmMain::after{display:none}html.fit-wide .hmMain img,html.fit-wide .hmB img{display:none}
+html.fit-wide .hmMain b{font-family:var(--pcf);font-weight:700;font-size:clamp(20px,1.5vw,25px);letter-spacing:.22em;-webkit-text-stroke:0;text-shadow:none;color:#fff3e4}
+html.fit-wide .hmMain span{font:500 12px var(--pcf);letter-spacing:.1em;color:#e2b9bf;text-shadow:none}
+html.fit-wide .hmMain .miTag{position:static;order:3;flex:1 0 100%;transform:none;margin-top:8px;padding:8px 0 0;border:0;border-top:1px solid rgba(255,220,220,.2);border-radius:0;background:none;box-shadow:none;font:500 11.5px var(--pcf);letter-spacing:.14em;color:#e8c88c}
+html.fit-wide .hmMain:hover{transform:none;filter:none;border-color:#e58497;background:linear-gradient(100deg,rgba(158,28,54,.9),rgba(84,14,32,.8) 60%,rgba(40,8,16,.7));box-shadow:0 0 26px rgba(201,50,76,.35)}
+html.fit-wide .hmB{height:auto;padding:11px 6px;align-items:center;justify-content:center;border:1px solid var(--hair);background:rgba(10,4,7,.55);backdrop-filter:blur(4px);color:var(--ivory)}
+html.fit-wide .hmB b{font-family:var(--pcf);font-weight:500;font-size:13.5px;letter-spacing:.14em;-webkit-text-stroke:0;text-shadow:none}
+html.fit-wide .hmB:hover{transform:none;filter:none;border-color:var(--hair2);background:rgba(40,16,22,.7);color:#f3dcae}
+html.fit-wide .hmB:active,html.fit-wide .hmMain:active{transform:translateY(1px)}
+html.fit-wide .hmB .bdg{top:-6px;right:-4px}
+html.fit-wide .hmResume{font-weight:700;font-size:14px;letter-spacing:.1em;padding:11px 18px;border:1px solid var(--hair2);color:#f3dcae;background:rgba(40,26,10,.7);backdrop-filter:blur(4px)}
+html.fit-wide .hmResume small{font:500 12px var(--pcf);color:#d9cbb6}
+html.fit-wide .hmResume:hover{background:rgba(70,46,16,.8)}
+/* 右：箱をやめて、見出しと線だけ */
+html.fit-wide .hmPc{gap:clamp(18px,3vh,30px);padding-top:clamp(14px,3vh,30px)}
+html.fit-wide .hmPn{border:0;border-radius:0;padding:0;background:none;box-shadow:none}
+html.fit-wide .hmPn h2{margin:0 0 12px;padding-bottom:9px;border-bottom:1px solid var(--hair);font:700 13px var(--pcf);letter-spacing:.3em;color:#e8c88c;text-shadow:none}
+html.fit-wide .hmPn h2 small{font:500 11px var(--pcf);letter-spacing:.06em;color:var(--dim)}
+html.fit-wide .hmPn h2 button{font:500 11px var(--pcf);letter-spacing:.12em;color:var(--dim);background:none;border:0;border-radius:0;padding:0;transition:color .2s}
+html.fit-wide .hmPn h2 button::after{content:" →"}html.fit-wide .hmPn h2 button:hover{color:#e8c88c}
+html.fit-wide .hmMsnP .msnList{gap:11px}
+html.fit-wide .hmMsnP .msnList li{font:500 13px var(--pcf);letter-spacing:.04em;color:var(--ivory)}
+html.fit-wide .hmMsnP .msnBar{height:2px;margin-top:6px;border:0;border-radius:0;background:rgba(255,255,255,.1)}
+html.fit-wide .hmMsnP .msnBar i{background:#e8c88c!important}
+html.fit-wide .hmMsnP .msnN{font-family:var(--pcf);color:var(--dim)}
+html.fit-wide .hmNews .updList{gap:12px;font:500 12.5px/1.75 var(--pcf);letter-spacing:.03em;scrollbar-color:rgba(232,200,140,.3) transparent}
+html.fit-wide .hmNews .updList li{padding-bottom:12px;border-bottom:1px solid rgba(232,200,140,.1)}
+html.fit-wide .hmNews .updD{font:500 11px var(--pcf);letter-spacing:.16em;color:#c9b08a}
+html.fit-wide .hmNews .updT{color:#d9cbb6;-webkit-line-clamp:2}
+html.fit-wide .hmMsnP .coin{font:700 12px var(--pcf);color:#d9cbb6}
+html.fit-wide .hmMsnP .b{font:700 12px var(--pcf);letter-spacing:.06em;padding:3px 12px;border-radius:2px;border:1px solid var(--hair2);background:rgba(232,200,140,.12);color:#f3dcae;box-shadow:none;text-shadow:none}
+html.fit-wide .tabBar button{letter-spacing:.1em}
+html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;width:clamp(330px,25vw,440px);z-index:-1;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(8,3,5,.72) 30%)}
+
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1714,7 +1805,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111075943';
+const APP_VER='20261111081719';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4117,6 +4208,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:57,d:'2026-11-11',t:'PCのホーム画面の見た目を、落ちついた雰囲気に作り替えました。太い金ぶちと大きなボタンをやめて、細い線と明朝体に。ボタンも小さくなり、絵が広く見えます。'},
   {id:56,d:'2026-11-11',t:'音楽を、長く遊んでも疲れない落ちついた曲に替えました。ホーム2曲・対戦3曲からランダムに流れます。カードを引く音・出す音・めくる音・ターンの音も、すっきりした音に作り直しました。'},
   {id:55,d:'2026-11-11',t:'音をすべて作り直しました。ホーム・対戦・残りライフ1の音楽は、このゲームのために作ったオーケストラの曲に。カードを出す音、心臓が割れる音、襲撃、勝ち負けの曲など、効果音も重みのある音に入れ替えました。'},
   {id:54,d:'2026-11-11',t:'レジェンドのカードを、系統の色のままにしました（青＝情報、赤＝攻撃、緑＝防御…）。代わりに、絵の上で光の筋が回り、きらめきと虹の光沢が走ります。'},
