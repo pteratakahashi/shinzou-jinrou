@@ -1,4 +1,23 @@
-<!doctype html><html lang="ja"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="ja"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* 候補がつぶれる演出（2026-11-11） */
+.nwWrap{position:relative;z-index:1;width:min(92vw,520px);padding:14px 14px 16px;background:rgba(14,6,8,.94);border:1px solid var(--hair);box-shadow:0 18px 60px rgba(0,0,0,.6);animation:nwIn .26s ease-out both}
+.nwH{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;font-family:var(--pcf);color:var(--ivory)}
+.nwH b{font-size:17px;font-weight:700;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nwH span{font-size:13px;color:var(--dim);white-space:nowrap}.nwH em{font-style:normal;color:var(--gold);font-size:22px;font-weight:800;margin:0 2px}
+.nwWrap.me{border-color:rgba(224,80,96,.55)}.nwWrap.me .nwH b{color:#f0a8ae}
+.nwGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.nwT{position:relative;aspect-ratio:1/1;background:#1a0d10 var(--art) center 12%/cover no-repeat;border:1px solid var(--hair2);overflow:hidden;image-rendering:pixelated}
+.nwT span{position:absolute;left:0;right:0;bottom:0;padding:12px 2px 2px;font:500 10px/1.2 var(--body);text-align:center;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.9));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;image-rendering:auto}
+.nwT.dead{filter:grayscale(1) brightness(.26)}
+.nwT.gone{animation:nwCrush .5s cubic-bezier(.4,0,.8,.5) var(--d,0ms) both}
+.nwT.gone::after{content:'';position:absolute;inset:0;background:linear-gradient(45deg,transparent 45%,#e8455a 45% 55%,transparent 55%),linear-gradient(-45deg,transparent 45%,#e8455a 45% 55%,transparent 55%);opacity:0;animation:nwX .5s ease-out var(--d,0ms) both}
+@keyframes nwIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes nwCrush{0%{transform:none;filter:none}22%{transform:scale(1.14);filter:brightness(1.9)}55%{transform:scale(1.08,.18);filter:brightness(1.3)}75%{transform:scale(.92,1.04);filter:grayscale(.8) brightness(.5)}100%{transform:scale(.94);filter:grayscale(1) brightness(.3)}}
+@keyframes nwX{0%,45%{opacity:0;transform:scale(1.6)}60%{opacity:1;transform:none}100%{opacity:.6;transform:none}}
+html.fit-wide .nwWrap{width:min(64vw,760px);padding:18px 18px 20px}html.fit-wide .nwGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}html.fit-wide .nwT span{font-size:12px}html.fit-wide .nwH b{font-size:20px}
+@media (orientation:landscape) and (max-height:520px){.nwWrap{width:min(92vw,128vh);padding:8px 10px 10px}.nwGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.nwH{margin-bottom:6px}}
+@media (max-height:620px) and (orientation:portrait){.nwWrap{width:min(92vw,62vh)}}
+</style></head><body>
 <title>心臓人狼</title>
 <script>
 /* 引っ越し（pteratakahashi.github.io/shinzou-jinrou → shinzoujinro.com）。
@@ -1932,7 +1951,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111103134';
+const APP_VER='20261111104213';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1998,7 +2017,7 @@ const SFX=(()=>{
   // 名前: 音量
   const VOL={ui:.3,tab:.42,select:.45,draw:.6,flip:.55,set:.6,play:.75,turn:.5,coin:.6,res:.55,
     rare:.6,legend:.9,pack:.8,
-    call:.8,hit:1,miss:.7,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
+    call:.8,hit:1,miss:.7,crush:.8,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
     round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
   let ac=null,bus=null,hitAt=0;const raw={},buf={};
   for(const n in VOL)fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;raw[n]=ab;if(ac)dec(n)}).catch(()=>{});
@@ -2031,6 +2050,7 @@ const SFX=(()=>{
     // ライフが減る時：重い一撃（直前に当たりの音が鳴っていれば省く）→ 心臓がはじける瞬間に「パリン」
     lifeBreak(at=.85){if(Date.now()-hitAt>3500)p('hit',{wet:.15,v:.9});p('shatter',{when:at,wet:.22})},
     miss(){p('miss')},
+    crush(i=0,when=0){p('crush',{when,rate:1+Math.min(i,8)*.035,v:i?.85:1,wet:.08})},
     res(n=1){p('res',{rate:1+Math.min(3,n-1)*.12,wet:.3})},
     coin(){p('coin',{wet:.05})},
     trap(){p('trap',{wet:.25})},guard(){p('guard',{wet:.25})},raid(){p('raid',{wet:.2})},shatter(){p('shatter',{wet:.3})},heart(){p('heart',{wet:.1})},
@@ -2859,6 +2879,31 @@ async function fxPlay(k,who){
   const el=$('#fx .fxcard');if(el)el.classList.add('out-'+who);await sleep(330);fxClear();
 }
 async function fxBanner(who){const sp=S&&S.spec,t=who==='me'?(sp?`${MYN()}のターン`:'あなたのターン'):`${OPN()}のターン`;SFX.turn(who);await fxShow(`<div class="turnBand ${who}"><div class="tbEn">${sp?'TURN':who==='me'?'YOUR TURN':'ENEMY TURN'}</div><div class="tbJp">${t}</div><div class="tbShine"></div></div>`,1100);fxClear()}
+// 候補が絞られた時：その人の心臓の候補の盤面を出して、消えた候補をつぶす（2026-11-11）
+// target＝心臓を読まれている側（'me'／'cpu'）、all＝その人のデッキの種類、dead＝前から消えていた種類、gone＝今回消えた種類
+async function fxNarrow(target,all,dead,gone){
+  if(!S||S.sim||!Array.isArray(all)||!Array.isArray(gone))return;
+  all=all.filter(t=>C[t]);const D=new Set(Array.isArray(dead)?dead:[]),G=gone.filter(t=>all.includes(t)&&!D.has(t));
+  if(!G.length)return;
+  const left=all.length-D.size-G.length,step=Math.max(45,Math.min(120,800/G.length)),t0=520;
+  G.forEach((t,i)=>SFX.crush(i,(t0+i*step+80)/1000));
+  await fxShow(`<div class="dim"></div><div class="nwWrap ${target==='me'?'me':'cpu'}"><div class="nwH"><b>${target==='me'?MYN():OPN()}の心臓の候補</b><span>${left+G.length} → <em>${left}</em>種</span></div><div class="nwGrid n${all.length>15?'L':'S'}">${all.map(ty=>{const gi=G.indexOf(ty);return`<div class="nwT ${D.has(ty)?'dead':gi>=0?'gone':''}" style="--art:url(art/${ty}.png)${gi>=0?`;--d:${t0+gi*step}ms`:''}"><span>${C[ty].n}</span></div>`}).join('')}</div></div>`,t0+G.length*step+850);
+  fxClear();
+}
+const aliveOf=obs=>{const w=probs(obs).w;return Object.keys(w).filter(t=>w[t]>0)};
+// 前に見せた時より候補が減っていたら演出を出す。先に自分の心臓（コストでばれた分）、次に相手の心臓。silent は記録だけ
+async function candFx(silent){
+  if(!S||S.sim||S.guest||S.spec||!S.me.heart||!S.cpu.heart)return;
+  const g=S,seen=S.candSeen=S.candSeen||{};
+  for(const [obs,target] of [[S.cpu,'me'],[S.me,'cpu']]){
+    if(S!==g)return;
+    const now=aliveOf(obs),was=seen[target];seen[target]=now;
+    if(silent||!was||S.over)continue;
+    const gone=was.filter(t=>!now.includes(t));if(!gone.length)continue;
+    const all=typesOf(target==='me'?S.me:S.cpu);
+    await fxNarrow(target,all,all.filter(t=>!was.includes(t)),gone);
+  }
+}
 async function fxCall(t){SFX.call();await fxShow(`<div class="dim"></div><div class="guessCall">「${esc(t)}」</div>`,1100);fxClear()}
 async function fxStamp(t,cls,k){
   if(cls==='hit'){setTimeout(()=>{SFX.hit();hitstop(120);screenFlash('white');setTimeout(()=>screenFlash('red'),120);quake();FXC.burst('#ef5a68',100,12);FXC.burst('#ffffff',40,9);FXC.ring('#ef5a68');FXC.ring('#ffffff')},250)}
@@ -3022,7 +3067,7 @@ async function payCost(p,c,R){
       break;}
   }
 }
-async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.effDraw=(S.effDraw||0)+1;try{return await playCard0(p,c,copy)}finally{g.effDraw=Math.max(0,(g.effDraw||1)-1);if(S)S.decider=pv;if(S&&!copy&&czOn(p,'chain')){p.f.req=0;p.f.opt=0}}}
+async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.effDraw=(S.effDraw||0)+1;try{const r=await playCard0(p,c,copy);if(r!=='over')await candFx();return r}finally{g.effDraw=Math.max(0,(g.effDraw||1)-1);if(S)S.decider=pv;if(S&&!copy&&czOn(p,'chain')){p.f.req=0;p.f.opt=0}}}
 async function playCard0(p,c,copy=false){
   const o=opp(p),w=whoOf(p);
   S.me.f.reflect=S.cpu.f.reflect=false;
@@ -3033,7 +3078,7 @@ async function playCard0(p,c,copy=false){
   if(!C[c.type].single)p.chain=R?(p.chain||1)+1:1;
   act({who:w,kind:'play',k:c.type,res:R,copy:!!copy});
   if(R){log(`共鳴！（${at}の属性）`,w);await fxRes()}
-  await payCost(p,c,R);
+  await payCost(p,c,R);await candFx();
   if(copy&&czBlock(p,c.type,true)){log(`${czBlock(p,c.type,true)}ので、効果は出なかった。`,w);render();return}
   if(p.f.watched){
     const same=C[c.type].cat===C[p.heart.type].cat;const k=K(o);
@@ -3128,7 +3173,7 @@ async function playCard0(p,c,copy=false){
       render();await fxCall(N(ty));
       if(hasSet(o,'decoy')){await triggerSet(o);log('影武者が身代わりになった。暗殺は無効（当たり外れは明かされない）。',w);decoyPenalty(p);break}
       if(o.heart.type===ty){await resolveHit(p,o);break}
-      K(p).excluded.add(ty);await fxStamp('外れ','miss');
+      K(p).excluded.add(ty);await fxStamp('外れ','miss');candFx(true);
       if(R)log('暗殺失敗。共鳴により捨てなくてよい。',w);else log('暗殺失敗。手札を1枚捨てる。',w);for(let i=0;i<(R?0:1)&&p.hand.length;i++){const x=rand(p.hand);toDiscard(p,x);log(`${p.name}は〈${N(x.type)}〉を捨てた。`)}render();
       break;}
     case 'greatdet':{const cand=cands(p,5);log(`名探偵：${o.name}の心臓は ${cand.map(x=>'〈'+N(x)+'〉').join('')} のどれか。`,w);break}
@@ -3226,7 +3271,7 @@ async function doGuess(p,ty){
   log(`${p.name}は「${N(ty)}」と宣言した。`,w);render();await fxCall(N(ty));
   if(hasSet(o,'decoy')){await triggerSet(o);act({who:w,kind:'guess',k:ty,r:'void'});log('影武者が身代わりになった。宣言は無効（当たり外れは明かされない）。',w);decoyPenalty(p);render();return'miss'}
   if(o.heart.type===ty){act({who:w,kind:'guess',k:ty,r:'hit'});return resolveHit(p,o)}
-  act({who:w,kind:'guess',k:ty,r:'miss'});K(p).excluded.add(ty);await fxStamp('外れ','miss');log('外れ。',w);
+  act({who:w,kind:'guess',k:ty,r:'miss'});K(p).excluded.add(ty);await fxStamp('外れ','miss');candFx(true);log('外れ。',w);
   if(p.f.curse){p.f.curse=false;p.life=Math.max(0,p.life-1);S.shake=w;log(`呪術師の反動。${p.name}のライフ-1（残り${p.life}）`,w);render();if(p.life<=0){await gameOver(o);return'over'}}
   if(hasSet(o,'watchman')){await triggerSet(o);draw(o,2);learnNot(o,3,'夜警');log(`夜警：${o.name}は2枚引いた。`,whoOf(o))}
   if(p.f.safe){p.f.safe=false;log('ペナルティなし。')}
@@ -4339,6 +4384,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:60,d:'2026-11-11',t:'カードの効果やコストで心臓の候補が絞られると、候補の盤面が出て、消えた候補がつぶれる演出が入るようになりました（音つき）。'},
   {id:59,d:'2026-11-11',t:'ライフが減る時の音を作り直しました。重い一撃のあと、心臓が「パリン」と割れます。'},
   {id:58,d:'2026-11-11',t:'友達と対戦に「パックを7つ開けて組む」が戻ってきました。その場で開けたカードからデッキを組むので、持っていないカードも使えます（この対戦はランクに関係しません）。'},
   {id:57,d:'2026-11-11',t:'見た目を全部作り替えました。太い金ぶち・縁どり文字・大きなボタンをやめて、細い線と明朝体の落ちついた雰囲気に。スマホ・タブレット・PCのホーム、カード、ショップ、対戦画面まで、すべて同じ雰囲気でそろえています。'},
@@ -4743,11 +4789,11 @@ function hostCmd(m){
 }
 // 演出はホストで呼ばれたらゲストにも同じものを流す（入れ子で呼ばれた分は送らない）
 let MXin=0;
-['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight'].forEach(n=>{
+['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow'].forEach(n=>{
   const f=window[n];
   window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a})}MXin++;try{return await f(...a)}finally{MXin--}};
 });
-const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight']);
+const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow']);
 
 /* ゲスト側 */
 function guestApply(sn){
