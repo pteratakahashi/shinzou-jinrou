@@ -1714,7 +1714,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111060108';
+const APP_VER='20261111075943';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -1778,10 +1778,10 @@ const sndOn=()=>SV.sound!==false;
    ページを開いたら先に読みこみ、最初のタップで音の出口（AudioContext）を作って使える形にする。圧縮（コンプレッサー）と残響を通す */
 const SFX=(()=>{
   // 名前: 音量
-  const VOL={ui:.3,tab:.42,select:.5,draw:.5,flip:.6,set:.7,coin:.6,res:.55,
-    play_info:.8,play_atk:.8,play_grd:.8,play_sup:.8,play_cur:.8,rare:.6,legend:.9,pack:.8,
+  const VOL={ui:.3,tab:.42,select:.45,draw:.6,flip:.55,set:.6,play:.75,turn:.5,coin:.6,res:.55,
+    rare:.6,legend:.9,pack:.8,
     call:.8,hit:1,miss:.7,trap:.85,guard:.85,raid:.9,shatter:1,heart:.9,
-    turn_me:.6,turn_cpu:.7,round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
+    round:.85,final:.9,match:.85,ko:1,jingle_win:.8,jingle_lose:.8};
   let ac=null,bus=null;const raw={},buf={};
   for(const n in VOL)fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;raw[n]=ab;if(ac)dec(n)}).catch(()=>{});
   function dec(n){const ab=raw[n];if(!ab)return;delete raw[n];try{ac.decodeAudioData(ab,b=>{buf[n]=b},()=>{})}catch(e){}}
@@ -1803,10 +1803,10 @@ const SFX=(()=>{
     p,ctx,unlock(){ctx()},
     ui(){p('ui',{wet:0})},tab(){p('tab',{wet:0})},
     select(){p('select',{wet:.05})},
-    draw(n=1){for(let i=0;i<Math.min(n,4);i++)p('draw',{when:i*.11,rate:1+i*.04,wet:.05})},
+    draw(n=1){for(let i=0;i<Math.min(n,4);i++)p('draw',{when:i*.13,rate:1+i*.05,v:i?.8:1,wet:.06})},
     flip(){p('flip',{wet:.08})},
     set(){p('set')},
-    play(cat,r='C'){p({info:'play_info',atk:'play_atk',grd:'play_grd',sup:'play_sup',cur:'play_cur'}[cat]||'play_sup',{wet:.2});if(r==='R'||r==='L')p('rare',{v:.7,when:.35,wet:.3})},
+    play(cat,r='C'){p('play',{wet:.1});if(r==='R'||r==='L')p('rare',{v:.7,when:.35,wet:.3})},
     legend(){p('legend',{wet:.3})},
     rare(){p('rare',{wet:.3})},
     hit(){p('hit',{wet:.25})},
@@ -1814,7 +1814,7 @@ const SFX=(()=>{
     res(n=1){p('res',{rate:1+Math.min(3,n-1)*.12,wet:.3})},
     coin(){p('coin',{wet:.05})},
     trap(){p('trap',{wet:.25})},guard(){p('guard',{wet:.25})},raid(){p('raid',{wet:.2})},shatter(){p('shatter',{wet:.3})},heart(){p('heart',{wet:.1})},
-    turn(who){p(who==='cpu'?'turn_cpu':'turn_me',{wet:.2})},
+    turn(){p('turn',{wet:.15})},
     call(){p('call',{wet:.3})},
     round(fin){p(fin?'final':'round',{wet:.3})},match(){p('match',{wet:.3})},ko(){p('ko',{wet:.3})},
     win(){p('jingle_win',{wet:0})},
@@ -1823,19 +1823,22 @@ const SFX=(()=>{
   };
 })();
 /* ---- BGM（2026-11-11 作り替え）----
-   ElevenLabs で作ったこのゲーム用のオリジナル曲（audio/bgm_NAME.mp3）。menu：赤い月の村／battle：対戦／crisis：どちらかのライフが1。
+   ElevenLabs で作ったこのゲーム用のオリジナル曲（audio/bgm_NAME.mp3）。長く遊んでも疲れない落ちついた曲を、ホーム用（menu1…）と対戦用（battle1…）に何曲かずつ。
+   ホームに戻るたび・対戦に入るたびに、前と違う曲をランダムに選ぶ。ライフ1での曲の切りかえはやめた（鼓動の音だけ鳴る）。
    曲は頭から鳴らし、BGM_LOOP の s〜e（秒）を継ぎ目なく繰り返す（位置は ~/shinzou-jinrou/audio/finish_audio.py が決める）。
    曲は使うときに読みこみ、使わなくなったら手放す（スマホのメモリを食わないように） */
-const BGM_LOOP={"battle":{"s":21.2402,"e":85.5613},"crisis":{"s":24.1502,"e":66.2701},"menu":{"s":17.7467,"e":89.7594}};
+const BGM_LOOP={"menu1":{"s":21.5045,"e":76.3655},"menu2":{"s":22.468,"e":76.4654},"battle1":{"s":9.748,"e":84.7617},"battle2":{"s":24.2242,"e":67.8693},"battle3":{"s":4.85,"e":88.8598}};
 const bgmOn=()=>SV.bgm!==false;
 const BGM=(()=>{
-  let ac=null,out=null,cur=null,want=null,hot=false;const buf={},pend={};
+  let ac=null,out=null,cur=null,want=null,pick=null,hot=false;const buf={},pend={},last={};
   function ctx(){
     if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();out=ac.createGain();out.gain.value=vol();out.connect(ac.destination)}catch(e){return null}}
     if(ac.state==='suspended')ac.resume();return ac;
   }
   const vol=()=>(SV.bgmVol==null?.55:SV.bgmVol)*.55;
-  const track=()=>want==='battle'&&hot?'crisis':want;
+  // 場面（menu／battle）の曲から、前と違うものをランダムに1つ
+  function choose(w){const all=Object.keys(BGM_LOOP).filter(k=>k.replace(/\d+$/,'')===w),c=all.filter(k=>k!==last[w]);const l=c.length?c:all;return last[w]=l[Math.floor(Math.random()*l.length)]||null}
+  const track=()=>pick;
   function load(n){return buf[n]?Promise.resolve():pend[n]||(pend[n]=fetch('audio/bgm_'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>ac.decodeAudioData(ab,res,rej))).then(b=>{buf[n]=b;delete pend[n]}).catch(()=>{delete pend[n]}))}
   function fadeOut(c,sec){if(!c)return;const t=ac.currentTime;c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+sec);try{c.src.stop(t+sec+.05)}catch(e){}}
   function sync(){
@@ -1844,17 +1847,17 @@ const BGM=(()=>{
     if(!ctx())return;
     if(cur&&cur.name===n)return;
     if(!buf[n]){load(n).then(()=>{if(buf[n]&&track()===n)sync()});return}
-    fadeOut(cur,n==='crisis'?.5:.9);
+    fadeOut(cur,.9);
     const src=ac.createBufferSource(),g=ac.createGain(),L=BGM_LOOP[n],t=ac.currentTime;
     src.buffer=buf[n];src.loop=true;src.loopStart=L.s;src.loopEnd=L.e;
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+(n==='crisis'?.5:1.2));
-    src.connect(g).connect(out);src.start(t,n==='crisis'?L.s:0);cur={name:n,src,g};
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+1.2);
+    src.connect(g).connect(out);src.start(t,0);cur={name:n,src,g};
     // いらない曲を手放し、次に要りそうな曲を先に読む
-    if(want==='battle'){delete buf.menu;load('crisis')}else{delete buf.battle;delete buf.crisis}
+    for(const k in buf)if(k!==n)delete buf[k];
   }
   function master(v,sec){if(!ac)return;const g=out.gain,t=ac.currentTime;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(v,t+sec)}
   return{
-    set(name){want=name;if(!name)hot=false;if(ac)sync()},
+    set(name){if(name!==want){want=name;pick=name?choose(name):null}if(!name)hot=false;if(ac)sync()},
     unlock(){if(bgmOn()&&want&&(!ac||!cur))sync()},
     hot(v){v=!!v;if(v===hot)return;hot=v;if(v&&want==='battle')SFX.heart();if(ac)sync()},
     toggle(){SV.bgm=!bgmOn();save();sync()},
@@ -4114,7 +4117,8 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:52,d:'2026-11-11',t:'音をすべて作り直しました。ホーム・対戦・残りライフ1の音楽は、このゲームのために作ったオーケストラの曲に。カードを出す音、心臓が割れる音、襲撃、勝ち負けの曲など、効果音も重みのある音に入れ替えました。'},
+  {id:56,d:'2026-11-11',t:'音楽を、長く遊んでも疲れない落ちついた曲に替えました。ホーム2曲・対戦3曲からランダムに流れます。カードを引く音・出す音・めくる音・ターンの音も、すっきりした音に作り直しました。'},
+  {id:55,d:'2026-11-11',t:'音をすべて作り直しました。ホーム・対戦・残りライフ1の音楽は、このゲームのために作ったオーケストラの曲に。カードを出す音、心臓が割れる音、襲撃、勝ち負けの曲など、効果音も重みのある音に入れ替えました。'},
   {id:54,d:'2026-11-11',t:'レジェンドのカードを、系統の色のままにしました（青＝情報、赤＝攻撃、緑＝防御…）。代わりに、絵の上で光の筋が回り、きらめきと虹の光沢が走ります。'},
   {id:53,d:'2026-11-11',t:'ホーム右のアイコンを小さく整理しました。「遊び方」は上のバーの「?」ボタンと設定の中に移りました。'},
   {id:52,d:'2026-11-11',t:'相手の手札の枚数を、数字で大きく出すようにしました（0枚のときは赤くなります）。'},
