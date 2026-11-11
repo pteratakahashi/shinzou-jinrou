@@ -1558,6 +1558,42 @@ html.fit-land .hmIc i,html.fit-wide .hmIc i{width:34px;height:34px;padding:7px}
 html.fit-wide .hmIc{width:auto}
 html.fit-wide .hmHelp{font-size:20px}
 @media (prefers-reduced-motion:reduce){.hmHelp.glow{animation:none}}
+
+/* ===== レジェンド（系統のあるカード）：色は系統のまま。絵の上に 回る光の筋・きらめき・虹の光沢 を重ねて豪華にする =====
+   枠は系統の色の金属光沢。レアリティで色を変えるのは名札と右上の印だけ */
+.tcg.r-L.lg{outline:0;border:.3em solid transparent;
+  background:linear-gradient(170deg,color-mix(in srgb,var(--cc) 34%,#1a1f3c),color-mix(in srgb,var(--cc) 12%,#0d1024)) padding-box,
+    conic-gradient(from var(--la),var(--cc),#fff 8%,var(--cc) 18%,color-mix(in srgb,var(--cc) 55%,#000) 34%,var(--cc) 50%,#fff3c4 58%,var(--cc) 68%,color-mix(in srgb,var(--cc) 55%,#000) 84%,var(--cc)) border-box;
+  box-shadow:0 0 .9em color-mix(in srgb,var(--cc) 75%,transparent),0 0 1.8em color-mix(in srgb,var(--cc) 35%,transparent),0 .35em .9em rgba(0,0,0,.5);animation:legRot 5s linear infinite}
+.tcg.r-L.lg .tname{background:linear-gradient(90deg,#4a2a00,#8a6418 50%,#4a2a00);color:#fff1c4}
+.tcg.r-L.lg .tart{isolation:isolate;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--cc) 85%,#fff 15%),color-mix(in srgb,var(--cc) 30%,#0a0d1c) 78%);box-shadow:0 0 0 .07em color-mix(in srgb,var(--cc) 60%,#fff) inset}
+.tcg.r-L.lg .tart img{z-index:0}
+.tcg.r-L.lg .catl{z-index:4;background:rgba(10,13,28,.78);color:var(--ink);font-weight:400}
+.tcg.r-L.lg .ttext{background:rgba(0,0,0,.42);box-shadow:none}
+/* 絵のうしろから差す、ゆっくり回る光の筋 */
+.tcg.r-L.lg .tart::before{content:"";position:absolute;left:50%;top:42%;width:230%;aspect-ratio:1;translate:-50% -50%;z-index:1;pointer-events:none;mix-blend-mode:screen;
+  background:repeating-conic-gradient(from var(--la),rgba(255,246,210,0) 0 8deg,rgba(255,246,210,.3) 11deg 14deg,rgba(255,246,210,0) 17deg 30deg);
+  -webkit-mask-image:radial-gradient(circle,transparent 20%,#000 36%,transparent 66%);mask-image:radial-gradient(circle,transparent 20%,#000 36%,transparent 66%);animation:legRot 16s linear infinite}
+/* 絵の上のきらめき（2組が時間差でまたたく） */
+.tcg.r-L.lg .tart::after,.tcg.r-L.lg::before{content:"";position:absolute;pointer-events:none;z-index:3;mix-blend-mode:screen;
+  background:
+   radial-gradient(circle,#fff 0 .1em,rgba(255,244,190,.9) .15em,transparent .5em) 14% 18%/1.6em 1.6em no-repeat,
+   radial-gradient(circle,#fff 0 .07em,rgba(255,244,190,.85) .11em,transparent .36em) 80% 12%/1.2em 1.2em no-repeat,
+   radial-gradient(circle,#fff 0 .08em,rgba(190,235,255,.85) .12em,transparent .42em) 66% 60%/1.4em 1.4em no-repeat,
+   radial-gradient(circle,#fff 0 .07em,rgba(255,200,240,.85) .11em,transparent .36em) 22% 74%/1.2em 1.2em no-repeat,
+   radial-gradient(circle,#fff 0 .06em,rgba(255,244,190,.85) .1em,transparent .3em) 90% 82%/1.1em 1.1em no-repeat;
+  animation:legTwinkle 2.6s ease-in-out infinite}
+.tcg.r-L.lg .tart::after{inset:0}
+.tcg.r-L.lg::before{inset:16% 6% 14% 6%;transform:scaleX(-1);animation-duration:3.4s;animation-delay:-1.3s}
+@keyframes legTwinkle{0%,100%{opacity:0;scale:.7}45%{opacity:1;scale:1.08}60%{opacity:.85;scale:1}}
+/* カード全体をなでる虹の光沢 */
+.tcg.r-L.lg::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(112deg,transparent 42%,rgba(255,120,200,.14) 45.500%,rgba(255,248,214,.38) 49%,rgba(140,230,255,.16) 52.500%,transparent 56%);background-size:320% 100%;animation:legSweep 4.2s ease-in-out infinite}
+@keyframes legSweep{0%{background-position:125% 0}55%,100%{background-position:-135% 0}}
+/* 小さく出るところ（盤面の小さい札・推理表・履歴）は、光沢だけにして軽くする */
+.tcg.s.r-L.lg .tart::before,.tcg.s.r-L.lg .tart::after,.tcg.s.r-L.lg::before{display:none}
+@media (prefers-reduced-motion:reduce){.tcg.r-L.lg,.tcg.r-L.lg::before,.tcg.r-L.lg::after,.tcg.r-L.lg .tart::before,.tcg.r-L.lg .tart::after{animation:none}.tcg.r-L.lg::before,.tcg.r-L.lg .tart::after{opacity:.8}.tcg.r-L.lg::after{display:none}}
+body.resultOn #app .tcg.r-L.lg::before,body.resultOn #app .tcg.r-L.lg .tart::after{opacity:.8}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1678,7 +1714,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111031244';
+const APP_VER='20261111032704';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4157,6 +4193,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:54,d:'2026-11-11',t:'レジェンドのカードを、系統の色のままにしました（青＝情報、赤＝攻撃、緑＝防御…）。代わりに、絵の上で光の筋が回り、きらめきと虹の光沢が走ります。'},
   {id:53,d:'2026-11-11',t:'ホーム右のアイコンを小さく整理しました。「遊び方」は上のバーの「?」ボタンと設定の中に移りました。'},
   {id:52,d:'2026-11-11',t:'相手の手札の枚数を、数字で大きく出すようにしました（0枚のときは赤くなります）。'},
   {id:51,d:'2026-11-11',t:'PCのホーム画面を、PC用の配置に作り替えました。横長の絵が画面いっぱいに広がり、左にメニュー、右にデイリーミッションとお知らせが並びます。ホームから「友達と対戦」もすぐ選べます。'},
