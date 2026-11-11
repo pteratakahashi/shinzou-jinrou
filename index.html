@@ -1595,6 +1595,133 @@ html.fit-wide .hmHelp{font-size:20px}
 @media (prefers-reduced-motion:reduce){.tcg.r-L.lg,.tcg.r-L.lg::before,.tcg.r-L.lg::after,.tcg.r-L.lg .tart::before,.tcg.r-L.lg .tart::after{animation:none}.tcg.r-L.lg::before,.tcg.r-L.lg .tart::after{opacity:.8}.tcg.r-L.lg::after{display:none}}
 body.resultOn #app .tcg.r-L.lg::before,body.resultOn #app .tcg.r-L.lg .tart::after{opacity:.8}
 
+/* ================= 落ちついた見た目・全画面（2026-11-11）=================
+   プテラ「ホームがこの雰囲気になるなら、全部この雰囲気で一新したい。どの機種でも破綻がないように」。
+   APP SKIN（太い金ぶち・縁どり文字・立体ボタン）を上書きする。細い金の線、明朝体、平らで小さめのボタン、余白。
+   スマホ・タブレット・横向き・PC すべてに効く。PC のホームだけの指定は上の「PC の落ちついた見た目」 */
+:root{
+  --pcf:"Shippori Mincho B1","Zen Antique","Yu Mincho","Hiragino Mincho ProN",serif;
+  --game:var(--pcf);
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --hair:rgba(232,200,140,.28);--hair2:rgba(232,200,140,.6);--ivory:#efe4d2;--dim:#a8998a;--gold:#e8c88c;
+  --table:#0e0609;--panel:#1c0d12;--panel2:#2a141b;--line:rgba(232,200,140,.2);--muted:#a8998a;--candle:#e8c88c;--ink:#efe4d2;
+  --frame:linear-gradient(180deg,rgba(232,200,140,.55),rgba(232,200,140,.3));
+}
+h1,h2,h3,.top h1{font-weight:700;letter-spacing:.14em;color:var(--ivory);text-shadow:none}
+/* ボタン：平らで、線1本 */
+.b{font-family:var(--pcf);font-weight:700;letter-spacing:.12em;border-radius:2px;padding:10px 18px;border:1px solid var(--hair2);color:var(--ivory);
+  background:rgba(24,9,14,.72);box-shadow:none;text-shadow:none;transition:background .2s,border-color .2s,color .2s,transform .08s}
+.b:not(:disabled):hover{filter:none;border-color:#f3dcae;background:rgba(52,22,30,.8);color:#f8e8c8}
+.b:not(:disabled):active{transform:translateY(1px);box-shadow:none}
+.b.primary{color:#fff3e4;border-color:#b9475b;text-shadow:none;background:linear-gradient(100deg,rgba(140,24,48,.92),rgba(78,13,30,.9));box-shadow:none}
+.b.primary:not(:disabled):hover{border-color:#e58497;background:linear-gradient(100deg,rgba(168,30,58,.95),rgba(96,16,36,.92));color:#fff;box-shadow:0 0 18px rgba(201,50,76,.3)}
+.b.primary:not(:disabled):active{box-shadow:none}
+.b.danger{color:#f0a5b2;border-color:#a8485a;background:rgba(60,10,22,.5);box-shadow:none}
+.b.small{padding:6px 12px;font-size:12px;border-radius:2px;font-family:var(--pcf);font-weight:700;letter-spacing:.08em}
+.b:disabled{filter:none;opacity:.4}
+.xBtn{background:none!important;border:1px solid var(--hair)!important;color:var(--dim)!important;box-shadow:none;border-radius:50%}
+/* パネル：細い線と暗いガラス */
+.prof,.zone,.rankCard,.msnBox,.updBox,.ocStage,.sheet,.onCard,.shopIt,.altIt,.ocOpt,.ttOpt,.mi{
+  border:1px solid var(--hair)!important;border-radius:3px;
+  background:linear-gradient(180deg,rgba(34,13,19,.94),rgba(13,5,8,.96))!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.45)}
+.sheet{background:linear-gradient(180deg,rgba(38,14,21,.97),rgba(12,5,8,.98))!important}
+.label{font-family:var(--pcf);font-weight:700;letter-spacing:.22em;color:var(--gold)}
+.mi{padding:14px 16px;min-height:76px}
+.mi b{font-family:var(--pcf);font-weight:700;font-size:19px;letter-spacing:.16em;color:#fff3e4;text-shadow:none}
+.mi span{color:#cbbba6;font-weight:500}
+.mi.main{background:linear-gradient(180deg,rgba(34,13,19,.94),rgba(13,5,8,.96))!important}
+.mi.rank{border-color:#b9475b!important;background:linear-gradient(100deg,rgba(128,22,44,.9),rgba(64,10,24,.88) 60%,rgba(30,6,12,.9))!important;box-shadow:0 12px 34px rgba(0,0,0,.45)!important}
+.mi.big b{font-size:clamp(22px,5.4vw,28px)}
+.mi:not(:disabled):active{transform:translateY(1px)}
+.mi img{opacity:.6}
+.battleSel .mi{min-height:70px}.battleSel .mi.big{min-height:92px}.battleSel .mi.big b{font-size:clamp(22px,5.4vw,28px)}
+.miTag{font:700 11px var(--pcf);letter-spacing:.1em;color:var(--gold);background:rgba(10,4,6,.6);border:1px solid var(--hair2);border-radius:2px;padding:2px 8px;box-shadow:none;transform:none}
+.coin{font-family:var(--pcf);font-weight:700;letter-spacing:.04em;border:1px solid var(--hair);background:rgba(10,4,6,.5);box-shadow:none;color:var(--ivory)}
+.coin i{box-shadow:none;background:radial-gradient(circle at 35% 30%,#fff,#c9d0de 45%,#7d859f)}
+.ptitle,.prank{font-family:var(--pcf);font-weight:500;letter-spacing:.08em;border-radius:2px;background:none}
+.ptitle{border-color:var(--hair);color:#d9c39a}
+.shopH{display:block;font-size:14px;margin:26px 0 12px;padding:0 0 9px;color:var(--gold);letter-spacing:.3em;text-shadow:none;background:none;clip-path:none;border-bottom:1px solid var(--hair)}
+.chip{font-family:var(--pcf);font-weight:700;letter-spacing:.06em;border-width:1px;border-radius:2px}
+.bdg{min-width:16px;height:16px;padding:0 4px;border:0;border-radius:8px;font:700 10px/16px var(--pcf);background:#b3263f;box-shadow:none}
+.msnBar{height:2px;border:0;border-radius:0;background:rgba(255,255,255,.1)}
+.msnBar i{background:var(--gold)!important}
+/* 下のタブ */
+.tabBar{background:linear-gradient(180deg,rgba(18,7,10,.96),rgba(8,3,5,.98))!important;border-top:1px solid var(--hair)!important;border-image:none!important;box-shadow:none}
+.tabBar button{font-family:var(--pcf);font-weight:500;font-size:10.5px;letter-spacing:.1em;color:var(--dim)}
+.tabBar button svg{width:21px;height:21px;stroke-width:1.2}
+.tabBar button.on{color:var(--gold)}.tabBar button.on svg{filter:none}
+.tabBar button.on::before{top:-7px;left:50%;width:30px;height:1px;translate:-50% 0;border-radius:0;background:var(--gold);box-shadow:0 0 8px rgba(232,200,140,.7);z-index:0}
+.tabBar .tbBattle{width:72px;max-width:72px;margin-top:-16px;color:var(--ivory)}
+.tabBar .tbBattle i{position:relative;width:48px;height:48px;border-radius:0;border:0;background:none;box-shadow:none;animation:none;font-family:var(--pcf);font-weight:700;font-size:13px;letter-spacing:.08em;text-shadow:none;color:#f6d5da}
+.tabBar .tbBattle i::before{content:"";position:absolute;inset:5px;rotate:45deg;border:1px solid #c9566a;background:linear-gradient(135deg,#7a1630,#3a0a16);box-shadow:0 0 16px rgba(201,50,76,.35);z-index:-1}
+.tabBar .tbBattle span{margin-top:0;color:var(--dim)}
+/* ホーム（スマホ・タブレット・横向き。PC は上のブロックが上書きする） */
+@media (min-width:600px){.hm{border-left:1px solid var(--hair);border-right:1px solid var(--hair)}}
+.hmTop{gap:10px;padding:5px 10px 5px 6px;border:1px solid var(--hair);border-radius:3px;background:rgba(10,4,6,.72);box-shadow:none;backdrop-filter:blur(4px)}
+.hmAv{border:1px solid var(--hair2);box-shadow:none;width:42px;height:42px}
+.hmId b{font-family:var(--pcf);font-weight:700;letter-spacing:.06em;color:var(--ivory);text-shadow:none}
+.hmGear{border:1px solid var(--hair);border-radius:50%;background:none;box-shadow:none;color:var(--dim);width:34px;height:34px;padding:7px}
+.hmGear svg,.hmIc svg{stroke-width:1.3}
+.hmHelp{font:500 15px var(--pcf);padding:0}
+.hmEvt{border-radius:0;border:0;border-left:1px solid var(--hair2);background:linear-gradient(90deg,rgba(10,4,6,.82),rgba(10,4,6,.5) 70%,transparent);box-shadow:none;padding:6px 10px 7px 12px}
+.hmEvt b{font-weight:700;font-size:11px;letter-spacing:.3em;color:var(--gold)}
+.hmEvt span{font-size:11px;color:#d9cbb6}
+.hmIc i{border:1px solid var(--hair2);background:rgba(10,4,6,.7);box-shadow:none;color:#e3cfa6;backdrop-filter:blur(3px)}
+.hmIc span{font-family:var(--pcf);font-weight:500;letter-spacing:.06em;color:#e6dac6}
+@keyframes icGlow{50%{box-shadow:0 0 14px rgba(232,200,140,.8)}}
+.hmLogo small{font-family:var(--pcf);font-weight:500;letter-spacing:.4em;color:#d3bd98;text-shadow:0 1px 6px #000}
+.hmLogo h1{font-family:var(--pcf);font-weight:800;letter-spacing:.12em;color:var(--ivory);-webkit-text-stroke:0;text-shadow:0 2px 18px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.8)}
+.hmLogo h1 span{color:#d43a55;animation:none}
+.hmMascot{width:64px;height:64px;bottom:176px;animation:none}
+.hmSay{left:72px;bottom:18px;padding:0 0 0 10px;border:0;border-left:1px solid var(--hair2);border-radius:0;background:none;box-shadow:none;font:500 11.5px/1.5 var(--pcf);letter-spacing:.04em;color:#e6dac6;text-shadow:0 1px 5px #000,0 0 2px #000}
+.hmSay::before{display:none}
+.hmB,.hmMain,.hmResume{font-family:var(--pcf);border-radius:2px;box-shadow:none}
+.hmB{height:44px;justify-content:center;border:1px solid var(--hair);background:rgba(10,4,7,.72);backdrop-filter:blur(4px);color:var(--ivory)}
+.hmMain{height:96px;border:1px solid #b9475b;background:linear-gradient(100deg,rgba(128,22,44,.9),rgba(64,10,24,.82) 60%,rgba(30,6,12,.7));backdrop-filter:blur(4px);box-shadow:none}
+.hmMain::after{display:none}
+.hmB img{display:none}.hmMain img{opacity:.38;height:120%;filter:saturate(.7)}
+.hmB b,.hmMain b{font-family:var(--pcf);font-weight:700;font-size:14px;letter-spacing:.12em;-webkit-text-stroke:0;text-shadow:none}
+.hmMain b{font-size:clamp(19px,5.4vw,24px);letter-spacing:.18em;color:#fff3e4}
+.hmMain span{font:500 11px var(--pcf);letter-spacing:.08em;color:#e2b9bf;text-shadow:none}
+.hmB:active,.hmMain:active{transform:translateY(1px)}
+.hmResume{font-weight:700;letter-spacing:.08em;border:1px solid var(--hair2);color:#f3dcae;background:rgba(40,26,10,.78);backdrop-filter:blur(4px)}
+.hmResume small{font:500 11px var(--pcf);color:#d9cbb6}
+@media (max-height:660px){.hmB{height:40px}.hmMain{height:88px}.hmMascot{bottom:150px}}
+@media (max-height:560px){.hmB{height:36px}.hmMain{height:80px}.hmAv{width:36px;height:36px}.hmGear{width:30px;height:30px}}
+.ocLink{border:1px solid var(--hair2)!important;border-radius:3px!important;background:linear-gradient(100deg,rgba(52,22,30,.9),rgba(20,8,12,.9))!important;box-shadow:none!important}
+.ocLink b{font-family:var(--pcf);font-weight:700;letter-spacing:.14em}
+/* 対戦画面 */
+.btTurn{font-family:var(--pcf);font-weight:700;letter-spacing:.14em;border-radius:2px;border:1px solid var(--hair);color:var(--dim);background:rgba(10,4,6,.5)}
+.btTurn.me{color:#f3dcae;background:rgba(232,200,140,.14);border-color:var(--hair2);box-shadow:none}
+.btTurn.op{color:#f0a5b2;background:rgba(160,30,54,.28);border-color:#a8485a}
+.ib{border:1px solid var(--hair);border-radius:2px;background:rgba(10,4,6,.5);box-shadow:none;color:#d9cbb6;font-family:var(--pcf);font-weight:700;letter-spacing:.1em}
+.ib:active{transform:translateY(1px);box-shadow:none}
+.ib svg,.mrow svg{stroke-width:1.4}
+.btMenu{border:1px solid var(--hair2);border-radius:3px;background:linear-gradient(180deg,rgba(38,14,21,.98),rgba(12,5,8,.98))}
+.mrow{border-radius:2px;border:1px solid var(--hair);color:var(--ivory);font:700 13px var(--pcf);letter-spacing:.08em}
+.mrow em{border-radius:2px}.mrow em.on{background:rgba(232,200,140,.85);color:#2a1405}
+.mrow.danger{color:#f0a5b2;border-color:#a8485a}
+html.fit-p .btAct .detail:not(.ph),html.fit-land .btAct .detail:not(.ph),html.fit-tab .btAct .detail:not(.ph),html.fit-ws .btAct .detail:not(.ph){border:1px solid var(--hair2);border-radius:3px}
+.ohN{border:1px solid var(--hair);border-radius:2px;background:rgba(10,4,6,.5);box-shadow:none;color:var(--ivory)}
+.ohN b{font-family:var(--pcf);font-weight:700;text-shadow:none;color:var(--ivory)}
+html.fit-tight .ohN,html.fit-land .ohN{border-radius:2px}
+.lives{border-radius:2px!important}
+.lfN{font-family:var(--pcf);font-weight:700;text-shadow:none}
+.turnBand{background:linear-gradient(90deg,transparent,rgba(8,3,5,.95) 12%,rgba(8,3,5,.95) 88%,transparent);border-top-width:1px;border-bottom-width:1px}
+.tbEn{font-family:var(--pcf);font-weight:700;font-style:normal;letter-spacing:.2em;text-shadow:0 0 22px var(--tc)}
+.trivia b{color:var(--gold);font-weight:700;letter-spacing:.2em}
+html.fit-wide .btField::before{border-width:1px}
+html.fit-wide .btField::after{font-weight:700;letter-spacing:.2em;color:var(--ivory);-webkit-text-stroke:0;text-shadow:0 0 22px rgba(201,50,76,.6)}
+html.fit-wide .fldEmpty{border:1px dashed var(--hair);border-radius:3px}
+html.fit-wide .bt .btMid>.sh .label,html.fit-w3 .drawer .label{color:var(--gold);font-weight:700;letter-spacing:.2em}
+html.fit-wide .bt .btMid .tt{border:1px solid var(--hair);border-radius:2px;box-shadow:none}
+#boot b{font-family:var(--pcf);font-weight:800;letter-spacing:.14em;color:var(--ivory);text-shadow:0 2px 18px rgba(0,0,0,.9)}
+.result .big{font-family:var(--pcf);font-weight:800;letter-spacing:.14em}
+body.inBattle .b{border-radius:2px!important}
+.bt .zone,.btAct .detail{border-radius:3px!important}
+.bt .tt{border-radius:2px!important}
+
 /* ================= PC の落ちついた見た目（2026-11-11）=================
    プテラ「PC のボタンが大きく、世界観に合っていない。読み合いが好きな層に刺さる、洗練された UI に」。
    太い金ぶち・縁どり文字・大きな赤いボタンをやめ、細い金の線・明朝体・小さめのボタン・余白で見せる。絵を主役にする。PC（html.fit-wide）だけ */
@@ -1805,7 +1932,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111081719';
+const APP_VER='20261111083340';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4208,7 +4335,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:57,d:'2026-11-11',t:'PCのホーム画面の見た目を、落ちついた雰囲気に作り替えました。太い金ぶちと大きなボタンをやめて、細い線と明朝体に。ボタンも小さくなり、絵が広く見えます。'},
+  {id:57,d:'2026-11-11',t:'見た目を全部作り替えました。太い金ぶち・縁どり文字・大きなボタンをやめて、細い線と明朝体の落ちついた雰囲気に。スマホ・タブレット・PCのホーム、カード、ショップ、対戦画面まで、すべて同じ雰囲気でそろえています。'},
   {id:56,d:'2026-11-11',t:'音楽を、長く遊んでも疲れない落ちついた曲に替えました。ホーム2曲・対戦3曲からランダムに流れます。カードを引く音・出す音・めくる音・ターンの音も、すっきりした音に作り直しました。'},
   {id:55,d:'2026-11-11',t:'音をすべて作り直しました。ホーム・対戦・残りライフ1の音楽は、このゲームのために作ったオーケストラの曲に。カードを出す音、心臓が割れる音、襲撃、勝ち負けの曲など、効果音も重みのある音に入れ替えました。'},
   {id:54,d:'2026-11-11',t:'レジェンドのカードを、系統の色のままにしました（青＝情報、赤＝攻撃、緑＝防御…）。代わりに、絵の上で光の筋が回り、きらめきと虹の光沢が走ります。'},
