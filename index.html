@@ -1542,6 +1542,22 @@ html.fit-wide .ohN{padding:5px 14px 7px;gap:5px}
 html.fit-wide .ohN b{font-size:clamp(28px,calc(var(--tcw,56px) * .62),48px)}
 html.fit-wide .ohN small{font-size:13px}
 html.fit-ws .ohN small{font-size:11.5px}
+
+/* --- ホーム右のアイコン：小さく整える。遊び方は上のバーの「?」へ --- */
+.hmIc{width:52px;gap:1px}
+.hmIc i{box-sizing:border-box;width:44px;height:44px;padding:9px}
+.hmIc span{font-size:9.5px}
+.hmIc .bdg{top:-5px;right:-2px}
+.hmSide{gap:8px}
+.hmHelp{position:relative;font-family:var(--game);font-size:18px;line-height:1;padding:0;display:grid;place-items:center}
+.hmHelp .bdg{position:absolute;top:-8px;right:-6px}
+.hmHelp.glow{animation:icGlow 1.6s ease-in-out infinite}
+@media (max-height:660px){.hmIc{width:46px}.hmIc i{width:38px;height:38px;padding:8px}}
+@media (max-height:560px){.hmIc{width:40px}.hmIc i{width:34px;height:34px;padding:7px}.hmHelp{font-size:15px}}
+html.fit-land .hmIc i,html.fit-wide .hmIc i{width:34px;height:34px;padding:7px}
+html.fit-wide .hmIc{width:auto}
+html.fit-wide .hmHelp{font-size:20px}
+@media (prefers-reduced-motion:reduce){.hmHelp.glow{animation:none}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -1662,7 +1678,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111024833';
+const APP_VER='20261111031244';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2075,12 +2091,11 @@ function renderMenu(){
       <div class="hmId"><b>${esc(netName())}</b><span>${rk?`<em class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</em>`:''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div></div>
       <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
-      ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):LADDER.on()&&!inn&&LADDER.state!=='loading'?side('mGift',IC.gift,'プレゼント','5','glow'):''}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
-      ${side('mRules',IC.book,'遊び方',!SV.tutDone?'!':'',!SV.tutDone?'glow':'')}
-      ${canInstall()?side('mInstall',IC.app,'アプリ',''):''}
+      ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):''}
     </nav>
       ${coinsHTML()}
+      <button type="button" class="hmGear hmHelp ${SV.tutDone?'':'glow'}" id="mRules" aria-label="遊び方">?${SV.tutDone?'':'<b class="bdg">!</b>'}</button>
       <button type="button" class="hmGear" id="hmSet" aria-label="設定">${IC.gear}</button>
     </header>
     <button type="button" class="hmEvt" id="updAll">${updNew?'<i class="bdg n">NEW</i>':''}<b>お知らせ</b><span>${UPDATES.length?esc(String(UPDATES[0].t).replace(/<[^>]+>/g,'')):''}</span></button>
@@ -2099,7 +2114,7 @@ function renderMenu(){
           ${NET.conn?'':'<button type="button" class="hmB pcOnly" id="mFriend"><img src="art/twins.png" alt=""><b>友達と対戦</b></button>'}
         </div>
         ${NET.conn?`<button type="button" class="hmMain" id="mOnline"><img src="art/twins.png" alt=""><b>対戦に戻る</b><span>${esc(NET.opp||'相手')}さん</span></button>`
-          :`<button type="button" class="hmMain" id="mRank"><img src="art/greatwolf.png" alt=""><i class="miTag">カードがもらえる</i><b>ランクマッチ</b><span>${inn?'対人戦':'Googleでログイン'}</span></button>`}
+          :`<button type="button" class="hmMain" id="mRank"><img src="art/greatwolf.png" alt=""><i class="miTag">${!inn&&LADDER.on()?'ログインで5パック':'カードがもらえる'}</i><b>ランクマッチ</b><span>${inn?'対人戦':'Googleでログイン'}</span></button>`}
       </div>
     </div>
   </div>
@@ -2131,10 +2146,12 @@ function showSettings(){
     <div class="stRow"><span class="label">名前</span>${nameEdHTML('mName')}</div>
     ${rankCardHTML()}
     <div class="sndSet"><span class="label">サウンド</span><button type="button" class="b small" id="mBgm">BGM ${bgmOn()?'ON':'OFF'}</button><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="BGMの音量"><button type="button" class="b small" id="mSfx">効果音 ${sndOn()?'ON':'OFF'}</button></div>
+    <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   modal(html(),(m,done)=>{
     const bind=()=>{
       m.querySelector('#stX').onclick=()=>{done();if(VIEW==='menu')renderMenu()};
+      m.querySelector('#stHow').onclick=()=>{done();go('howto')};{const bi=m.querySelector('#stInst');if(bi)bi.onclick=()=>{done();installApp()}}
       bindRankCard();bindNameEd('mName',()=>{m.querySelector('.sheet').innerHTML=html();bind()});
       m.querySelector('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');m.querySelector('.sheet').innerHTML=html();bind()};
       m.querySelector('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
@@ -4140,6 +4157,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:53,d:'2026-11-11',t:'ホーム右のアイコンを小さく整理しました。「遊び方」は上のバーの「?」ボタンと設定の中に移りました。'},
   {id:52,d:'2026-11-11',t:'相手の手札の枚数を、数字で大きく出すようにしました（0枚のときは赤くなります）。'},
   {id:51,d:'2026-11-11',t:'PCのホーム画面を、PC用の配置に作り替えました。横長の絵が画面いっぱいに広がり、左にメニュー、右にデイリーミッションとお知らせが並びます。ホームから「友達と対戦」もすぐ選べます。'},
   {id:50,d:'2026-11-11',t:'PCの対戦画面を、画面いっぱいの「卓」の配置に変えました。中央に、おたがいが最後に使ったカードが大きく出ます。左に記録、右にカードの絵つきの推理ボードが並び、手札も大きくなりました。'},
