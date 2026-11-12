@@ -551,7 +551,7 @@ update public.cards c set tier = v.t from (values
 
 -- スタンダードデッキのカード（全員が最初から持っている扱い。パックではかぶり扱い）
 alter table public.cards add column if not exists starter boolean not null default false;
-update public.cards set starter = (k in ('villager','seer','medium','hunter','wolf','fox','mason','baker','detective','elder','trapper','executioner','madman','greatdet'));
+update public.cards set starter = (k in ('villager','seer','medium','hunter','wolf','fox','mason','baker','detective','elder','executioner','madman','silencer','greatdet','trapper'));
 
 create table if not exists public.packs (
   uid uuid primary key references public.players(id) on delete cascade,
@@ -610,3 +610,34 @@ begin
 end $$;
 grant execute on function public.pack_state() to authenticated;
 grant execute on function public.open_pack() to authenticated;
+
+
+-- ================= 端末の記録の預かり（2026-11-12） =================
+-- 銀貨・称号・実績・買ったものなどは端末（ブラウザ）に保存している。別のブラウザやアプリからログインし直すと
+-- 空になってしまうので、ログインしている人の分はここにも預かり、ログインしたときに戻す。
+create table if not exists public.saves (
+  uid uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.saves enable row level security;
+revoke all on public.saves from anon, authenticated;
+
+create or replace function public.save_get()
+returns jsonb language sql security definer set search_path = public as $$
+  select data from saves where uid = auth.uid()
+$$;
+create or replace function public.save_put(p_data jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid();
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  if p_data is null or jsonb_typeof(p_data) <> 'object' then raise exception 'bad data'; end if;
+  if pg_column_size(p_data) > 60000 then raise exception 'too big'; end if;
+  insert into saves(uid, data) values (me, p_data)
+  on conflict (uid) do update set data = excluded.data, updated_at = now();
+end $$;
+revoke execute on function public.save_get() from public, anon;
+revoke execute on function public.save_put(jsonb) from public, anon;
+grant execute on function public.save_get() to authenticated;
+grant execute on function public.save_put(jsonb) to authenticated;

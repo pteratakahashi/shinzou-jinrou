@@ -32,6 +32,14 @@ input[type=range]{accent-color:var(--gold)}input[type=range]:disabled{opacity:.3
 .multiPick .mpL{font-family:var(--pcf);font-size:17px}
 .multiPick .b.on{border-color:var(--gold);background:rgba(163,29,46,.5);color:#fff}
 .multiPick .b.on::after{content:'✓';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:18px}
+
+/* デッキの一覧（2026-11-12） */
+.dvGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px;margin:8px 0 14px}
+.dvGrid .cardBtn{padding:0;border:0;background:none;cursor:pointer;display:block}
+.dvGrid .tcg.p .tart{flex:none;height:44%}
+.dvGrid .tcg.p .ttext{flex:1;min-height:0;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+.dvEmpty{aspect-ratio:5/7;border:1px dashed var(--hair);display:flex;align-items:center;justify-content:center;color:var(--dim);font:500 12px var(--pcf)}
+html.fit-wide .dvGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -1871,7 +1879,7 @@ const RAW=[
  ['baker','パン屋','麦','sup','S','自分は2枚引く。'],
  ['detective','探偵','探','info','S','種類を6つ指定し、相手の山札にあるその種類のカードをすべて見る。そのあと自分は1枚引く。'],
  ['elder','長老','老','sup','S','自分は1枚引く。このターン、自分は宣言を2回まで行える。さらに、相手の心臓ではない種類を1つ知る。'],
- ['trapper','罠師','罠','grd','S','【伏せ専用】相手が宣言を外したとき発動。相手は追加で3枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
+ ['trapper','罠師','罠','grd','C','【伏せ専用】相手が宣言を外したとき発動。相手は追加で3枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。さらに、相手の心臓ではない種類を1つ知る。'],
  ['madman','狂人','狂','atk','S','次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、そのカードが相手の心臓と同じ系統かどうかわかる。共鳴：自分は1枚引き、相手の心臓ではない種類を2つ知る。'],
@@ -1888,7 +1896,7 @@ const RAW=[
  ['inquisitor','審問官','審','atk','R','種類を2つまで指定する。相手の手札にその種類のカードがあれば、すべて捨てさせる。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['cursewolf','呪狼','呪','atk','R','コスト：自分の手札をランダムに1枚捨てる。効果：相手の手札をランダムに2枚捨てさせる。共鳴：コストなし。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['cryboy','狼少年','嘘','sup','R','自分は2枚引く。このターン、自分の宣言+1回。ただし、このターンに宣言を外すと、いつもの2枚ではなく3枚捨てる。共鳴：外しても、捨てるのはいつもどおり2枚。'],
- ['silencer','口封じ','封','grd','R','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
+ ['silencer','口封じ','封','grd','S','【伏せ専用】相手がカードを使ったとき発動。その効果を無効にする。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['reflect','反射','返','grd','R','【伏せ専用】相手の効果で手札を捨てさせられるとき発動。代わりに相手が同じ枚数を捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['prophet','預言者','予','info','C','相手の心臓が、ゴールド以上（ゴールド・レジェンド）か、シルバー以下かを知る。さらに、相手の心臓ではない種類を1つ知る。'],
  ['spy','密偵','密','info','R','相手の伏せカードを見る。そのあと自分は1枚引く（相手が伏せていなければ2枚）。さらに、相手の心臓ではない種類を1つ知る。'],
@@ -1942,13 +1950,13 @@ const RAW=[
  ['drummer','鼓手','鼓','sup','C','相手の心臓ではない種類を1つ知る。次に使う共鳴つきのカードは必ず共鳴する。'],
  ['gambler','博徒','賭','sup','R','このターン、自分の宣言+1回。共鳴：自分は1枚引く。'],
  ['moonqueen','月の女王','月','one','L','コスト：自分の心臓の系統を相手に知られる。効果：相手の心臓の系統を知る。'],
- ['seal','封印師','封','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['fangpull','牙抜き','牙','cur','C','自分は1枚引く。呪い（次の相手ターン）：相手は攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['mute','沈黙僧','黙','cur','C','自分は1枚引く。呪い（次の相手ターン）：相手は情報系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['kotodama','言霊師','言','cur','C','自分は1枚引く。呪い（次の相手ターン）：相手は宣言できない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['chain','鎖使い','鎖','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、1ターンにカードを1枚しか使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['thirst','渇き巫女','渇','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、カードの効果では引けない（ターンのはじめに引く1枚や、襲撃のあとに引く分は引ける）。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['blind','目隠し鬼','盲','cur','C','自分は1枚引く。呪い（このターンの残り・次の相手ターン・次の自分のターン）：お互い、「相手の心臓ではない種類を知る」効果がはたらかない。共鳴：自分はさらに1枚引く。'],
+ ['seal','封印師','封','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['fangpull','牙抜き','牙','cur','C','自分は1枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['mute','沈黙僧','黙','cur','C','自分は1枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は情報系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['kotodama','言霊師','言','cur','C','自分は1枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は宣言できない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['chain','鎖使い','鎖','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、1ターンにカードを1枚しか使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['thirst','渇き巫女','渇','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、カードの効果では引けない（ターンのはじめに引く1枚や、襲撃のあとに引く分は引ける）。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['blind','目隠し鬼','盲','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、「相手の心臓ではない種類を知る」効果がはたらかない。共鳴：自分はさらに1枚引く。'],
  ['dispel','解呪師','解','cur','C','場の呪いを解き、自分は2枚引く。呪いがなかったときは、さらに相手の心臓ではない種類を1つ知る。'],
 ];
 // カードの文を「条件／コスト／効果／共鳴／襲撃」ごとに行を分けて、見出しを付ける
@@ -1966,7 +1974,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261111165856';
+const APP_VER='20261112022231';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2235,14 +2243,52 @@ let SV;
 try{SV=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
 if(!SV||!SV.coll)SV=defaultSave();
 CARDS.forEach(c=>{if(SV.coll[c.k]==null)SV.coll[c.k]=maxOwn(c.k)});
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}}
+function save(){SV.at=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}if(typeof CLOUD!=='undefined')CLOUD.push()}
+/* 端末の記録（銀貨・称号・実績・買ったものなど）を、ログインしているアカウントにも預ける（2026-11-12）。
+   端末の記録はブラウザごとなので、別のブラウザやアプリからログインし直すと空になっていた。
+   ・はじめてそのアカウントとつながった端末：サーバーの記録と合わせる（多い方・両方を持つ）
+   ・つながったあと：新しい方（最後に保存した時刻）を使う
+   サーバーに save_get / save_put が無いあいだは何もしない（setup.sql を実行すると動き出す） */
+const CLOUD_KEYS=['coins','owned','equip','unlocked','stat','wins','losses','ow','ol','login','daily','tutDone','altOff','freeDeck','deck'];
+const CLOUD={t:0,ok:true,
+  // LADDER はこのあとで作られる。起動直後の save() から呼ばれても落ちないようにする
+  me(){try{return LADDER.sb&&LADDER.uid()||null}catch(e){return null}},
+  pack(){const o={at:SV.at||0};CLOUD_KEYS.forEach(k=>{if(SV[k]!==undefined)o[k]=SV[k]});return o},
+  adopt(d){CLOUD_KEYS.forEach(k=>{if(d[k]!==undefined)SV[k]=d[k]})},
+  merge(d){
+    const num=k=>{SV[k]=Math.max(+SV[k]||0,+d[k]||0)},uni=k=>{SV[k]=[...new Set([...(SV[k]||[]),...(Array.isArray(d[k])?d[k]:[])])]};
+    ['coins','wins','losses','ow','ol'].forEach(num);['owned','unlocked'].forEach(uni);
+    const a=SV.stat=SV.stat||{},b=d.stat||{};for(const k in b)if(typeof b[k]==='number')a[k]=Math.max(+a[k]||0,b[k]);else if(a[k]===undefined)a[k]=b[k];
+    const eq=SV.equip||{};if(d.equip&&!eq.title&&!eq.frame&&!eq.octo&&(!eq.avatar||eq.avatar==='villager'))SV.equip=d.equip;
+    if(d.tutDone)SV.tutDone=true;
+    ['login','daily','freeDeck','altOff'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
+  },
+  async pull(){
+    const me=CLOUD.me();if(!me)return;
+    const {data,error}=await LADDER.sb.rpc('save_get');
+    if(error){CLOUD.ok=false;return}
+    CLOUD.ok=true;
+    if(data&&typeof data==='object'&&data.at){
+      if(SV.cloudUid===me){if(data.at>(SV.at||0))CLOUD.adopt(data)}
+      else if(SV.cloudUid)CLOUD.adopt(data);   // 別のアカウントの記録が残っている端末：このアカウントの記録に入れ替える
+      else CLOUD.merge(data);                  // はじめてつながった端末：合わせる
+    }
+    SV.cloudUid=me;ecoInit();applyFrame();save();CLOUD.push(true);
+  },
+  push(now){
+    const me=CLOUD.me();if(!CLOUD.ok||!me||SV.cloudUid!==me)return;
+    clearTimeout(CLOUD.t);CLOUD.t=setTimeout(()=>{if(CLOUD.me()!==me)return;LADDER.sb.rpc('save_put',{p_data:CLOUD.pack()}).then(({error})=>{if(error){console.error(error);if(/PGRST202|save_put/.test((error.code||'')+error.message))CLOUD.ok=false}})},now?0:4000);
+  }
+};
 ecoInit();applyFrame();
 // カードの所持：スタンダードデッキの14種は全員が持っている。それ以外はランクマッチの報酬（サーバーの collection）
 const STD_SINGLE='greatdet';
 const stdDeck=()=>({types:[...STARTER],single:STD_SINGLE});
 const COLL={map:{}};
 if(SV.collCache&&SV.collCache.map)COLL.map={...SV.collCache.map};
-const owns=k=>STARTER.includes(k)||k===STD_SINGLE||(COLL.map[k]||0)>0;
+// 罠師は、前はスタンダードデッキに入っていた（2026-11-12 口封じと入れ替え）。前から使っていた人が困らないよう、全員が持っている扱いのまま
+const FREE_OWN=['trapper'];
+const owns=k=>STARTER.includes(k)||FREE_OWN.includes(k)||k===STD_SINGLE||(COLL.map[k]||0)>0;
 const own=k=>owns(k)?maxOwn(k):0;
 const ownedCount=()=>CARDS.filter(c=>owns(c.k)).length;
 const isNewCard=k=>(COLL.map[k]||0)>0&&!(SV.collSeen||{})[k];
@@ -2464,6 +2510,12 @@ function bindFilter(st,redraw){
   const fi=document.querySelector('[data-fin]');if(fi)fi.onchange=()=>{st.inDeck=fi.checked;redraw()};
 }
 // デッキの内訳（系統の段・属性の段）
+// デッキの中身をカードの形で並べる（押すと効果）
+let DKV=false;
+function deckViewHTML(d){
+  const ts=[...d.types].sort(byCat),cell=k=>`<button type="button" class="cardBtn" data-card="${k}">${cardHTML(k,'p')}</button>`;
+  return`<div class="dvGrid">${ts.map(cell).join('')}${Array.from({length:Math.max(0,13-ts.length)},()=>'<div class="dvEmpty">あき</div>').join('')}${d.single?cell(d.single):'<div class="dvEmpty">シングル</div>'}</div>`;
+}
 function deckSum(types){
   const cs=['info','atk','grd','sup','cur'].map(k=>[CAT[k],types.filter(t=>C[t].cat===k).length]).filter((e,i)=>e[1]||i<4);
   const as=['月','血','聖','影'].map(a=>[a,types.filter(t=>C[t].attr===a).length]).concat([['通常',types.filter(t=>C[t].plain).length]]);
@@ -2514,8 +2566,9 @@ function renderFree(){
   <p class="note" style="margin-top:0">持っているカードからデッキを組めます（カード13種×3枚＋シングル1枚＝40枚）。所持 <b>${ownedCount()}/${CARDS.length}</b>種。<br>カードは<b>ランクマッチ</b>で、勝つと2種、負けても1種もらえます${LADDER.uid()?'':'（Googleでログインが必要）'}。</p>
   <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></div>${deckSum(d.types)}
    ${filterBar(FFS,{inDeck:true})}
-   <div class="btns"><button type="button" class="b small" id="fStd">スタンダードデッキに戻す</button><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
+   <div class="btns"><button type="button" class="b small ${DKV?'primary':''}" id="fView">${DKV?'一覧を閉じる':'デッキを一覧で見る'}</button><button type="button" class="b small" id="fStd">スタンダードデッキに戻す</button><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
   <div class="note" id="fNote" ${bad.length?'style="color:var(--blood)"':''}>${msg}</div>
+  ${DKV?`<h3 style="font-size:16px">いまのデッキ（カードを押すと効果）</h3>${deckViewHTML(d)}`:''}
   <h3 style="font-size:16px">カード（13種・各3枚）</h3>
   <div class="dkList">${list.map(c=>row(c,false)).join('')}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
@@ -2525,6 +2578,7 @@ function renderFree(){
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   // NEW の印は、この画面を出るときに消す
   $('#back').onclick=()=>{markCollSeen();go('menu')};
+  $('#fView').onclick=()=>{DKV=!DKV;const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   bindFilter(FFS,()=>{const y=window.scrollY;renderFree();window.scrollTo(0,y)});
   document.querySelectorAll('[data-cpu]').forEach(b=>b.onclick=keep(()=>{SV.freeCpu=b.dataset.cpu}));
   $('#fStd').onclick=keep(()=>{SV.freeDeck=stdDeck()});
@@ -2607,7 +2661,7 @@ function rulesListHTML(){
   <section class="hw terms"><div class="hwNo">用語</div><div class="hwBody">
     <dl class="hwTerms">
       <dt>系統</dt><dd>カードは6つに分かれます：${chip('info','情報')}${chip('atk','攻撃')}${chip('grd','防御')}${chip('sup','補助')}${chip('cur','呪い')}${chip('one','シングル')}</dd>
-      <dt>呪い</dt><dd>呪い系のカードを使うと、場に「呪い」が残り、書かれたターンのあいだ効き続けます。「次の相手ターン」は、使ったあとに来る相手のターン1回分。「このターンの残り・次の相手ターン・次の自分のターン」は、使った瞬間から、次の自分のターンが終わるまでです。場に置ける呪いは1つだけで、新しい呪いを使うと前の呪いは消えます。〈解呪師〉で解くこともできます。</dd>
+      <dt>呪い</dt><dd>呪い系のカードを使うと、場に「呪い」が残り、書かれたターン数のあいだ効き続けます。<b>ターンの数え方</b>は、呪いを使ったターンが1、次の相手のターンが2、その次の自分のターンが3です。「2ターン」は相手のターンの終わりに、「3ターン」は次の自分のターンの終わりに消えます。場に置ける呪いは1つだけで、新しい呪いを使うと前の呪いは消えます。〈解呪師〉で解くこともできます。</dd>
       <dt>共鳴</dt><dd>カードには<b>属性</b>（月・血・聖・影）があります。直前に自分が使ったカード（前のターンの分や、相手のターンに発動した伏せカードも含む）と<b>同じ属性</b>のカードを続けて使うと、「共鳴：」に書かれた効果が上乗せされます。系統（情報・攻撃・防御・補助）がちがっても、属性が同じなら共鳴します。</dd><dt>ブラフ</dt><dd>伏せ専用ではないカードも「ブラフ」ボタンで伏せられます（効果は発動しません）。相手が警戒して、次の相手ターンにカードを1枚も使わなかったら<b>ブラフ成功</b>。ただし、自分のデッキに伏せ専用カードが1種も入っていなければ、伏せはすべてブラフだと相手にわかるので、ブラフは成功しません。自分のターンのはじめにそのカードが手札に戻り、そのターンはカードを1枚多く使えます。さらに、相手の心臓ではない種類を1つ知ります。</dd><dt>引く・見る</dt><dd>「引く」は、いつも<b>自分の山札から</b>自分の手札に加えることです。相手の山札や手札を「見る」効果では、カードは動きません（見たカードは相手のところに残ります）。</dd><dt>通常カード</dt><dd>属性マークのないカード。共鳴しないかわりに、はじめから効果が少し強めです。使うと共鳴のつながりは途切れます。</dd>
       <dt>コスト</dt><dd>強いカードを使うときに払うものです。自分の情報を相手に知られたり、手札を失ったりします。カードを使った時点で払うので、口封じなどで効果を無効にされてもコストは戻りません。</dd>
       <dt>伏せる</dt><dd>手札を1枚、裏向きで置けます（1枚まで）。<b>【伏せ専用】</b>のカードは、書かれた条件で自動で発動します（伏せずには使えません）。普通のカードも伏せられるので、ハッタリに使えます。効くのは<b>次の相手ターンだけ</b>で、発動しなければ自分のターンの始めに公開されて捨て札になります。発動すると、相手の心臓ではない種類を2つ知れます（直前に使ったのが防御系なら、さらに1枚引けます）。</dd>
@@ -3053,7 +3107,7 @@ function czPut(p,k){
   const o=opp(p),both=CZ_BOTH.includes(k),had=czAny(S.me)||czAny(S.cpu);
   czClear();const until=S.turnNo+(both?2:1);
   if(both){S.me.f.cz={k,until};S.cpu.f.cz={k,until}}else o.f.cz={k,until};
-  log(`呪い：${both?'お互い':o.name}は「${CZ_TEXT[k]}」（${both?'次の自分のターンの終わりまで':'次の相手ターン'}）。${had?'前の呪いは消えた。':''}`,whoOf(p));
+  log(`呪い：${both?'お互い':o.name}は「${CZ_TEXT[k]}」（${both?'3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりまで':'2ターン：このターンが1、相手のターンが2。2の終わりまで'}）。${had?'前の呪いは消えた。':''}`,whoOf(p));
 }
 function learnNot(p,n,lab='共鳴'){
   const o=opp(p),k=K(p);
@@ -3551,7 +3605,7 @@ function gotHTML(d){
   if(!d||!d.ranked)return'';
   if(d.status==='pending')return'<br><span class="note">もらえるカードは、相手の結果報告のあとで届きます（デッキ編成で確認できます）。</span>';
   if(d.status!=='done'||!Array.isArray(d.got)||!d.got.length)return'';
-  const was=k=>STARTER.includes(k)||k===STD_SINGLE||(COLL.map[k]||0)>0;
+  const was=k=>owns(k);
   return`<br><b>カードをもらいました</b><div class="gotList">${d.got.filter(k=>C[k]).map(k=>`<div>${cardHTML(k,'s')}<span>${N(k)}</span><span class="${was(k)?'muted':'newTag'}">${was(k)?'かぶり':'NEW'}</span></div>`).join('')}</div>`;
 }
 async function startBattle(){
@@ -4287,6 +4341,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in';if(data&&data.name&&data.name!==SV.nick){SV.nick=data.name;save()}}
     await LADDER.loadColl();
     await LADDER.loadPacks();
+    await CLOUD.pull();
     LADDER.redraw();
     showGifts();
   },
@@ -4438,6 +4493,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:64,d:'2026-11-12',t:'デッキ編成に「デッキを一覧で見る」ボタンを追加。友達と対戦でも、先に準備ができた人は自分のデッキを眺められます。スタンダードデッキは〈罠師〉を〈口封じ〉に入れ替えました（罠師はこれまでどおり全員が使えます）。'},
   {id:63,d:'2026-11-12',t:'ルールと不具合の直し：友達との対戦はランクと戦績に関係しなくなりました／心臓を当てたあとは、すぐ相手が心臓を選ぶ番になり、選び終わってから90秒を数えます／占い師は「2つまで」選べます／錬金術師は「ほかに手札が2枚以上あるときだけ使え、2枚捨てて4枚引く（共鳴で5枚）」に変更／祈祷師は系統を2つ押して選ぶ形に／妖狐は化けるカードがないときは使えません／パックのカードは説明が長くても絵が消えません／チュートリアルを正規のルール（1ターンに1枚）に直しました／狼少年と呪いの説明文をはっきりさせました。'},
   {id:62,d:'2026-11-11',t:'効果音をさらに作り直しました。勝ったとき・負けたときの音は短く静かな合図に、ほかの音も短く整った音に替え、音楽と効果音の大きさをそろえました。'},
   {id:61,d:'2026-11-11',t:'音楽と効果音の音量を、それぞれバーで変えられるようになりました（設定と、対戦中のメニュー）。設定のアイコンも歯車に描き直しました。'},
@@ -5023,7 +5079,7 @@ function renderOnline(){
     body=`<div class="onCard"><p class="onBig">${esc(NET.opp||'相手')} さんとつながりました</p>
       <div class="onStat"><span>あなた：<b>${me?'デッキ準備OK':'デッキ準備中'}</b></span><span>${esc(NET.opp||'相手')}：<b>${op?'デッキ準備OK':'デッキ準備中'}</b></span></div>
       ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:'友達との対戦は、ランクと戦績に関係しません。'}</p>`:''}
-      ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p>`
+      ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p><p class="label" style="margin-top:12px">あなたのデッキ（カードを押すと効果）</p>${deckSum(me.types)}${deckViewHTML(me)}`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
           ${deckLegal(freeDeck())?`<button type="button" class="mi main" id="oMine"><b>自分のデッキで対戦</b><span>${catSummary(freeDeck().types)}・シングル〈${N(freeDeck().single)}〉（ホームの「デッキ編成」で編集）</span></button>`:''}
           <button type="button" class="mi ${deckLegal(freeDeck())?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
@@ -5070,6 +5126,8 @@ function renderOnline(){
 
 let rzT=0;const onRz=()=>{FIT.apply();clearTimeout(rzT);rzT=setTimeout(()=>{FIT.apply();if(VIEW==='menu'){const im=document.querySelector('.hmBg img');if(im&&$('#modal').hidden&&/home_w/.test(im.src)!==FIT.get().wide)renderMenu();else FIT.home()}if(VIEW==='battle'&&S){if(S.busy||S.over)FIT.after();else render()}},120)};
 addEventListener('resize',onRz);addEventListener('orientationchange',onRz);if(window.visualViewport)visualViewport.addEventListener('resize',onRz);
+// デッキの一覧（デッキ編成・友達対戦の待ち画面）のカードを押すと効果を見られる
+$('#app').addEventListener('click',e=>{if(VIEW==='battle')return;const el=e.target.closest('.dvGrid [data-card]');if(el)showCardInfo(el.dataset.card)});
 $('#app').addEventListener('click',e=>{
   if(VIEW!=='battle')return;
   const ds=e.target.closest('[data-dis]');if(ds&&S){showDiscard(ds.dataset.dis);return}
