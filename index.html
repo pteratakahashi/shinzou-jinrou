@@ -2038,7 +2038,7 @@ const RAW=[
  ['diviner','祈祷師','祷','info','R','コスト：自分の心臓ではない種類を3つ相手に知られる。効果：系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：自分は1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['tracker','追跡者','跡','info','C','相手の山札の上から5枚を見る（見たカードはそのまま相手の山札に残る）。そのあと自分は1枚引く。'],
  ['confessor','告解師','告','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓ではない種類を4つ知る。共鳴：コストなし。'],
- ['stargazer','星読み','星','info','C','相手の心臓の名前が偶数文字か奇数文字かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
+ ['stargazer','星読み','星','info','C','相手の心臓の名前が偶数文字か奇数文字かを知る。'],
  ['clairvoy','千里眼','眼','info','R','種類を1つ指定し、それが相手の心臓か判定する。違ったら自分は1枚引く。共鳴：相手の心臓ではない種類を2つ知る。'],
  ['berserker','猛り狼','猛','atk','R','コスト：自分の心臓ではない種類を2つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせる。共鳴：さらに1枚捨てさせ、コストが1つになる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['ghoul','屍鬼','屍','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：自分の捨て札からランダムに1枚を手札に戻す。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
@@ -2082,12 +2082,12 @@ function effHTML(e){
   return out;
 }
 // 属性：同じ属性のカードを続けて使うと共鳴する。属性のないカード（シングル以外）は「通常カード」で、共鳴しないかわりに効果が少し強い
-const ATTR={"seal": "月", "fangpull": "血", "mute": "聖", "kotodama": "影", "chain": "影", "thirst": "月", "blind": "血", "seer": "月", "stargazer": "月", "astrologer": "月", "howler": "月", "madman": "月", "witch": "月", "warder": "月", "gatekeeper": "月", "fox": "月", "drummer": "月", "bard": "月", "apprentice": "月", "watchdog": "血", "diviner": "血", "wolf": "血", "pack": "血", "alpha": "血", "bodyguard": "血", "reflect": "血", "trapper": "血", "twins": "血", "cryboy": "血", "alchemist": "血", "medium": "聖", "confessor": "聖", "clairvoy": "聖", "assassin": "聖", "berserker": "聖", "knight": "聖", "cleric": "聖", "exorcist": "聖", "bastion": "聖", "villager": "聖", "chief": "聖", "mason": "聖", "fortune": "影", "cursewolf": "影", "ghoul": "影", "vampire": "影", "poisoner": "影", "decoy": "影", "silencer": "影", "watchman": "影", "gravedigger": "影", "gambler": "影", "priest": "影"};
+const ATTR={"seal": "月", "fangpull": "血", "mute": "聖", "kotodama": "影", "chain": "影", "thirst": "月", "blind": "血", "seer": "月", "astrologer": "月", "howler": "月", "madman": "月", "witch": "月", "warder": "月", "gatekeeper": "月", "fox": "月", "drummer": "月", "bard": "月", "apprentice": "月", "watchdog": "血", "diviner": "血", "wolf": "血", "pack": "血", "alpha": "血", "bodyguard": "血", "reflect": "血", "trapper": "血", "twins": "血", "cryboy": "血", "alchemist": "血", "medium": "聖", "confessor": "聖", "clairvoy": "聖", "assassin": "聖", "berserker": "聖", "knight": "聖", "cleric": "聖", "exorcist": "聖", "bastion": "聖", "villager": "聖", "chief": "聖", "mason": "聖", "fortune": "影", "cursewolf": "影", "ghoul": "影", "vampire": "影", "poisoner": "影", "decoy": "影", "silencer": "影", "watchman": "影", "gravedigger": "影", "gambler": "影", "priest": "影"};
 const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'};
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112174355';
+const APP_VER='20261112183828';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3559,7 +3559,7 @@ async function playCard0(p,c,copy=false){
       if(R){draw(p,1);learnNot(p,1)}break;}
     case 'tracker':reveal(p,o.deck.slice(-5));draw(p,1);break;
     case 'confessor':learnNot(p,4,'告解');break;
-    case 'stargazer':{const odd=N(o.heart.type).length%2;narrow(p,typesOf(o).filter(t=>N(t).length%2===odd));log(`星読み：${o.name}の心臓の名前は${odd?'奇数':'偶数'}文字。`,w);if(R)learnNot(p,2);break}
+    case 'stargazer':{const odd=N(o.heart.type).length%2;narrow(p,typesOf(o).filter(t=>N(t).length%2===odd));log(`星読み：${o.name}の心臓の名前は${odd?'奇数':'偶数'}文字。`,w);break}
     case 'clairvoy':{const ty=(await chooseTypes(p,1,'千里眼：1種類を選ぶ','相手の心臓がこの種類かを判定します。'))[0];judge(p,[ty]);if(o.heart.type!==ty)draw(p,1);if(R)learnNot(p,2);break}
     case 'berserker':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'ghoul':{if(o.hand.length)forcedDiscard(o,rand(o.hand),p);const back=p.discard.filter(x=>x!==c);if(R&&back.length){const x=rand(back);rm(p.discard,x);p.hand.push(x);log(`${p.name}は捨て札から1枚を手札に戻した。`,w)}await raid(p,o);break}
@@ -4847,6 +4847,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:91,d:'2026-11-13',t:'カードの調整：星読みは、対人戦での勝率が高かったため、通常カード（属性なし）になり、共鳴がなくなりました。効果は「相手の心臓の名前が偶数文字か奇数文字かを知る」だけです。しばらくこれで様子を見ます。'},
   {id:90,d:'2026-11-13',t:'利用規約・配信や動画についての決まり・プライバシーポリシーを載せました。設定と、Googleでログインのボタンの下から読めます。'},
   {id:89,d:'2026-11-13',t:'ログインすると、毎日1パックもらえるようになりました（その日はじめてゲームを開いたときに届きます。Googleでログインしている人が対象です）。'},
   {id:88,d:'2026-11-12',t:'不具合の直し：妖狐などで「カードをえらぶ画面」が出る直前に手札のカードの説明を開くと、えらぶ画面が消えて対戦が止まってしまうことがある不具合を直しました。'},
