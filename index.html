@@ -2044,7 +2044,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112080437';
+const APP_VER='20261112082518';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3894,8 +3894,8 @@ function tutShow(st){
   if(!b){b=document.createElement('div');b.id='tutBox';document.body.appendChild(b)}
   const txt=st.textFn?st.textFn():st.text;
   if(b.dataset.i!==String(TUT.i)){b.dataset.i=TUT.i;b.innerHTML=`<div class="tutHd"><span>チュートリアル ${TUT.i+1}/${TUT_STEPS.length}</span><button type="button" class="tutQuit">やめる</button></div><p>${txt}</p>${st.btn?`<div class="btns"><button type="button" class="b primary small tutNext">${st.btn}</button></div>`:''}`;
-    b.querySelector('.tutQuit').onclick=()=>{TUT.on=false;tutHide();SV.tutDone=true;save()};
-    const nx=b.querySelector('.tutNext');if(nx)nx.onclick=()=>{TUT.i++;TUT.act=-1;if(TUT.i>=TUT_STEPS.length){TUT.on=false;SV.tutDone=true;save();tutHide()}else tutTick()};}
+    b.querySelector('.tutQuit').onclick=()=>{TUT.on=false;tutHide();SV.tutDone=true;save();if(VIEW==='battle'&&S)render()};
+    const nx=b.querySelector('.tutNext');if(nx)nx.onclick=()=>{TUT.i++;TUT.act=-1;if(TUT.i>=TUT_STEPS.length){TUT.on=false;SV.tutDone=true;save();tutHide();if(VIEW==='battle'&&S)render()}else tutTick()};}
   document.querySelectorAll('.tutHi').forEach(e=>e.classList.remove('tutHi'));
   if(st.sel)document.querySelectorAll(st.sel).forEach(e=>e.classList.add('tutHi'));
   // 光らせた場所に重なるなら、吹き出しを下に出す
