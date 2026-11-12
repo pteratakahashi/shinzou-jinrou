@@ -3195,7 +3195,7 @@ async function fxStamp(t,cls,k){
 /* ---- modals ---- */
 // def：時間切れのときに自動で決める答え。modalAuto() で今の選択を自動で決め、modalKill() で答えずに閉じる
 let MODAL_CUR=null;const KILL={kill:1};
-function modal(html,setup,def){return new Promise(res=>{const m=$('#modal');if(MODAL_CUR)MODAL_CUR.fin(KILL);m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;const cur={def};const fin=v=>{if(MODAL_CUR===cur)MODAL_CUR=null;m.hidden=true;m.innerHTML='';res(v)};cur.fin=fin;MODAL_CUR=cur;setup(m,fin)})}
+function modal(html,setup,def){return new Promise(res=>{const m=$('#modal');if(MODAL_CUR)MODAL_CUR.fin(KILL);m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;m.onclick=null;const cur={def};const fin=v=>{if(cur.end)return;cur.end=1;if(MODAL_CUR===cur){MODAL_CUR=null;m.hidden=true;m.innerHTML=''}res(v)};cur.fin=fin;MODAL_CUR=cur;setup(m,fin)})}
 function modalAuto(){const c=MODAL_CUR;if(c&&c.def){let v;try{v=c.def()}catch(e){v=null}c.fin(v);return true}return false}
 function modalKill(){const c=MODAL_CUR;if(c)c.fin(KILL)}
 function tileHTML(target,ty,view,tag='div',cls=''){
@@ -4134,7 +4134,9 @@ function histRow(who,label){
   return`<div class="hrow"><span class="who" style="font-size:14px">${label}</span><div class="hlist">${items.map(h=>`<button type="button" class="cardBtn hi" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る"><span class="ht">${h.turn}T</span>${cardHTML(h.k,'s')}</button>`).join('')||'<span class="note">まだありません</span>'}</div></div>`;
 }
 function showCardInfo(k){
-  const c=C[k];
+  // えらぶ画面（妖狐の「化けるカード」など）が出ている間は、カードの説明で上書きしない（えらぶ画面が消えて対戦が止まるため）
+  if(MODAL_CUR&&MODAL_CUR.def)return;
+  const c=C[k];if(!c)return;
   const rn=`<b class="tierTx t-${c.t}">${TIER_N[c.t]}</b>${c.single?'・シングル':''}`;
   let usage='';
   if(S&&VIEW==='battle'){const a=S.hist.filter(h=>h.k===k&&h.who==='cpu').length,b=S.hist.filter(h=>h.k===k&&h.who==='me').length;usage=`<p>この対戦で使われた回数：${OPN()} ${a}回／${MYN()} ${b}回</p>`}
@@ -4787,6 +4789,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:88,d:'2026-11-12',t:'不具合の直し：妖狐などで「カードをえらぶ画面」が出る直前に手札のカードの説明を開くと、えらぶ画面が消えて対戦が止まってしまうことがある不具合を直しました。'},
   {id:87,d:'2026-11-12',t:'デッキ編成の上に固定されている「いまのデッキ」の小さなカードに、属性（月・血・聖・影・通常）の印が付きました。PCの対戦画面で、説明が長いカードを選ぶと文が途中で切れて読めなかったのを直しました。チュートリアルの「まん中の推理の状況」という案内を、PCでも分かる言い方に直しました（Discordでいただいた要望です）。'},
   {id:86,d:'2026-11-12',t:'デッキ編成の下に「デッキを保存する」ボタンを置きました。押すと、名前とアイコンを決めて「完成」で保存できます（カードの出し入れは、これまでどおりその場でも保存されます）。'},
   {id:85,d:'2026-11-12',t:'不具合の直し：デイリーミッションの銀貨を受け取ったあと、別の端末（PC・スマホ・タブレットなど）で開くと、同じ日にもう一度受け取れてしまうのを直しました（Discordでいただいた報告です）。'},
