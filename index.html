@@ -81,6 +81,13 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 .dkSlots .chip.add{border-style:dashed;color:var(--gold)}
 .dkSlotN{font-size:11px}
 .dkSlotAct{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.dkNameNow{font:800 18px var(--pcf);color:var(--ivory);margin-right:4px}
+
+/* デッキのアイコン（代表のカード） */
+.dkIc{width:22px;height:22px;border-radius:50%;object-fit:cover;object-position:50% 18%;image-rendering:pixelated;background:#1a0d10;border:1px solid var(--hair2);vertical-align:middle;flex:none}
+.dkSlots .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 5px;max-width:13em}.dkSlots .chip.add{padding:6px 12px}
+.dkSlots .chip span{overflow:hidden;text-overflow:ellipsis}
+.dkIcBig{width:46px;height:46px;padding:0;border-radius:50%;border:1px solid var(--gold);background:none;cursor:pointer;overflow:hidden;flex:none}.dkIcBig .dkIc{width:100%;height:100%;border:0}
+.mi b .dkIc{width:26px;height:26px;margin-right:8px}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2015,7 +2022,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112051158';
+const APP_VER='20261112051940';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2641,6 +2648,9 @@ function deckInit(){
 const freeDeck=()=>{deckInit();const d=SV.decks[SV.deckIx];SV.freeDeck={types:d.types,single:d.single};return d};
 // いまのデッキの中身を入れ替える（名前はそのまま）
 function setFreeDeck(x){deckInit();const d=SV.decks[SV.deckIx];d.types=[...x.types];d.single=x.single||null}
+// デッキのアイコン（代表のカード）。決めていない、またはそのカードをデッキから外した場合は、シングル → 1枚目の順で決める
+const deckIcon=d=>d&&d.icon&&C[d.icon]&&(d.types.includes(d.icon)||d.single===d.icon)?d.icon:(d&&d.single&&C[d.single]?d.single:(d&&d.types.find(k=>C[k]))||'villager');
+const deckIcHTML=d=>`<img class="dkIc" src="art/${deckIcon(d)}.png" alt="">`;
 function deckAdd(){deckInit();if(SV.decks.length>=DECK_MAX)return false;const used=SV.decks.map(d=>d.name);let i=1;while(used.includes(`デッキ${i}`))i++;SV.decks.push({name:`デッキ${i}`,...stdDeck()});SV.deckIx=SV.decks.length-1;return true}
 function deckDel(){deckInit();if(SV.decks.length<=1)return;SV.decks.splice(SV.deckIx,1);SV.deckIx=Math.max(0,SV.deckIx-1)}
 // 持っているカードだけで組めているか
@@ -2657,8 +2667,8 @@ function renderFree(){
   const msg=bad.length?`持っていないカードが入っています（${bad.map(k=>'〈'+N(k)+'〉').join('')}）。外すか、スタンダードデッキに戻してください。`:ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください';
   $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
   <p class="note" style="margin-top:0">持っているカードからデッキを組めます（カード13種×3枚＋シングル1枚＝40枚）。所持 <b>${ownedCount()}/${CARDS.length}</b>種。<br>カードは<b>ランクマッチ</b>で、勝つと2種、負けても1種もらえます${LADDER.uid()?'':'（Googleでログインが必要）'}。</p>
-  <div class="dkSlots"><span class="label">デッキ</span>${SV.decks.map((x,i)=>`<button type="button" class="chip ${i===SV.deckIx?'on':''} ${deckLegal(x)?'':'ng'}" data-slot="${i}">${esc(x.name)}</button>`).join('')}${SV.decks.length<DECK_MAX?'<button type="button" class="chip add" id="dkAdd">＋ 新しいデッキ</button>':''}<span class="muted dkSlotN">${SV.decks.length}/${DECK_MAX}</span></div>
-  <div class="dkSlotAct"><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button>${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
+  <div class="dkSlots"><span class="label">デッキ</span>${SV.decks.map((x,i)=>`<button type="button" class="chip ${i===SV.deckIx?'on':''} ${deckLegal(x)?'':'ng'}" data-slot="${i}">${deckIcHTML(x)}<span>${esc(x.name)}</span></button>`).join('')}${SV.decks.length<DECK_MAX?'<button type="button" class="chip add" id="dkAdd">＋ 新しいデッキ</button>':''}<span class="muted dkSlotN">${SV.decks.length}/${DECK_MAX}</span></div>
+  <div class="dkSlotAct"><button type="button" class="dkIcBig" id="dkIcB" aria-label="デッキのアイコンを変える">${deckIcHTML(d)}</button><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button><button type="button" class="b small" id="dkIcon">アイコンを変える</button>${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
   <div class="dkTop"><div class="dkTopH"><span><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></span><span class="muted dmHint">いまのデッキ（押すと外れます）</span></div>${deckMiniHTML(d)}</div>
   <div class="dkHead dkStatic">${deckSum(d.types)}
    ${filterBar(FFS,{inDeck:true})}
@@ -2681,6 +2691,14 @@ function renderFree(){
     if(typeof v==='string'&&deckName(v)){d.name=deckName(v);save()}
     if(VIEW==='free'){const y=window.scrollY;renderFree();window.scrollTo(0,y)}
   };
+  const pickIcon=async()=>{
+    const ks=[...d.types].sort(byCat).concat(d.single?[d.single]:[]).filter(k=>C[k]);
+    if(!ks.length){const f=$('#fNote');f.textContent='先にカードを入れてください。デッキに入っているカードから、アイコンを選べます。';return}
+    const v=await modal(`<div class="info" style="width:100%"><div class="infoText" style="width:100%"><h2>デッキのアイコン</h2><p class="note" style="margin-top:0">このデッキを代表するカードを選んでください。</p><div class="avGrid">${ks.map(k=>`<button type="button" class="avOpt ${k===deckIcon(d)?'on':''}" data-ic="${k}" aria-label="${N(k)}"><img src="art/${k}.png" alt="" loading="lazy"><span>${N(k)}</span></button>`).join('')}</div><div class="btns"><button type="button" class="b" id="icNo">やめる</button></div></div></div>`,(m,done)=>{m.querySelectorAll('[data-ic]').forEach(b=>b.onclick=()=>done(b.dataset.ic));m.querySelector('#icNo').onclick=()=>done(null)},()=>null);
+    if(typeof v==='string'&&C[v]){d.icon=v;save()}
+    if(VIEW==='free'){const y=window.scrollY;renderFree();window.scrollTo(0,y)}
+  };
+  $('#dkIcon').onclick=pickIcon;$('#dkIcB').onclick=pickIcon;
   {const x=$('#dkDel');if(x){let armed=false;x.onclick=()=>{if(!armed){armed=true;x.textContent='本当に消す（もう一度押す）';return}keep(()=>{deckDel()})()}}}
   $('#fView').onclick=()=>{DKV=!DKV;const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   bindFilter(FFS,()=>{const y=window.scrollY;renderFree();window.scrollTo(0,y)});
@@ -4671,6 +4689,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:73,d:'2026-11-12',t:'デッキごとにアイコン（代表のカード）を決められるようになりました。デッキ編成の「アイコンを変える」から選べます。'},
   {id:72,d:'2026-11-12',t:'デッキを6つまで保存して、名前を付けられるようになりました（デッキ編成のいちばん上）。友達との対戦やランクマッチでは、保存したデッキから選べます。'},
   {id:71,d:'2026-11-12',t:'ランクマッチのあと、もらったカードがめくれる演出が入るようになりました。相手の報告を待っている場合は、カードが届いたときに出ます。'},
   {id:70,d:'2026-11-12',t:'ランクマッチの相手を待っている間に、アイコン・名前・称号とタコを変えられるようになりました。'},
@@ -5293,7 +5312,7 @@ function renderOnline(){
       ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:'友達との対戦は、ランクと戦績に関係しません。'}</p>`:''}
       ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p><p class="label" style="margin-top:12px">あなたのデッキ（カードを押すと効果）</p>${deckSum(me.types)}${deckViewHTML(me)}`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
-          ${(freeDeck(),SV.decks).map((x,i)=>deckLegal(x)?`<button type="button" class="mi ${i===SV.deckIx?'main':''}" data-odeck="${i}"><b>「${esc(x.name)}」で対戦</b><span>${catSummary(x.types)}・シングル〈${N(x.single)}〉</span></button>`:'').join('')}
+          ${(freeDeck(),SV.decks).map((x,i)=>deckLegal(x)?`<button type="button" class="mi ${i===SV.deckIx?'main':''}" data-odeck="${i}"><b>${deckIcHTML(x)}「${esc(x.name)}」で対戦</b><span>${catSummary(x.types)}・シングル〈${N(x.single)}〉</span></button>`:'').join('')}
           <button type="button" class="mi ${SV.decks.some(deckLegal)?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
           ${NET.ranked?'':`<button type="button" class="mi" id="oDraft"><b>パックを${DRAFT_N}つ開けて組む</b><span>その場で開けたカードから13種とシングル1枚を選びます。持っていないカードも使えます</span></button>`}
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${NET.lastDeck.draft?'パックで組んだデッキ・':''}${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
