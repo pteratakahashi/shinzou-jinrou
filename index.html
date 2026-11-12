@@ -147,6 +147,7 @@ html.fit-wide .rvSlot{width:80px}html.fit-wide .rvSlot .tcg,html.fit-wide .rvSlo
 #rpcBar{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(18,8,11,.94);border:1px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.6);white-space:nowrap}
 #rpcBar .rcT{font:700 12px var(--pcf);color:var(--gold);padding:0 6px}
 #rpcBar button{font:700 12px var(--pcf);background:none;color:var(--ivory);border:1px solid var(--hair);padding:5px 10px;cursor:pointer}
+@media (max-width:560px){#rpcBar{left:6px;right:6px;transform:none;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 6px}#rpcBar button{padding:4px 8px;font-size:11px}#rpcBar .rcT{width:100%;text-align:center;font-size:11px}}
 .oppHand.open .tcg{width:var(--ohw,34px)}
 html.fit-wide .oppHand.open .tcg{width:58px}
 </style></head><body>
@@ -2085,7 +2086,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112134147';
+const APP_VER='20261112140147';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2648,8 +2649,8 @@ function bindPkBtns(){
 function showGifts(){
   if(!LADDER.gifts||!LADDER.gifts.length||VIEW!=='menu'||!$('#modal').hidden)return;
   const g=LADDER.gifts;LADDER.gifts=[];
-  const txt={login:'はじめてのログイン ありがとう！',ranked:'はじめてのランクマッチ おつかれさま！'};
-  modal(`<div class="info giftBox"><div class="infoText" style="width:100%;text-align:center"><div class="giftPk">${g.map(()=>`<div class="pack mini" aria-hidden="true"><span class="pkh">心</span><span class="pk2">×5</span></div>`).join('')}</div><h2>プレゼント</h2>${g.map(k=>`<p>${txt[k]||''}<br><b>パック5つ</b>をプレゼントします</p>`).join('')}<p class="note">1パック5枚入り。5枚目はゴールド以上です。</p><div class="btns" style="justify-content:center"><button type="button" class="b primary" id="gOpen">今すぐ開ける</button><button type="button" class="b" id="gLater">あとで</button></div></div></div>`,(m,done)=>{
+  const txt={login:'はじめてのログイン ありがとう！',ranked:'はじめてのランクマッチ おつかれさま！',daily:'今日のログインプレゼント！'},cnt={login:5,ranked:5,daily:1};
+  modal(`<div class="info giftBox"><div class="infoText" style="width:100%;text-align:center"><div class="giftPk">${g.map(k=>`<div class="pack mini" aria-hidden="true"><span class="pkh">心</span><span class="pk2">×${cnt[k]||5}</span></div>`).join('')}</div><h2>プレゼント</h2>${g.map(k=>`<p>${txt[k]||''}<br><b>パック${cnt[k]||5}つ</b>をプレゼントします</p>`).join('')}<p class="note">1パック5枚入り。5枚目はゴールド以上です。${g.includes('daily')?'ログインすると、毎日1パックもらえます。':''}</p><div class="btns" style="justify-content:center"><button type="button" class="b primary" id="gOpen">今すぐ開ける</button><button type="button" class="b" id="gLater">あとで</button></div></div></div>`,(m,done)=>{
     try{SFX.legend()}catch(e){}
     m.querySelector('#gOpen').onclick=()=>{done();P=null;go('packs')};
     m.querySelector('#gLater').onclick=()=>{done();renderMenu()};
@@ -3073,7 +3074,7 @@ let LOGQ=0;
 function log(t,who='sys',to){const e={t,who,turn:S.turnNo,actor:S.cur?whoOf(S.cur):'sys',hdr:t.startsWith('― '),q:++LOGQ};if(to)e.to=to;S.log.push(e);if(S.log.length>400)S.log.shift();if(!to||to==='me')S.last=e}
 const OPNraw=()=>S&&S.online?(S.names&&S.names.cpu||'相手'):'CPU';
 const OPN=()=>esc(OPNraw());
-const MYraw=()=>S&&S.spec?(S.names&&S.names.me||'プレイヤー'):'あなた';
+const MYraw=()=>S&&(S.spec||S.replay)?(S.names&&S.names.me||'プレイヤー'):'あなた';
 const MYN=()=>esc(MYraw());
 const nm=t=>String(t).replace(/@me/g,MYraw()).replace(/@cpu/g,OPNraw());
 function by(p,fn){const pv=S.decider;S.decider=p;try{return fn()}finally{S.decider=pv}}
@@ -3738,12 +3739,13 @@ function playerTurn(p,plays){
   return new Promise(res=>{S.endTurn=res});
 }
 // 画面に出す手番の状態。オンラインでは S.phase は手番の人のものなので、相手の番は「考えています」にする
-function PH(){if(!S||S.over)return'none';if(S.replay)return'cpu';if(S.cur&&S.cur!==S.me&&(S.phase==='play'||S.phase==='guess'))return'cpu';return S.phase}
+function PH(){if(!S||S.over)return'none';if(S.rpAll)return'cpu';if(S.cur&&S.cur!==S.me&&(S.phase==='play'||S.phase==='guess'))return'cpu';return S.phase}
 const canSetIn=(P,ph)=>RULES.freeSet?P.f.setFree>0&&(ph==='play'||ph==='guess'):ph==='play';
 const canPickIn=(P,ph)=>ph==='play'||(RULES.freeSet&&ph==='guess'&&P.f.setFree>0);
 async function onPlay(){return onUse(false)}
 async function onSet(){return onUse(true)}
 async function onUse(asSet){
+  if(S&&S.replay)return;
   const ph=PH();if(!S.sel||S.busy)return;
   if(!tutOk(asSet||C[S.sel.type].set?'set':'play',S.sel.type))return;
   if(asSet||C[S.sel.type].set){if(!canSetIn(S.me,ph))return}else if(ph!=='play')return;
@@ -3763,9 +3765,10 @@ async function useAs(P,c,asSet){
   if(S.phase==='play'&&((f.req<=0&&f.opt<=0)||!P.hand.length))S.phase='guess';
   S.busy=false;render();
 }
-function onSkip(){if(PH()!=='play'||S.busy)return;if(!tutOk('skip'))return;S.sel=null;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'skip'});render();return}skipAs(S.me)}
+function onSkip(){if(S&&S.replay)return;if(PH()!=='play'||S.busy)return;if(!tutOk('skip'))return;S.sel=null;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'skip'});render();return}skipAs(S.me)}
 function skipAs(P){if(S.phase!=='play'||S.cur!==P||S.busy)return;P.f.req=0;P.f.opt=0;S.phase='guess';render()}
 async function onGuess(){
+  if(S&&S.replay)return;
   if(PH()!=='guess'||S.busy||S.me.f.guesses<=0||!S.me.hand.length)return;
   if(!tutOk('guess'))return;
   const r=await pickTypes(S.cpu,1,'心臓を宣言する',`${OPN()}の心臓だと思う種類を選んでください。外すと手札をランダムに2枚捨てます。`,true,S.me);
@@ -3779,7 +3782,7 @@ async function guessAs(P,ty){
   if(res==='over')return;
   if(res==='hit'){S.phase='none';render();S.endTurn()}else render();
 }
-function onEnd(){if(PH()!=='guess'||S.busy)return;if(!tutOk('end'))return;if(S.me.f.mustGuess&&S.me.f.guesses>0&&S.me.hand.length)return;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'end'});render();return}endAs(S.me)}
+function onEnd(){if(S&&S.replay)return;if(PH()!=='guess'||S.busy)return;if(!tutOk('end'))return;if(S.me.f.mustGuess&&S.me.f.guesses>0&&S.me.hand.length)return;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'end'});render();return}endAs(S.me)}
 function endAs(P){if(S.phase!=='guess'||S.cur!==P||S.busy)return;if(P.f.mustGuess&&P.f.guesses>0&&P.hand.length)return;S.phase='none';render();S.endTurn()}
 
 /* ---- flow ---- */
@@ -4226,7 +4229,7 @@ function render0(){
   try{REC.snap()}catch(e){REC.on=false;console.error(e)}  // 記録でしくじっても、対戦は止めない
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
-  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.replay,HID=SP&&!RP;  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
+  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.rpAll,HID=SP&&!RP;  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
   const logScroll=$('#log')?.scrollTop||0;
   const kn=S.know.me;
   const notes=[];if(kn.stale)notes.push('※妖狐より前の判定を含む');if(kn.allowed)notes.push(`候補：${[...kn.allowed].map(N).join('・')}`);if(kn.excluded.size)notes.push(`除外：${[...kn.excluded].map(N).join('・')}`);
@@ -4260,7 +4263,7 @@ function render0(){
       <input type="range" class="mvol" id="sndV" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}>
       <button type="button" class="mrow" id="bgmB" aria-label="BGM">${BIC.bgm}<span>音楽</span><em class="${bgmOn()?'on':''}">${bgmOn()?'ON':'OFF'}</em></button>
       <input type="range" class="mvol" id="bgmV" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}>
-      <button type="button" class="mrow danger" id="quit">${SP?'観戦をやめる':'降参する'}</button>
+      <button type="button" class="mrow danger" id="quit">${S.replay?'リプレイをやめる':SP?'観戦をやめる':'降参する'}</button>
     </div>
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
@@ -4330,12 +4333,13 @@ function render0(){
   if(!SP){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
-  $('#quit').onclick=e=>{if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+  $('#quit').onclick=e=>{if(S.replay){rpcStop();RPV.cur=null;VIEW='replay';draw_();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
 }
 
 
 /* 手札のカードを上に引っ張って、手札の列より上で離すと使う（伏せ専用は伏せる）。横に動かしたときは手札のスクロールに任せる */
 function dragCard(b,e,card,cancelLp){
+  if(S&&S.replay)return;
   const sx=e.clientX,sy=e.clientY,hand=b.closest('.hand'),line=(hand?hand.getBoundingClientRect().top:innerHeight*.6)-24;
   let ghost=null,ox=0,oy=0,over=false;
   const move=ev=>{
@@ -4839,6 +4843,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:89,d:'2026-11-13',t:'ログインすると、毎日1パックもらえるようになりました（その日はじめてゲームを開いたときに届きます。Googleでログインしている人が対象です）。'},
   {id:88,d:'2026-11-12',t:'不具合の直し：妖狐などで「カードをえらぶ画面」が出る直前に手札のカードの説明を開くと、えらぶ画面が消えて対戦が止まってしまうことがある不具合を直しました。'},
   {id:87,d:'2026-11-12',t:'デッキ編成の上に固定されている「いまのデッキ」の小さなカードに、属性（月・血・聖・影・通常）の印が付きました。PCの対戦画面で、説明が長いカードを選ぶと文が途中で切れて読めなかったのを直しました。チュートリアルの「まん中の推理の状況」という案内を、PCでも分かる言い方に直しました（Discordでいただいた要望です）。'},
   {id:86,d:'2026-11-12',t:'デッキ編成の下に「デッキを保存する」ボタンを置きました。押すと、名前とアイコンを決めて「完成」で保存できます（カードの出し入れは、これまでどおりその場でも保存されます）。'},
@@ -5098,14 +5103,43 @@ const REC={on:false,ev:[],prev:{},last:'',q:0,t0:0,
   }};
 // ---- 演出つきの再生（2026-11-13）：記録した「盤面」と「演出」を、対戦に入った人（ゲスト）の画面と同じ仕組みで流す。
 //      下が部屋に入った側、上が部屋を開いた側。両方の手札と心臓が見える（S.replay）
-const RPC={on:false,data:null,meta:null,i:0,sp:1,paused:false,snap:{},run:0};
+const RPC={on:false,data:null,meta:null,i:0,sp:1,paused:false,snap:{},run:0,pov:'me',names:null};
 const rpcWait=ms=>new Promise(r=>setTimeout(r,ms));
 // 第2版の記録から、盤面をまるごと組み立て直す（差分を重ねる）
 function rpcMerge(base,d){for(const k in d){if(k==='logs')continue;if(k==='me'||k==='cpu'||k==='know')base[k]={...(base[k]||{}),...d[k]};else base[k]=d[k]}return base}
-async function rpcStart(data,meta){
+// 盤面の「部屋を開いた側（me）」と「入った側（cpu）」を入れ替える
+function rpcMirror(sn){
+  const sw=r=>r==='me'?'cpu':r==='cpu'?'me':r,tx=t=>String(t).replace(/@(me|cpu)/g,(m,r)=>'@'+sw(r));
+  return{...sn,me:sn.cpu,cpu:sn.me,know:{me:sn.know.cpu,cpu:sn.know.me},cards:sn.cards.map(([id,t,o])=>[id,t,sw(o)]),cur:sw(sn.cur),pick:sw(sn.pick),shake:sw(sn.shake),
+    hist:(sn.hist||[]).map(h=>({...h,who:sw(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:sw(a.who)})),
+    logs:(sn.logs||[]).map(e=>{const x={...e,who:sw(e.who),actor:sw(e.actor),t:tx(e.t)};if(x.to)x.to=sw(x.to);return x})};
+}
+// 見る人に合わせた盤面を作る。pov：'me'＝部屋を開いた側の視点、'cpu'＝入った側の視点、'all'＝両方見える。
+// 視点つきのときは、その人が対戦中に見ていたのと同じように、相手の手札・心臓・山札・伏せカードのうち、まだ知らないものを伏せる
+function rpcView(full,logs,pov){
+  let sn=JSON.parse(JSON.stringify(full));sn.logs=logs||[];sn.left=null;
+  if(pov==='all')return sn;
+  if(pov==='me')sn=rpcMirror(sn);
+  const known=new Set(sn.know.cpu.known||[]),o=sn.me,sec=new Set([...(o.hand||[]),...(o.deck||[]),o.heart,o.setCard].filter(x=>x!=null&&!known.has(x)));
+  sn.cards=sn.cards.map(([id,t,ow])=>[id,sec.has(id)?null:t,ow]);
+  sn.logs=sn.logs.filter(e=>!e.to||e.to==='cpu');
+  return sn;
+}
+// どちらの視点で見るかを選ぶ
+async function rpcChoose(data,meta){
+  const v=await modal(`<h2>どちらの視点で見ますか？</h2><p class="note" style="margin-top:0">選んだ人が対戦中に見ていた画面で再生します。相手の手札と心臓は、その人が知るまで伏せたままです。</p>
+    <div class="menu"><button type="button" class="mi main" data-pv="me"><b>${esc(data.names.me)} の視点</b><span>部屋を開いた側</span></button>
+      <button type="button" class="mi main" data-pv="cpu"><b>${esc(data.names.cpu)} の視点</b><span>部屋に入った側</span></button>
+      <button type="button" class="mi" data-pv="all"><b>両方の手札が見える</b><span>解説向き。おたがいの手札と心臓がすべて見えます</span></button></div>
+    <div class="btns" style="margin-top:12px"><button type="button" class="b" id="pvNo">やめる</button></div>`,(m,done)=>{m.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>done(b.dataset.pv));m.querySelector('#pvNo').onclick=()=>done(null)},()=>null);
+  if(v==='me'||v==='cpu'||v==='all')rpcStart(data,meta,v);else if(VIEW==='replay')renderReplay();
+}
+async function rpcStart(data,meta,pov){
   rpcStop(true);
-  RPC.on=true;RPC.data=data;RPC.meta=meta||RPC.meta;RPC.i=0;RPC.paused=false;RPC.snap={};const run=++RPC.run;
-  NET.spec=true;NET.watchNames={me:data.names.cpu,cpu:data.names.me};NET.fxq=Promise.resolve();
+  RPC.on=true;RPC.data=data;RPC.meta=meta||RPC.meta;RPC.i=0;RPC.paused=false;RPC.snap={};RPC.pov=pov||RPC.pov||'me';const run=++RPC.run;
+  // 見る人（下に出る人）と相手の名前
+  RPC.names=RPC.pov==='me'?{me:data.names.me,cpu:data.names.cpu}:{me:data.names.cpu,cpu:data.names.me};
+  NET.spec=RPC.pov==='all';NET.watchNames=RPC.names;NET.fxq=Promise.resolve();
   S=null;VIEW='battle';window.scrollTo(0,0);$('#app').innerHTML='<div class="onl"><p class="note">リプレイを始めます…</p></div>';rpcBar();
   const ev=data.ev;
   for(;RPC.i<ev.length;RPC.i++){
@@ -5117,8 +5151,8 @@ async function rpcStart(data,meta){
     while(RPC.paused&&run===RPC.run&&RPC.on)await rpcWait(150);
     if(run!==RPC.run||!RPC.on)return;
     try{
-      if(e.s){rpcMerge(RPC.snap,e.s);const sn=JSON.parse(JSON.stringify(RPC.snap));sn.logs=e.s.logs||[];sn.left=null;if(sn.me&&sn.cpu&&sn.cards)guestApply(sn)}
-      else if(e.f)guestFx(e.f[0],e.f[1]);
+      if(e.s){rpcMerge(RPC.snap,e.s);if(RPC.snap.me&&RPC.snap.cpu&&RPC.snap.cards)guestApply(rpcView(RPC.snap,e.s.logs,RPC.pov))}
+      else if(e.f)rpcFx(e.f[0],e.f[1]);
     }catch(err){console.error(err)}
     rpcBar();
   }
@@ -5126,10 +5160,18 @@ async function rpcStart(data,meta){
   if(run!==RPC.run||!RPC.on)return;
   RPC.done=true;rpcBar();
   const w=data.names[data.winner];
-  const v=await modal(`<div class="result"><span class="big win" style="font-size:30px">決着</span><p><b>${esc(w)}</b> の勝ち</p><div class="btns"><button type="button" class="b primary" id="rcAgain">もう一度見る</button><button type="button" class="b" id="rcStep">コマ送りで見る</button><button type="button" class="b" id="rcList">一覧へ</button></div></div>`,(m,done)=>{m.querySelector('#rcAgain').onclick=()=>done('again');m.querySelector('#rcStep').onclick=()=>done('step');m.querySelector('#rcList').onclick=()=>done('list')},()=>'list');
+  const v=await modal(`<div class="result"><span class="big win" style="font-size:30px">決着</span><p><b>${esc(w)}</b> の勝ち</p><div class="btns"><button type="button" class="b primary" id="rcAgain">もう一度見る</button><button type="button" class="b" id="rcPov">視点を変える</button><button type="button" class="b" id="rcStep">コマ送りで見る</button><button type="button" class="b" id="rcList">一覧へ</button></div></div>`,(m,done)=>{m.querySelector('#rcAgain').onclick=()=>done('again');m.querySelector('#rcPov').onclick=()=>done('pov');m.querySelector('#rcStep').onclick=()=>done('step');m.querySelector('#rcList').onclick=()=>done('list')},()=>'list');
   if(run!==RPC.run)return;
-  if(v==='again')return rpcStart(data,meta);
-  rpcStop();if(v==='step')rpvOpen(data,RPC.meta);else{RPV.cur=null;VIEW='replay';draw_()}
+  if(v==='again')return rpcStart(data,meta,RPC.pov);
+  const m2=RPC.meta;rpcStop();
+  if(v==='pov'){VIEW='replay';draw_();rpcChoose(data,m2)}else if(v==='step')rpvOpen(data,m2);else{RPV.cur=null;VIEW='replay';draw_()}
+}
+// 演出を流す。記録は「部屋を開いた側」から見た形なので、入った側の視点・両方見える表示では左右（me／cpu）を入れ替える
+function rpcFx(name,a){
+  if(!FX_OK.has(name)||!Array.isArray(a))return;
+  const args=RPC.pov==='me'?a:a.map(swR);
+  if(fxKick){const k=fxKick;setTimeout(k,700)}
+  NET.fxq=NET.fxq.then(()=>S&&S.replay?window[name](...args):0).catch(e=>console.error(e));
 }
 function rpcStop(keep){
   RPC.run++;RPC.on=false;RPC.done=false;RPC.paused=false;
@@ -5146,10 +5188,11 @@ function rpcBar(){
     b.onclick=e=>{const k=e.target.closest('[data-rc]');if(!k)return;const c=k.dataset.rc;
       if(c==='pause'){RPC.paused=!RPC.paused;rpcBar()}
       else if(c==='sp'){RPC.sp=RPC.sp>=3?1:RPC.sp+1;rpcBar()}
+      else if(c==='pov'){const d=RPC.data,m=RPC.meta;rpcStop();VIEW='replay';draw_();rpcChoose(d,m)}
       else if(c==='step'){const d=RPC.data,m=RPC.meta;rpcStop();rpvOpen(d,m)}
       else if(c==='quit'){rpcStop();RPV.cur=null;VIEW='replay';draw_()}}}
   const n=RPC.data?RPC.data.ev.length:0;
-  b.innerHTML=`<span class="rcT">リプレイ ${n?Math.round(Math.min(RPC.i+1,n)/n*100):0}%</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button><button type="button" data-rc="step">コマ送り</button><button type="button" data-rc="quit">やめる</button>`;
+  b.innerHTML=`<span class="rcT">${RPC.pov==='all'?'両方見える':esc(RPC.names?RPC.names.me:'')+'の視点'}　${n?Math.round(Math.min(RPC.i+1,n)/n*100):0}%</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button><button type="button" data-rc="pov">視点</button><button type="button" data-rc="step">コマ送り</button><button type="button" data-rc="quit">やめる</button>`;
 }
 // ---- 見る側（運営だけ）
 const RPV={list:null,total:0,err:'',cur:null,full:[],i:0,play:false,sp:1,tm:0,meta:null};
@@ -5184,7 +5227,7 @@ function rpvFromV2(data){
 async function rpvFetch(id){
   const {data,error}=await LADDER.sb.rpc('replay_get',{p_match:id});
   if(error||!data||!data.ok){RPV.err='記録を読みこめませんでした。';return renderReplay()}
-  try{const d=await REC.unzip(data.data),m={id:data.id,at:data.at,keep:data.keep,...data.meta};if(d.v===2&&d.ev&&d.ev.length)rpcStart(d,m);else rpvOpen(d,m)}catch(e){console.error(e);RPV.err='記録をひらけませんでした（こわれているかもしれません）。';renderReplay()}
+  try{const d=await REC.unzip(data.data),m={id:data.id,at:data.at,keep:data.keep,...data.meta};if(d.v===2&&d.ev&&d.ev.length)rpcChoose(d,m);else rpvOpen(d,m)}catch(e){console.error(e);RPV.err='記録をひらけませんでした（こわれているかもしれません）。';renderReplay()}
 }
 function rpvStep(n){RPV.i=Math.max(0,Math.min(RPV.full.length-1,n));if(RPV.i>=RPV.full.length-1)rpvPlay(false);renderReplay()}
 function rpvPlay(on){RPV.play=on;clearInterval(RPV.tm);if(on){if(RPV.i>=RPV.full.length-1)RPV.i=0;RPV.tm=setInterval(()=>{if(VIEW!=='replay'||!RPV.cur)return rpvPlay(false);rpvStep(RPV.i+1)},1100/RPV.sp)}}
@@ -5225,7 +5268,7 @@ function renderReplay(){
   $('#rvPlay').onclick=()=>{rpvPlay(!RPV.play);renderReplay()};
   $('#rvSp').onclick=()=>{RPV.sp=RPV.sp>=4?1:RPV.sp*2;if(RPV.play)rpvPlay(true);renderReplay()};
   $('#rvSl').oninput=e=>{rpvPlay(false);rpvStep(+e.target.value)};
-  {const c=$('#rvCine');if(c)c.onclick=()=>{rpvPlay(false);const src=D.src,m=RPV.meta;RPV.cur=null;rpcStart(src,m)}}
+  {const c=$('#rvCine');if(c)c.onclick=()=>{rpvPlay(false);const src=D.src,m=RPV.meta;RPV.cur=null;VIEW='replay';draw_();rpcChoose(src,m)}}
   const li=$('#rvLogIn');if(li)li.scrollTop=li.scrollHeight;
 }
 const swR=r=>r==='me'?'cpu':r==='cpu'?'me':r;
@@ -5520,7 +5563,7 @@ function guestApply(sn){
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:swR(a.who)})),last:old?old.last:null,
     turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,picking:sn.pick?pl[swR(sn.pick)]:null,
-    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,replay:RPC.on,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
+    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,replay:RPC.on,rpAll:RPC.on&&RPC.pov==='all',gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:RPC.on?{...RPC.names}:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});
   S=n;

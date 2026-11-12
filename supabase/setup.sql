@@ -564,9 +564,10 @@ alter table public.packs enable row level security;
 revoke all on public.packs from anon, authenticated;
 
 -- 自分のパックの数。まだもらっていないプレゼントがあればここで渡す（got に 'login' / 'ranked'）
+alter table public.packs add column if not exists daily_on date;   -- 毎日のプレゼントを最後に渡した日（日本時間）
 create or replace function public.pack_state()
 returns json language plpgsql security definer set search_path = public as $$
-declare me uuid := auth.uid(); p public.packs; got text[] := '{}';
+declare me uuid := auth.uid(); p public.packs; got text[] := '{}'; today date := (now() at time zone 'Asia/Tokyo')::date;
 begin
   if me is null then raise exception 'not signed in'; end if;
   insert into players(id) values (me) on conflict (id) do nothing;
@@ -577,6 +578,10 @@ begin
   end if;
   if not p.ranked_bonus and exists (select 1 from matches m where m.ranked and m.status = 'done' and me in (m.p1, m.p2)) then
     update packs set n = n + 5, ranked_bonus = true where uid = me; got := got || 'ranked'::text;
+  end if;
+  -- 毎日のプレゼント：その日（日本時間）はじめてのログインで1パック（2026-11-13）
+  if p.daily_on is null or p.daily_on < today then
+    update packs set n = n + 1, daily_on = today where uid = me; got := got || 'daily'::text;
   end if;
   return json_build_object('n', (select n from packs where uid = me), 'got', to_json(got),
     'ranked_bonus', (select ranked_bonus from packs where uid = me));
