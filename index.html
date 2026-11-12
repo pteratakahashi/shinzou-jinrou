@@ -2078,7 +2078,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112120123';
+const APP_VER='20261112130513';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4216,7 +4216,7 @@ function render0(){
   if(VIEW==='battle'&&S&&!S.over)guardHist();
   if(VIEW==='battle')setBg('home_a','dark');
   if(S&&S.online&&!S.guest)NET.sync();
-  REC.snap();
+  try{REC.snap()}catch(e){REC.on=false;console.error(e)}  // 記録でしくじっても、対戦は止めない
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
   const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec;
