@@ -142,6 +142,13 @@ html.fit-wide .rvRoot{position:relative;left:50%;transform:translateX(-50%);widt
 html.fit-wide .rvGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px}html.fit-wide .rvLogIn{max-height:600px}
 html.fit-wide .rvSlot{width:80px}html.fit-wide .rvSlot .tcg,html.fit-wide .rvSlot .emptySlot,html.fit-wide .rvHand .tcg{width:74px}html.fit-wide .rvCand .nwT span{font-size:11px}
 @media (min-width:1000px){.rvCand{grid-template-columns:repeat(7,minmax(0,1fr))}}
+
+/* 演出つきのリプレイ：操作の帯、相手の手札を表にする */
+#rpcBar{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(18,8,11,.94);border:1px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.6);white-space:nowrap}
+#rpcBar .rcT{font:700 12px var(--pcf);color:var(--gold);padding:0 6px}
+#rpcBar button{font:700 12px var(--pcf);background:none;color:var(--ivory);border:1px solid var(--hair);padding:5px 10px;cursor:pointer}
+.oppHand.open .tcg{width:var(--ohw,34px)}
+html.fit-wide .oppHand.open .tcg{width:58px}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2078,7 +2085,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112130513';
+const APP_VER='20261112134147';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2100,7 +2107,7 @@ const maxOwn=k=>C[k].single?1:3;
 const $=s=>document.querySelector(s);
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 // 打ち切った対戦（S.aborted：ランクマッチの相手が見つかって中断した CPU 対戦）の続きは、ここで止めて二度と動かさない
-const sleep=ms=>{const g=typeof S!=="undefined"?S:null;if(g&&g.sim)return Promise.resolve();return new Promise(r=>setTimeout(()=>{if(g&&g.aborted)return;r()},RM?Math.min(ms,120):ms))};
+const sleep=ms=>{const g=typeof S!=="undefined"?S:null;if(g&&g.sim)return Promise.resolve();return new Promise(r=>setTimeout(()=>{if(g&&g.aborted)return;r()},(RM?Math.min(ms,120):ms)/(typeof RPC!=='undefined'&&RPC.on?RPC.sp:1)))};
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const rand=a=>a[Math.floor(Math.random()*a.length)];
 const rm=(arr,c)=>{const i=arr.indexOf(c);if(i>=0)arr.splice(i,1)};
@@ -3153,7 +3160,7 @@ const ranked=p=>Object.entries(probs(p).w).sort((a,b)=>b[1]-a[1]||Math.random()-
 let fxKick=null;
 async function fxShow(html,ms,skip){const g0=S;if(g0&&g0.aborted)return new Promise(()=>{});const fx=$('#fx');fx.innerHTML=html;fx.hidden=false;if(!skip)return sleep(ms);
   // ★読ませたい演出（相手のカードなど）は長めに出し、タップで先へ進める。動きを減らす設定でも読む時間は削らない
-  fx.classList.add('skip');await new Promise(r=>{const t=setTimeout(r,ms);fxKick=fx.onclick=()=>{clearTimeout(t);r()}});fxKick=null;fx.onclick=null;fx.classList.remove('skip');if(g0&&g0.aborted)return new Promise(()=>{})}
+  fx.classList.add('skip');await new Promise(r=>{const t=setTimeout(r,ms/(RPC.on?RPC.sp:1));fxKick=fx.onclick=()=>{clearTimeout(t);r()}});fxKick=null;fx.onclick=null;fx.classList.remove('skip');if(g0&&g0.aborted)return new Promise(()=>{})}
 function fxClear(){const fx=$('#fx');fx.hidden=true;fx.innerHTML=''}
 async function fxSet(who){await fxShow(`<div class="fxcard">${backHTML('l','伏せ')}<div class="by">${who==='me'?MYN():OPN()}がカードを伏せた</div></div>`,who==='me'?800:1300);fxClear()}
 async function fxTrap(k){VOICE.say('Trap card!');await fxStamp('発動','guard',k)}
@@ -3731,7 +3738,7 @@ function playerTurn(p,plays){
   return new Promise(res=>{S.endTurn=res});
 }
 // 画面に出す手番の状態。オンラインでは S.phase は手番の人のものなので、相手の番は「考えています」にする
-function PH(){if(!S||S.over)return'none';if(S.cur&&S.cur!==S.me&&(S.phase==='play'||S.phase==='guess'))return'cpu';return S.phase}
+function PH(){if(!S||S.over)return'none';if(S.replay)return'cpu';if(S.cur&&S.cur!==S.me&&(S.phase==='play'||S.phase==='guess'))return'cpu';return S.phase}
 const canSetIn=(P,ph)=>RULES.freeSet?P.f.setFree>0&&(ph==='play'||ph==='guess'):ph==='play';
 const canPickIn=(P,ph)=>ph==='play'||(RULES.freeSet&&ph==='guess'&&P.f.setFree>0);
 async function onPlay(){return onUse(false)}
@@ -4219,7 +4226,7 @@ function render0(){
   try{REC.snap()}catch(e){REC.on=false;console.error(e)}  // 記録でしくじっても、対戦は止めない
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
-  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec;
+  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.replay,HID=SP&&!RP;  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
   const logScroll=$('#log')?.scrollTop||0;
   const kn=S.know.me;
   const notes=[];if(kn.stale)notes.push('※妖狐より前の判定を含む');if(kn.allowed)notes.push(`候補：${[...kn.allowed].map(N).join('・')}`);if(kn.excluded.size)notes.push(`除外：${[...kn.excluded].map(N).join('・')}`);
@@ -4232,9 +4239,9 @@ function render0(){
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
   if(S.picking&&!S.over)phase=S.picking===me&&!SP?'新しい心臓を選んでください':`${S.picking===me?MYN():OPN()}が新しい心臓を選んでいます…`;
-  if(!SP)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
+  if(!HID)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
   const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
-  const myHand=SP?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
+  const myHand=HID?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
@@ -4258,28 +4265,28 @@ function render0(){
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
-    <div class="tableRow"><div class="slot">${backHTML('s')}心臓</div><div class="slot">${cpu.setCard?backHTML('s','伏せ'):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand" aria-hidden="true">${cpu.hand.map(()=>backHTML('s')).join('')}</div></div></div>
+    <div class="tableRow"><div class="slot">${RP&&cpu.heart&&cpu.heart.type?cardHTML(cpu.heart.type,'s'):backHTML('s')}心臓</div><div class="slot">${cpu.setCard?(RP&&cpu.setCard.type?cardHTML(cpu.setCard.type,'s'):backHTML('s','伏せ')):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand ${RP?'open':''}" aria-hidden="true">${cpu.hand.map(c=>RP&&c.type?cardHTML(c.type,'s'):backHTML('s')).join('')}</div></div></div>
     ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
     <div class="sh"><span class="label">推理の状況</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率</label></div>
     ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button><button type="button" class="chip pct ${SV.showP?'on':''}" id="pTog2" aria-pressed="${!!SV.showP}" aria-label="確率を表示">%</button></div>
     <div class="duo t-${TRK}">
-      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
-      <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種${SP?'':`・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em>`}</span></div>${trackGrid(me,cpu,SP?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
+      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me,RP&&cpu.heart?cpu.heart.type:null)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
+      <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種${SP?'':`・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em>`}</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
   </section>
   ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
   <div class="lastLog btLast ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
   <section class="zone side btMe ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
     <div class="sh"><span class="who">${MYN()}</span>${lives(me)}${mini(me)}</div>${badges(me)}
-    <div class="tableRow"><div class="slot">${ready&&!SP?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?SP?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
+    <div class="tableRow"><div class="slot">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
   </section>
-  ${SP?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
+  ${HID?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています… <b id="pauseSec">${pauseLeftText()}</b>${NET.ranked&&NET.mid?'（相手が戻ってこなければ、あなたの勝ちになります）':'（戻ってこなければ、対戦を終了します）'}</div>`:''}
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}${mmInlineHTML()}</div>
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」＝伏せ札のふりをして伏せる。次の相手ターンに相手がカードを使わなければ成功：手札に戻り、1枚多く使え、相手の心臓ではない種類を1つ知る。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
-    ${SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
+    ${RP?'<p class="note">リプレイです。両方の手札と心臓が見えています。</p>':SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set&&!useBlock(me,S.sel.type)?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':S.sel&&czBlock(me,S.sel.type)?'呪いで使えない':S.sel&&useBlock(me,S.sel.type)?'今は使えない':'使う'}</button>
       <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
       ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
@@ -5055,21 +5062,27 @@ async function showBoard(){
    ランクマッチを、ホスト側の端末が盤面の変わった所だけ記録し、終わったときに圧縮してサーバーに預ける（setup.sql の replay_put）。
    見られるのは運営だけ（admins 表。LADDER.admin）。見る側は VIEW==='replay'（renderReplay）。対戦している人の手札と心臓もすべて見える。
    1試合ぶんは圧縮して3KBほど。7日で消える（残す印を付けたものは残る） */
-const REC={on:false,fr:[],prev:{},t0:0,test:false,
-  start(){REC.on=true;REC.fr=[];REC.prev={};REC.t0=Date.now()},
-  // 盤面の変わった所だけを1コマとして足す（render のたびに呼ばれる）
+const REC={on:false,ev:[],prev:{},last:'',q:0,t0:0,
+  start(){REC.on=true;REC.ev=[];REC.prev={};REC.last='';REC.q=LOGQ;REC.t0=Date.now()},
+  // 盤面（何も伏せない版）の、前から変わった所だけを足す。render のたびに呼ばれる
   snap(){
-    if(!REC.on||!S||S.guest||S.spec||!(S.online||REC.test)||!S.me.heart||!S.cpu.heart||REC.fr.length>=700)return;
-    const P=p=>({l:p.life,h:p.hand.map(c=>c.type),hr:p.heart.type,s:p.setCard?p.setCard.type:null,d:p.deck.length,x:p.discard.map(c=>c.type),a:p.lastAttr||''});
-    const Kx=k=>({e:[...k.excluded],a:k.allowed?[...k.allowed]:null});
-    const f={t:S.turnNo,r:S.round||1,c:S.cur?whoOf(S.cur):'',ph:S.phase,pk:S.picking?whoOf(S.picking):'',me:P(S.me),cpu:P(S.cpu),k:[Kx(S.know.me),Kx(S.know.cpu)],n:S.log.length,ov:S.over?1:0};
-    const d={};let ch=false;for(const k in f){const j=JSON.stringify(f[k]);if(REC.prev[k]!==j){d[k]=f[k];REC.prev[k]=j;ch=true}}
-    if(ch){d.at=Math.round((Date.now()-REC.t0)/1000);REC.fr.push(d)}
+    if(!REC.on||!S||S.guest||S.spec||!S.online||REC.ev.length>=1500)return;
+    const sn=netSnap('rec');sn.left=null;sn.watchers=0;sn.busy=false;
+    const logs=sn.logs;delete sn.logs;const j=JSON.stringify(sn);
+    if(j===REC.last&&!logs.length)return;REC.last=j;
+    if(logs.length)REC.q=logs[logs.length-1].q;
+    const d={};
+    for(const k in sn){
+      if(k==='me'||k==='cpu'||k==='know'){const sub={};let ch=false;for(const kk in sn[k]){const jj=JSON.stringify(sn[k][kk]);if(REC.prev[k+'.'+kk]!==jj){sub[kk]=sn[k][kk];REC.prev[k+'.'+kk]=jj;ch=true}}if(ch)d[k]=sub}
+      else{const jj=JSON.stringify(sn[k]);if(REC.prev[k]!==jj){d[k]=sn[k];REC.prev[k]=jj}}
+    }
+    if(logs.length)d.logs=logs.map(e=>{const x={t:e.t,who:e.who,q:e.q};if(e.to)x.to=e.to;if(e.hdr)x.hdr=1;if(e.actor)x.actor=e.actor;if(e.turn!=null)x.turn=e.turn;return x});
+    REC.ev.push({at:Date.now()-REC.t0,s:d});
   },
+  // 演出（ゲストに送るのと同じ呼び出し）
+  fx(n,a){if(REC.on&&REC.ev.length<1500)REC.ev.push({at:Date.now()-REC.t0,f:[n,a]})},
   pack(win){
-    const dk=p=>({types:[...p.types],single:p.single});
-    return{v:1,ver:String(APP_VER),names:{me:S.online?netName():'あなた',cpu:S.online?(NET.opp||'相手'):'CPU'},decks:{me:dk(S.me),cpu:dk(S.cpu)},winner:win?'me':'cpu',
-      frames:REC.fr,log:S.log.map(e=>[e.who||'',e.t])};
+    return{v:2,ver:String(APP_VER),names:{me:netName(),cpu:NET.opp||'相手'},winner:win?'me':'cpu',ev:REC.ev};
   },
   async zip(obj){const cs=new CompressionStream('gzip'),w=cs.writable.getWriter();w.write(new TextEncoder().encode(JSON.stringify(obj)));w.close();const b=new Uint8Array(await new Response(cs.readable).arrayBuffer());let t='';for(let i=0;i<b.length;i+=8192)t+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(t)},
   async unzip(b64){const bin=atob(b64),b=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);const ds=new DecompressionStream('gzip'),w=ds.writable.getWriter();w.write(b);w.close();return JSON.parse(await new Response(ds.readable).text())},
@@ -5078,11 +5091,66 @@ const REC={on:false,fr:[],prev:{},t0:0,test:false,
     try{
       if(!REC.on||!S||!NET.mid||!LADDER.sb||!LADDER.uid()||typeof CompressionStream==='undefined')return;
       REC.snap();const mid=NET.mid,data=REC.pack(win);REC.on=false;
-      const meta={names:[data.names.me,data.names.cpu],winner:data.names[data.winner],turns:S.turnNo,sec:Math.round((Date.now()-REC.t0)/1000),frames:data.frames.length,ver:data.ver,life:[S.me.life,S.cpu.life]};
+      const meta={names:[data.names.me,data.names.cpu],winner:data.names[data.winner],turns:S.turnNo,sec:Math.round((Date.now()-REC.t0)/1000),frames:data.ev.length,ver:data.ver,life:[S.me.life,S.cpu.life],v:2};
       const b64=await REC.zip(data);
       const {error}=await LADDER.sb.rpc('replay_put',{p_match:mid,p_meta:meta,p_data:b64});if(error&&!/PGRST202/.test(error.code||''))console.error(error);
     }catch(e){console.error(e)}
   }};
+// ---- 演出つきの再生（2026-11-13）：記録した「盤面」と「演出」を、対戦に入った人（ゲスト）の画面と同じ仕組みで流す。
+//      下が部屋に入った側、上が部屋を開いた側。両方の手札と心臓が見える（S.replay）
+const RPC={on:false,data:null,meta:null,i:0,sp:1,paused:false,snap:{},run:0};
+const rpcWait=ms=>new Promise(r=>setTimeout(r,ms));
+// 第2版の記録から、盤面をまるごと組み立て直す（差分を重ねる）
+function rpcMerge(base,d){for(const k in d){if(k==='logs')continue;if(k==='me'||k==='cpu'||k==='know')base[k]={...(base[k]||{}),...d[k]};else base[k]=d[k]}return base}
+async function rpcStart(data,meta){
+  rpcStop(true);
+  RPC.on=true;RPC.data=data;RPC.meta=meta||RPC.meta;RPC.i=0;RPC.paused=false;RPC.snap={};const run=++RPC.run;
+  NET.spec=true;NET.watchNames={me:data.names.cpu,cpu:data.names.me};NET.fxq=Promise.resolve();
+  S=null;VIEW='battle';window.scrollTo(0,0);$('#app').innerHTML='<div class="onl"><p class="note">リプレイを始めます…</p></div>';rpcBar();
+  const ev=data.ev;
+  for(;RPC.i<ev.length;RPC.i++){
+    const e=ev[RPC.i];
+    try{await NET.fxq}catch(_){}
+    if(run!==RPC.run||!RPC.on)return;
+    // 考えている時間は短くつめる（最大1.2秒）
+    const gap=Math.min(1200,Math.max(0,e.at-(RPC.i?ev[RPC.i-1].at:e.at)))/RPC.sp;if(gap>30)await rpcWait(gap);
+    while(RPC.paused&&run===RPC.run&&RPC.on)await rpcWait(150);
+    if(run!==RPC.run||!RPC.on)return;
+    try{
+      if(e.s){rpcMerge(RPC.snap,e.s);const sn=JSON.parse(JSON.stringify(RPC.snap));sn.logs=e.s.logs||[];sn.left=null;if(sn.me&&sn.cpu&&sn.cards)guestApply(sn)}
+      else if(e.f)guestFx(e.f[0],e.f[1]);
+    }catch(err){console.error(err)}
+    rpcBar();
+  }
+  try{await NET.fxq}catch(_){}
+  if(run!==RPC.run||!RPC.on)return;
+  RPC.done=true;rpcBar();
+  const w=data.names[data.winner];
+  const v=await modal(`<div class="result"><span class="big win" style="font-size:30px">決着</span><p><b>${esc(w)}</b> の勝ち</p><div class="btns"><button type="button" class="b primary" id="rcAgain">もう一度見る</button><button type="button" class="b" id="rcStep">コマ送りで見る</button><button type="button" class="b" id="rcList">一覧へ</button></div></div>`,(m,done)=>{m.querySelector('#rcAgain').onclick=()=>done('again');m.querySelector('#rcStep').onclick=()=>done('step');m.querySelector('#rcList').onclick=()=>done('list')},()=>'list');
+  if(run!==RPC.run)return;
+  if(v==='again')return rpcStart(data,meta);
+  rpcStop();if(v==='step')rpvOpen(data,RPC.meta);else{RPV.cur=null;VIEW='replay';draw_()}
+}
+function rpcStop(keep){
+  RPC.run++;RPC.on=false;RPC.done=false;RPC.paused=false;
+  const b=document.getElementById('rpcBar');if(b)b.remove();
+  if(keep)return;
+  modalKill();fxClear();NET.spec=false;NET.watchNames=null;NET.fxq=Promise.resolve();S=null;
+  document.body.classList.remove('inBattle','resultOn','hitstop');
+}
+// 再生中に出す小さな操作の帯
+function rpcBar(){
+  let b=document.getElementById('rpcBar');
+  if(!RPC.on){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.id='rpcBar';document.body.appendChild(b);
+    b.onclick=e=>{const k=e.target.closest('[data-rc]');if(!k)return;const c=k.dataset.rc;
+      if(c==='pause'){RPC.paused=!RPC.paused;rpcBar()}
+      else if(c==='sp'){RPC.sp=RPC.sp>=3?1:RPC.sp+1;rpcBar()}
+      else if(c==='step'){const d=RPC.data,m=RPC.meta;rpcStop();rpvOpen(d,m)}
+      else if(c==='quit'){rpcStop();RPV.cur=null;VIEW='replay';draw_()}}}
+  const n=RPC.data?RPC.data.ev.length:0;
+  b.innerHTML=`<span class="rcT">リプレイ ${n?Math.round(Math.min(RPC.i+1,n)/n*100):0}%</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button><button type="button" data-rc="step">コマ送り</button><button type="button" data-rc="quit">やめる</button>`;
+}
 // ---- 見る側（運営だけ）
 const RPV={list:null,total:0,err:'',cur:null,full:[],i:0,play:false,sp:1,tm:0,meta:null};
 async function rpvLoadList(){
@@ -5093,13 +5161,30 @@ async function rpvLoadList(){
 }
 // 記録を開く：差分をたどって、1コマごとの盤面をぜんぶ作っておく
 function rpvOpen(data,meta){
+  if(data.v===2)data=rpvFromV2(data);
   const full=[];let cur={};for(const d of data.frames){cur={...cur,...d};full.push(cur)}
   RPV.cur=data;RPV.full=full;RPV.i=0;RPV.play=false;RPV.meta=meta||null;clearInterval(RPV.tm);VIEW='replay';window.scrollTo(0,0);draw_();
+}
+// 第2版（盤面＋演出）の記録を、コマ送りの画面で使う形に直す
+function rpvFromV2(data){
+  const snap={},frames=[],log=[];let prev={},decks=null;
+  for(const e of data.ev){if(!e.s)continue;rpcMerge(snap,e.s);(e.s.logs||[]).forEach(x=>log.push([x.who||'',x.t]));
+    if(!snap.me||!snap.cpu||!snap.cards)continue;
+    const ty={};snap.cards.forEach(([id,t])=>ty[id]=t);
+    if(!decks)decks={me:{types:[...snap.me.types],single:snap.me.single},cpu:{types:[...snap.cpu.types],single:snap.cpu.single}};
+    const P=p=>({l:p.life,h:(p.hand||[]).map(i=>ty[i]).filter(Boolean),hr:p.heart!=null?ty[p.heart]:null,s:p.setCard!=null?ty[p.setCard]:null,d:(p.deck||[]).length,x:(p.discard||[]).map(i=>ty[i]).filter(Boolean),a:p.lastAttr||''});
+    const Kx=k=>({e:k.excluded||[],a:k.allowed||null});
+    if(snap.me.heart==null||snap.cpu.heart==null)continue;
+    const f={t:snap.turnNo,r:snap.round||1,c:snap.cur||'',ph:snap.phase,pk:snap.pick||'',me:P(snap.me),cpu:P(snap.cpu),k:[Kx(snap.know.me),Kx(snap.know.cpu)],n:log.length,ov:snap.over?1:0};
+    const d={};let ch=false;for(const k in f){const j=JSON.stringify(f[k]);if(prev[k]!==j){d[k]=f[k];prev[k]=j;ch=true}}
+    if(ch){d.at=Math.round(e.at/1000);frames.push(d)}
+  }
+  return{v:1,ver:data.ver,names:data.names,decks:decks||{me:{types:[],single:null},cpu:{types:[],single:null}},winner:data.winner,frames,log,src:data};
 }
 async function rpvFetch(id){
   const {data,error}=await LADDER.sb.rpc('replay_get',{p_match:id});
   if(error||!data||!data.ok){RPV.err='記録を読みこめませんでした。';return renderReplay()}
-  try{rpvOpen(await REC.unzip(data.data),{id:data.id,at:data.at,keep:data.keep,...data.meta})}catch(e){console.error(e);RPV.err='記録をひらけませんでした（こわれているかもしれません）。';renderReplay()}
+  try{const d=await REC.unzip(data.data),m={id:data.id,at:data.at,keep:data.keep,...data.meta};if(d.v===2&&d.ev&&d.ev.length)rpcStart(d,m);else rpvOpen(d,m)}catch(e){console.error(e);RPV.err='記録をひらけませんでした（こわれているかもしれません）。';renderReplay()}
 }
 function rpvStep(n){RPV.i=Math.max(0,Math.min(RPV.full.length-1,n));if(RPV.i>=RPV.full.length-1)rpvPlay(false);renderReplay()}
 function rpvPlay(on){RPV.play=on;clearInterval(RPV.tm);if(on){if(RPV.i>=RPV.full.length-1)RPV.i=0;RPV.tm=setInterval(()=>{if(VIEW!=='replay'||!RPV.cur)return rpvPlay(false);rpvStep(RPV.i+1)},1100/RPV.sp)}}
@@ -5132,7 +5217,7 @@ function renderReplay(){
   $('#app').innerHTML=`<div class="rvRoot">`+top(`${esc(NM.me)} <i class="rvVs">vs</i> ${esc(NM.cpu)}`,'一覧へ')+`
     <div class="rvBar"><span>ROUND ${f.r||1}・${f.t||0}ターン目${f.c?'（'+esc(NM[f.c])+'）':''}${PHN[f.ph]?'・'+PHN[f.ph]:''}${f.ov?`・<b>決着：${esc(NM[D.winner])}の勝ち</b>`:''}</span><span>${RPV.i+1} / ${RPV.full.length}・${Math.floor((f.at||0)/60)}:${String((f.at||0)%60).padStart(2,'0')}</span></div>
     <div class="rvCtl"><button type="button" class="b small" id="rv0" aria-label="最初へ">⏮</button><button type="button" class="b small" id="rvP" aria-label="1つ戻る">◀</button><button type="button" class="b primary" id="rvPlay">${RPV.play?'一時停止':'再生'}</button><button type="button" class="b small" id="rvN" aria-label="1つ進む">▶</button><button type="button" class="b small" id="rvT" aria-label="次のターンへ">次のターン</button>
-      <button type="button" class="b small" id="rvSp">速さ ×${RPV.sp}</button><input type="range" id="rvSl" min="0" max="${RPV.full.length-1}" value="${RPV.i}" aria-label="再生する場所"></div>
+      ${D.src?'<button type="button" class="b small primary" id="rvCine">演出つきで見る</button>':''}<button type="button" class="b small" id="rvSp">速さ ×${RPV.sp}</button><input type="range" id="rvSl" min="0" max="${RPV.full.length-1}" value="${RPV.i}" aria-label="再生する場所"></div>
     <div class="rvGrid">${side('cpu')}${side('me')}<section class="rvLog"><div class="rvCandH">対戦の記録</div><div class="rvLogIn" id="rvLogIn">${logs.slice(-60).map(e=>`<p class="${e[0]}">${nmx(e[1])}</p>`).join('')||'<p class="note">まだありません</p>'}</div></section></div></div>`;
   $('#rvBack').onclick=()=>{rpvPlay(false);RPV.cur=null;RPV.list?renderReplay():rpvLoadList()};
   $('#rv0').onclick=()=>{rpvPlay(false);rpvStep(0)};$('#rvP').onclick=()=>{rpvPlay(false);rpvStep(RPV.i-1)};$('#rvN').onclick=()=>{rpvPlay(false);rpvStep(RPV.i+1)};
@@ -5140,6 +5225,7 @@ function renderReplay(){
   $('#rvPlay').onclick=()=>{rpvPlay(!RPV.play);renderReplay()};
   $('#rvSp').onclick=()=>{RPV.sp=RPV.sp>=4?1:RPV.sp*2;if(RPV.play)rpvPlay(true);renderReplay()};
   $('#rvSl').oninput=e=>{rpvPlay(false);rpvStep(+e.target.value)};
+  {const c=$('#rvCine');if(c)c.onclick=()=>{rpvPlay(false);const src=D.src,m=RPV.meta;RPV.cur=null;rpcStart(src,m)}}
   const li=$('#rvLogIn');if(li)li.scrollTop=li.scrollHeight;
 }
 const swR=r=>r==='me'?'cpu':r==='cpu'?'me':r;
@@ -5396,7 +5482,9 @@ function netSnap(spec,full){
   const gk=S.know.cpu.known,hide=new Set(),secret=p=>[...p.hand,...p.deck,p.heart,p.setCard];
   secret(S.me).forEach(c=>{if(c&&!gk.has(c.id))hide.add(c.id)});
   if(spec)secret(S.cpu).forEach(c=>{if(c&&!S.know.me.known.has(c.id))hide.add(c.id)});
-  const logs=spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
+  // spec==='rec'：リプレイの記録用。何も伏せず、記録の文もぜんぶ入れる
+  if(spec==='rec')hide.clear();
+  const logs=spec==='rec'?S.log.filter(e=>e.q>REC.q):spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
   return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,pick:S.picking?whoOf(S.picking):null,me:P(S.me),cpu:P(S.cpu),
     cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,acts:(S.acts||[]).slice(-40),logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
 }
@@ -5415,7 +5503,7 @@ function hostCmd(m){
 let MXin=0;
 ['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle'].forEach(n=>{
   const f=window[n];
-  window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a})}MXin++;try{return await f(...a)}finally{MXin--}};
+  window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a});REC.fx(n,a)}MXin++;try{return await f(...a)}finally{MXin--}};
 });
 const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle']);
 
@@ -5432,7 +5520,7 @@ function guestApply(sn){
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:swR(a.who)})),last:old?old.last:null,
     turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,picking:sn.pick?pl[swR(sn.pick)]:null,
-    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
+    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,replay:RPC.on,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});
   S=n;
