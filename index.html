@@ -40,6 +40,18 @@ input[type=range]{accent-color:var(--gold)}input[type=range]:disabled{opacity:.3
 .dvGrid .tcg.p .ttext{flex:1;min-height:0;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
 .dvEmpty{aspect-ratio:5/7;border:1px dashed var(--hair);display:flex;align-items:center;justify-content:center;color:var(--dim);font:500 12px var(--pcf)}
 html.fit-wide .dvGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+
+/* デッキ編成：いまのデッキを上に固定（2026-11-12） */
+.dkTop{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:#12080b;padding:8px 0 8px;border-bottom:1px solid var(--hair);box-shadow:0 8px 14px -8px rgba(0,0,0,.8)}
+.dkTopH{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.dmHint{font-size:11px}
+.dkHead.dkStatic{position:static}
+.dmRow{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;margin-top:6px}
+.dm{position:relative;aspect-ratio:1/1;min-width:0;padding:0;border:1px solid var(--hair2);border-bottom:3px solid var(--cc,var(--hair2));background:#1a0d10 var(--art) center 12%/cover no-repeat;image-rendering:pixelated;overflow:hidden;cursor:pointer;display:block}
+.dm span{position:absolute;left:0;right:0;bottom:0;padding:8px 1px 1px;font:500 9px/1.15 var(--body);color:#fff;text-align:center;background:linear-gradient(transparent,rgba(0,0,0,.9));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;image-rendering:auto}
+.dm.sg{border-color:var(--gold)}
+.dm.em{border-style:dashed;border-bottom-width:1px;background:rgba(0,0,0,.25);cursor:default}.dm.em span{position:static;display:flex;height:100%;align-items:center;justify-content:center;background:none;color:var(--dim);padding:0}
+@media (max-width:700px){.dmRow{grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.dmHint{display:none}}
+@media (max-height:520px) and (orientation:landscape){.dmRow{grid-template-columns:repeat(14,minmax(0,1fr))}.dm{aspect-ratio:1.5/1}}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -1953,7 +1965,7 @@ const RAW=[
  ['seal','封印師','封','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['fangpull','牙抜き','牙','cur','C','自分は1枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は攻撃系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['mute','沈黙僧','黙','cur','C','自分は1枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は情報系のカードを使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
- ['kotodama','言霊師','言','cur','C','自分は1枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は宣言できない。共鳴：相手の心臓ではない種類を1つ知る。'],
+ ['kotodama','言霊師','言','cur','C','自分は2枚引く。呪い（2ターン：このターンが1、相手のターンが2。2の終わりに消える）：相手は宣言できない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['chain','鎖使い','鎖','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、1ターンにカードを1枚しか使えない。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['thirst','渇き巫女','渇','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、カードの効果では引けない（ターンのはじめに引く1枚や、襲撃のあとに引く分は引ける）。共鳴：相手の心臓ではない種類を1つ知る。'],
  ['blind','目隠し鬼','盲','cur','C','自分は1枚引く。呪い（3ターン：このターンが1、相手のターンが2、次の自分のターンが3。3の終わりに消える）：お互い、「相手の心臓ではない種類を知る」効果がはたらかない。共鳴：自分はさらに1枚引く。'],
@@ -1974,7 +1986,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112023904';
+const APP_VER='20261112025321';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2268,14 +2280,14 @@ const CLOUD={t:0,ok:true,
   //  ・サーバーが前回のまま → 端末の方が進んでいるので、そのまま預ける
   //  ・端末が前回のまま（SV.dirty なし。サーバーだけ進んだ＝別の端末で遊んだ）→ サーバーの記録を使う
   //  ・両方進んだ／はじめてつながる → 合わせる（銀貨は多い方、称号や買ったものは両方）
-  busy:false,again:false,
+  busy:false,again:false,last:null,
   async sync(){
-    const me=CLOUD.me();if(!me||!CLOUD.ok)return;
+    const me=CLOUD.me();if(!me)return;if(!CLOUD.ok){CLOUD.last={t:Date.now(),err:'サーバーの準備がまだです（SQL）'};return}
     if(CLOUD.busy){CLOUD.again=true;return}
     CLOUD.busy=true;
     try{
       const {data,error}=await LADDER.sb.rpc('save_get');
-      if(error){if(/PGRST202|save_get/.test((error.code||'')+error.message))CLOUD.ok=false;return}
+      if(error){if(/PGRST202/.test((error.code||'')+error.message))CLOUD.ok=false;CLOUD.last={t:Date.now(),err:'読み出せません（'+(error.code||'')+' '+(error.message||'')+'）'};return}
       if(CLOUD.me()!==me)return;
       const linked=SV.cloudUid===me,has=data&&typeof data==='object'&&data.at;
       let changed=false;
@@ -2291,12 +2303,14 @@ const CLOUD={t:0,ok:true,
       if(!same){
         // 預けているあいだに端末側で変わったら dirty が立ち直るので、次の突き合わせでまた預ける
         const at=Math.max(Date.now(),has?data.at+1:0);SV.at=at;SV.dirty=0;const put=await LADDER.sb.rpc('save_put',{p_data:CLOUD.pack()});
-        if(put.error){console.error(put.error);SV.dirty=1;return}
+        if(put.error){console.error(put.error);SV.dirty=1;CLOUD.last={t:Date.now(),err:'預けられません（'+(put.error.code||'')+' '+(put.error.message||'')+'）'};return}
         SV.cloudAt=at;
       }
       ecoInit();applyFrame();
       try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}
+      CLOUD.last={t:Date.now(),coins:SV.coins||0,how:!has?'はじめて預けました':changed?'ほかの端末の記録を取りこみました':same?'変わりなし':'この端末の記録を預けました'};
       if(changed&&typeof VIEW!=='undefined'&&$('#modal').hidden&&['menu','shop','octo'].includes(VIEW))draw_();
+    }catch(e){CLOUD.last={t:Date.now(),err:String(e&&e.message||e)}
     }finally{CLOUD.busy=false;if(CLOUD.again){CLOUD.again=false;CLOUD.push()}}
   },
   pull(){return CLOUD.sync()},
@@ -2307,6 +2321,7 @@ const CLOUD={t:0,ok:true,
 };
 ecoInit();applyFrame();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)CLOUD.push(true)});
+setInterval(()=>{if(!document.hidden)CLOUD.push(true)},60000);
 // カードの所持：スタンダードデッキの14種は全員が持っている。それ以外はランクマッチの報酬（サーバーの collection）
 const STD_SINGLE='greatdet';
 const stdDeck=()=>({types:[...STARTER],single:STD_SINGLE});
@@ -2438,6 +2453,7 @@ function showSettings(){
     <div class="sndSet"><span class="label">音楽</span><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}><button type="button" class="b small" id="mBgm">${bgmOn()?'ON':'OFF'}</button></div>
     <div class="sndSet"><span class="label">効果音</span><input type="range" id="mSfxVol" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}><button type="button" class="b small" id="mSfx">${sndOn()?'ON':'OFF'}</button></div>
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
+    ${LADDER.uid()?`<div class="btns"><span class="label">記録</span><button type="button" class="b small" id="clSync">ほかの端末と合わせる</button><span class="note" id="clSt">${CLOUD.last?(CLOUD.last.err?'合わせられませんでした：'+esc(CLOUD.last.err):new Date(CLOUD.last.t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+' '+CLOUD.last.how+'（銀貨 '+CLOUD.last.coins+'）'):'まだ合わせていません'}</span></div>`:''}
     <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   modal(html(),(m,done)=>{
     const bind=()=>{
@@ -2448,6 +2464,7 @@ function showSettings(){
       m.querySelector('#mBgmVol').oninput=e=>BGM.volume(+e.target.value);
       {const sv=m.querySelector('#mSfxVol');sv.oninput=e=>SFX.volume(+e.target.value);sv.onchange=()=>SFX.select()}
       m.querySelector('#mSfx').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.ui();m.querySelector('.sheet').innerHTML=html();bind()};
+      {const cs=m.querySelector('#clSync');if(cs)cs.onclick=async()=>{cs.disabled=true;CLOUD.ok=true;await CLOUD.sync();m.querySelector('.sheet').innerHTML=html();bind()}}
       m.querySelector('#tReset').onclick=()=>{if(!armed){armed=true;m.querySelector('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();done();renderMenu()};
     };bind();
   });
@@ -2538,6 +2555,11 @@ function bindFilter(st,redraw){
 // デッキの内訳（系統の段・属性の段）
 // デッキの中身をカードの形で並べる（押すと効果）
 let DKV=false;
+// 小さな顔の並び（デッキ編成の上に固定。押すと外す）
+function deckMiniHTML(d){
+  const ts=[...d.types].sort(byCat),cell=(k,sg)=>`<button type="button" class="dm cat-${C[k].cat} ${sg?'sg':''}" data-dm="${k}" style="--art:url(art/${k}.png)" aria-label="${N(k)}を外す"><span>${N(k)}</span></button>`;
+  return`<div class="dmRow">${ts.map(k=>cell(k)).join('')}${Array.from({length:Math.max(0,13-ts.length)},()=>'<span class="dm em"></span>').join('')}${d.single?cell(d.single,true):'<span class="dm em sg"><span>シングル</span></span>'}</div>`;
+}
 function deckViewHTML(d){
   const ts=[...d.types].sort(byCat),cell=k=>`<button type="button" class="cardBtn" data-card="${k}">${cardHTML(k,'p')}</button>`;
   return`<div class="dvGrid">${ts.map(cell).join('')}${Array.from({length:Math.max(0,13-ts.length)},()=>'<div class="dvEmpty">あき</div>').join('')}${d.single?cell(d.single):'<div class="dvEmpty">シングル</div>'}</div>`;
@@ -2590,7 +2612,8 @@ function renderFree(){
   const msg=bad.length?`持っていないカードが入っています（${bad.map(k=>'〈'+N(k)+'〉').join('')}）。外すか、スタンダードデッキに戻してください。`:ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください';
   $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
   <p class="note" style="margin-top:0">持っているカードからデッキを組めます（カード13種×3枚＋シングル1枚＝40枚）。所持 <b>${ownedCount()}/${CARDS.length}</b>種。<br>カードは<b>ランクマッチ</b>で、勝つと2種、負けても1種もらえます${LADDER.uid()?'':'（Googleでログインが必要）'}。</p>
-  <div class="dkHead"><div><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></div>${deckSum(d.types)}
+  <div class="dkTop"><div class="dkTopH"><span><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></span><span class="muted dmHint">いまのデッキ（押すと外れます）</span></div>${deckMiniHTML(d)}</div>
+  <div class="dkHead dkStatic">${deckSum(d.types)}
    ${filterBar(FFS,{inDeck:true})}
    <div class="btns"><button type="button" class="b small ${DKV?'primary':''}" id="fView">${DKV?'一覧を閉じる':'デッキを一覧で見る'}</button><button type="button" class="b small" id="fStd">スタンダードデッキに戻す</button><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
   <div class="note" id="fNote" ${bad.length?'style="color:var(--blood)"':''}>${msg}</div>
@@ -2618,6 +2641,7 @@ function renderFree(){
     else{if(d.types.length>=13){f.textContent='13種まで。先に1種外してください';f.style.color='var(--blood)';return}d.types.push(k)}
     keep(()=>{})();
   });
+  document.querySelectorAll('.dm[data-dm]').forEach(b=>b.onclick=()=>{const k=b.dataset.dm;if(C[k].single)d.single=null;else rm(d.types,k);keep(()=>{})()});
   $('#fGo').onclick=()=>{markCollSeen();startFree()};
 }
 function startFree(quick){
@@ -3238,7 +3262,7 @@ async function playCard0(p,c,copy=false){
       const xs=o.deck.filter(x=>ts.includes(x.type));xs.forEach(x=>K(p).known.add(x.id));
       log(`探偵：${o.name}の山札には ${ts.map(t=>`〈${N(t)}〉${xs.filter(x=>x.type===t).length}枚`).join('・')}。`,w);draw(p,1);break;}
     case 'seal':case 'fangpull':case 'mute':case 'kotodama':case 'chain':case 'thirst':case 'blind':
-      draw(p,1);if(R&&c.type==='blind')draw(p,1);else if(R)learnNot(p,1);czPut(p,c.type);break;
+      draw(p,c.type==='kotodama'?2:1);if(R&&c.type==='blind')draw(p,1);else if(R)learnNot(p,1);czPut(p,c.type);break;
     case 'dispel':{const had=czAny(S.me)||czAny(S.cpu);czClear();log(had?'解呪：場の呪いを解いた。':'解呪：場に呪いはなかった。',w);draw(p,2);if(!had)learnNot(p,1,'解呪師');break}
     case 'watchdog':if(R){draw(p,1);learnNot(p,2)}o.f.watched=true;log(`${o.name}が次のターンに使うカードは、心臓と同じ系統かどうか判定される。`);break;
     case 'villager':draw(p,R?2:1);if(R)learnNot(p,1);if(p.f.boosted)log('このターンはすでに使える枚数が増えているので、増えない。',w);else{p.f.boosted=true;p.f.opt=(p.f.opt||0)+1;log('このターン、もう1枚使える。',w)}break;
@@ -4519,6 +4543,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:66,d:'2026-11-12',t:'デッキ編成の上に、いまのデッキが小さく並んで固定されるようになりました（押すと外れます）。言霊師は2枚引けるようになりました。設定に、記録を「ほかの端末と合わせる」ボタンを足しました。'},
   {id:65,d:'2026-11-12',t:'ログインしていれば、銀貨・称号・買ったものが、どの端末でも同じになるようにしました（スマホとPCで別々だった記録は、多い方に合わせます）。'},
   {id:64,d:'2026-11-12',t:'デッキ編成に「デッキを一覧で見る」ボタンを追加。友達と対戦でも、先に準備ができた人は自分のデッキを眺められます。スタンダードデッキは〈罠師〉を〈口封じ〉に入れ替えました（罠師はこれまでどおり全員が使えます）。'},
   {id:63,d:'2026-11-12',t:'ルールと不具合の直し：友達との対戦はランクと戦績に関係しなくなりました／心臓を当てたあとは、すぐ相手が心臓を選ぶ番になり、選び終わってから90秒を数えます／占い師は「2つまで」選べます／錬金術師は「ほかに手札が2枚以上あるときだけ使え、2枚捨てて4枚引く（共鳴で5枚）」に変更／祈祷師は系統を2つ押して選ぶ形に／妖狐は化けるカードがないときは使えません／パックのカードは説明が長くても絵が消えません／チュートリアルを正規のルール（1ターンに1枚）に直しました／狼少年と呪いの説明文をはっきりさせました。'},
