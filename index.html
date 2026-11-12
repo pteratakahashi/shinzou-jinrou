@@ -4754,6 +4754,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:83,d:'2026-11-12',t:'お知らせ（アップデート情報）の画面の上にも「閉じる」ボタンを置きました。下までスクロールしなくても閉じられます（Discordでいただいた要望です）。'},
   {id:82,d:'2026-11-12',t:'不具合の直し：相手が口封じなどを伏せているときに妖狐を使うと、対戦が固まって操作できなくなる不具合を直しました（友達との対戦・ランクマッチで起きていました）。'},
   {id:81,d:'2026-11-12',t:'デッキ編成の絞りこみに「シングル」を足しました。押すと、シングルカードだけが並びます。属性の絞りこみと「デッキに入れたカードだけ」も、シングルカードに効くようになりました（Discordでいただいた要望です）。'},
   {id:80,d:'2026-11-12',t:'ホームに公式Discordへのリンクを置きました。カードの調整：狼王は「捨て札が10枚以上なら、さらに1枚」に／妖狐で化けたあとも、直前に使ったカードは妖狐（月）のあつかいに／物見は、伏せ専用のカードを捨て札にしたら、さらに1枚引く／夜警は「発動したら1つ知る」のおまけをなくしました。'},
@@ -4850,8 +4851,8 @@ function updatesHTML(){
   return`<section class="updBox" aria-label="アップデート情報"><div class="updHead"><span class="label">アップデート情報</span><button type="button" class="b small" id="updAll">すべて見る</button></div>${updListHTML(UPDATES.slice(0,3),seen)}</section>`;
 }
 function showUpdates(){
-  modal(`<div class="info"><div class="infoText" style="width:100%"><h2>アップデート情報</h2>${updListHTML(UPDATES,updPrev())}<div class="btns"><button type="button" class="b" id="uClose">閉じる</button></div></div></div>`,(m,done)=>{
-    m.querySelector('#uClose').onclick=()=>{m.onclick=null;done()};m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
+  modal(`<div class="info"><div class="infoText" style="width:100%"><div class="mHead"><h2>アップデート情報</h2><button type="button" class="b small" id="uCloseTop">閉じる</button></div>${updListHTML(UPDATES,updPrev())}<div class="btns"><button type="button" class="b" id="uClose">閉じる</button></div></div></div>`,(m,done)=>{
+    m.querySelector('#uClose').onclick=m.querySelector('#uCloseTop').onclick=()=>{m.onclick=null;done()};m.onclick=e=>{if(e.target===m){m.onclick=null;done()}};
   });
 }
 /* 待ち時間に出す豆知識。7秒ごとに次のものに変わる */
