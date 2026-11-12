@@ -2022,7 +2022,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112051940';
+const APP_VER='20261112053248';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2198,10 +2198,21 @@ const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigat
 const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();BIP=e;if(typeof VIEW!=='undefined'&&VIEW==='menu')renderMenu()});
 addEventListener('appinstalled',()=>{BIP=null;if(VIEW==='menu')renderMenu()});
-const canInstall=()=>!isStandalone()&&(BIP||isIOS());
+const canInstall=()=>!isStandalone()&&(BIP||isIOS()||isPhone());
+const isPhone=()=>/Android|iPhone|iPad|iPod|Mobile/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+// スマホの人への案内（2026-11-12）：ホーム画面に追加すると全画面で遊べる。ホームで1回だけ出す（設定からはいつでも見られる）
+async function a2hsHint(){
+  if(SV.a2hsSeen||isStandalone()||!isPhone()||!(SV.tutDone||SV.wins+SV.losses>0))return;
+  SV.a2hsSeen=1;save();
+  const v=await modal(`<h2>スマホで遊ぶ人へ</h2><p><b>ホーム画面に追加</b>すると、アプリのように全画面で遊べます。アドレスの帯や下のボタンが消えて、画面が広くなります。</p><p class="note">あとからでも、設定（歯車）の「アプリとしてホーム画面に追加」で同じ案内を見られます。</p><div class="btns"><button type="button" class="b primary" id="a2Ok">追加のしかたを見る</button><button type="button" class="b" id="a2No">あとで</button></div>`,(m,done)=>{m.querySelector('#a2Ok').onclick=()=>done(1);m.querySelector('#a2No').onclick=()=>done(0)},()=>0);
+  if(v===1)installApp();
+}
 async function installApp(){
   if(BIP){BIP.prompt();try{await BIP.userChoice}catch(e){}BIP=null;renderMenu();return}
-  await modal(`<h2>ホーム画面に追加</h2><p>iPhone・iPadでは、Safariの下にある<b>共有ボタン</b>（四角から矢印が出ているマーク）を押して、<b>「ホーム画面に追加」</b>を選んでください。</p><p class="note">追加すると、ホーム画面のアイコンから全画面で遊べます。CPU戦はネットがなくても遊べます。</p><div class="btns"><button type="button" class="b primary" id="iOk">わかった</button></div>`,(m,done)=>{m.querySelector('#iOk').onclick=()=>done()});
+  const how=isIOS()
+    ?'<p><b>iPhone・iPad（Safari）</b>：画面の下（または上）にある<b>共有ボタン</b>（四角から矢印が出ているマーク）を押して、<b>「ホーム画面に追加」</b>を選びます。</p><p class="note">Safari 以外（LINE や X の中の画面、Chrome など）で開いているときは、先に Safari で開き直してください。</p>'
+    :'<p><b>Android（Chrome）</b>：右上の<b>「︙」</b>を押して、<b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>を選びます。</p><p class="note">LINE や X の中の画面で開いているときは、先に Chrome で開き直してください。</p>';
+  await modal(`<h2>ホーム画面に追加</h2>${how}<p class="note">追加すると、ホーム画面のアイコンから全画面で遊べます。CPU戦はネットがなくても遊べます。</p><div class="btns"><button type="button" class="b primary" id="iOk">わかった</button></div>`,(m,done)=>{m.querySelector('#iOk').onclick=()=>done()});
 }
 document.addEventListener('visibilitychange',()=>BGM.duck(document.hidden));
 
@@ -2472,7 +2483,7 @@ function renderMenu(){
   on('hmMsn',showMissions);on('hmSet',showSettings);
   bindTabBar();
   setTimeout(showGifts,300);setTimeout(showUnlocks,700);
-  setTimeout(()=>{if(VIEW==='menu'&&$('#modal').hidden)loginBonus()},400);
+  setTimeout(async()=>{if(VIEW==='menu'&&$('#modal').hidden){await loginBonus();if(VIEW==='menu'&&$('#modal').hidden)a2hsHint()}},400);
   if(UPDATES.length&&(SV.updSeen||0)<UPDATES[0].id){updPrev();SV.updSeen=UPDATES[0].id;save()}
 }
 // ホームのミッション（右のアイコンから）
@@ -4689,6 +4700,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:74,d:'2026-11-12',t:'スマホで遊んでいる人へ：ホーム画面に追加すると、アプリのように全画面で遊べます。設定（歯車）の「アプリとしてホーム画面に追加」から、追加のしかたを見られます。'},
   {id:73,d:'2026-11-12',t:'デッキごとにアイコン（代表のカード）を決められるようになりました。デッキ編成の「アイコンを変える」から選べます。'},
   {id:72,d:'2026-11-12',t:'デッキを6つまで保存して、名前を付けられるようになりました（デッキ編成のいちばん上）。友達との対戦やランクマッチでは、保存したデッキから選べます。'},
   {id:71,d:'2026-11-12',t:'ランクマッチのあと、もらったカードがめくれる演出が入るようになりました。相手の報告を待っている場合は、カードが届いたときに出ます。'},
