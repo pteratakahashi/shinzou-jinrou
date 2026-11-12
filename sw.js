@@ -10,7 +10,7 @@ self.addEventListener('fetch',e=>{
   const url=new URL(req.url);
   const same=url.origin===location.origin,font=/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
   if(!same&&!font)return; // ログインや対戦の通信は触らない
-  const page=req.mode==='navigate'||(same&&/\/(index\.html)?$/.test(url.pathname));
+  const page=same&&/\/(index\.html)?$/.test(url.pathname); // ゲームのページだけ。ほかのページ（規約・モニター）を開いても、ゲームの控えを書きかえない
   if(page){
     e.respondWith(fetch(req).then(r=>{const cp=r.clone();caches.open(CACHE).then(c=>c.put('./index.html',cp));return r}).catch(()=>caches.match('./index.html').then(r=>r||caches.match('./'))));
     return;

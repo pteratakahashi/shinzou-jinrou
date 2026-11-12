@@ -150,6 +150,7 @@ html.fit-wide .rvSlot{width:80px}html.fit-wide .rvSlot .tcg,html.fit-wide .rvSlo
 @media (max-width:560px){#rpcBar{left:6px;right:6px;transform:none;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 6px}#rpcBar button{padding:4px 8px;font-size:11px}#rpcBar .rcT{width:100%;text-align:center;font-size:11px}}
 .oppHand.open .tcg{width:var(--ohw,34px)}
 html.fit-wide .oppHand.open .tcg{width:58px}
+.polLink{color:var(--gold,#e8c88c);font-size:12px;text-underline-offset:3px}.polNote{margin:6px 0 0}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2086,7 +2087,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112173436';
+const APP_VER='20261112174355';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2575,6 +2576,7 @@ function showSettings(){
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     ${LADDER.uid()?`<div class="btns"><span class="label">記録</span><button type="button" class="b small" id="clSync">ほかの端末と合わせる</button><span class="note" id="clSt">${CLOUD.last?(CLOUD.last.err?'合わせられませんでした：'+esc(CLOUD.last.err):new Date(CLOUD.last.t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+' '+CLOUD.last.how+'（銀貨 '+CLOUD.last.coins+'）'):'まだ合わせていません'}</span></div>`:''}
     ${LADDER.admin?`<div class="btns"><span class="label">運営</span><button type="button" class="b small" id="stRep">リプレイを見る</button></div>`:''}
+    <div class="btns"><span class="label">規約</span>${POLICY_LINK}</div>
     <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   modal(html(),(m,done)=>{
     const bind=()=>{
@@ -4627,6 +4629,7 @@ function renderShop(){
    ホストから見た me / cpu を、ゲスト側では入れ替えて「自分＝me」として描く。 */
 // つなぎ役（PeerJS のシグナリング）と TURN は自前の VPS（~/shinzou-jinrou/peer）。仮アドレス sjpeer.162-43-6-41.sslip.io も同じサーバーにつながる（古い画面のため Caddy に残している）。TURN の一時パスワードは /turn から（24時間有効、12時間ごとに取り直す）
 const PEER_HOST='peer.shinzoujinro.com';
+const POLICY_LINK='<a class="polLink" href="policy.html" target="_blank" rel="noopener">利用規約・プライバシーポリシー</a>';
 let ICE=null,ICE_AT=0;
 // 対戦の通信は必ず自分たちの中継サーバーを通す（端末どうしを直接つながない）。中継の情報が取れないときは、つながずに失敗にする
 async function netIce(){
@@ -4737,7 +4740,7 @@ function rankCardHTML(){
   const st=LADDER.state;
   if(st==='loading')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">読み込み中…</p></div>`;
   if(st==='err')return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">${esc(LADDER.err)}</p><div class="btns"><button type="button" class="b small" id="rkRetry">もう一度</button></div></div>`;
-  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、ランクマッチで対戦でき、戦績とランクが記録されます（友達との対戦は、ランクと戦績に関係しません）。</p><div class="btns" data-gsi><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div>${GSI.err?`<p class="note gsiErr">${esc(GSI.err)}</p>`:''}</div>`;
+  if(st!=='in'||!LADDER.prof)return`<div class="rankCard"><span class="label">対人ランク</span><p class="note">Googleでログインすると、ランクマッチで対戦でき、戦績とランクが記録されます（友達との対戦は、ランクと戦績に関係しません）。</p><div class="btns" data-gsi><button type="button" class="b primary small" id="rkLogin">Googleでログイン</button></div><p class="note polNote">${POLICY_LINK}</p>${GSI.err?`<p class="note gsiErr">${esc(GSI.err)}</p>`:''}</div>`;
   const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0,rk=rankOf(p.rp);
   const ladder=TIERS.map((t,i)=>`<i class="${i<rk.i?'done':i===rk.i?'cur':''}" style="--tc:${t[1]}" title="${t[0]}"></i>`).join('');
   return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
@@ -4844,6 +4847,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:90,d:'2026-11-13',t:'利用規約・配信や動画についての決まり・プライバシーポリシーを載せました。設定と、Googleでログインのボタンの下から読めます。'},
   {id:89,d:'2026-11-13',t:'ログインすると、毎日1パックもらえるようになりました（その日はじめてゲームを開いたときに届きます。Googleでログインしている人が対象です）。'},
   {id:88,d:'2026-11-12',t:'不具合の直し：妖狐などで「カードをえらぶ画面」が出る直前に手札のカードの説明を開くと、えらぶ画面が消えて対戦が止まってしまうことがある不具合を直しました。'},
   {id:87,d:'2026-11-12',t:'デッキ編成の上に固定されている「いまのデッキ」の小さなカードに、属性（月・血・聖・影・通常）の印が付きました。PCの対戦画面で、説明が長いカードを選ぶと文が途中で切れて読めなかったのを直しました。チュートリアルの「まん中の推理の状況」という案内を、PCでも分かる言い方に直しました（Discordでいただいた要望です）。'},
@@ -5742,7 +5746,7 @@ function renderOnline(){
   }else{
     body=`<div class="onCard"><span class="label">あなたの名前（相手に表示されます）</span><div class="nameRow">${nameEdHTML('oName')}</div></div>
       <div class="menu">
-        ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns" ${LADDER.uid()?'':'data-gsi'}>${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div></div>`:''}
+        ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns" ${LADDER.uid()?'':'data-gsi'}>${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div>${LADDER.uid()?'':'<p class="note polNote">'+POLICY_LINK+'</p>'}</div>`:''}
         <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
         <div class="mi"><b>部屋に参加する</b><span>友達から届いた5文字のコードを入れます。</span><div class="btns"><input id="oCode" class="codeIn" maxlength="5" autocapitalize="characters" autocomplete="off" value="${esc(NET.code||'')}" placeholder="ABCDE"><button type="button" class="b primary" id="oJoin">参加する</button></div></div>
       </div>`;
