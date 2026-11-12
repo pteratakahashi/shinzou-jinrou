@@ -1934,7 +1934,7 @@ const RAW=[
  ['mirror','鏡の巫女','鏡','one','L','心臓にしているとき、当てた相手のライフも1減る（相手のライフが1なら無効）。この効果は1試合に1回だけで、一度起きたら鏡の巫女はもう心臓にできない。使ったときは何も起きない。'],
  ['fortune','易者','易','info','C','相手の心臓ではない種類を2つ知る。共鳴：さらに2つ知る。'],
  ['listener','聞き耳','耳','info','C','相手の手札をランダムに3枚見る（見たカードは相手の手札のまま）。そのあと自分は1枚引き、さらに相手の心臓ではない種類を1つ知る。'],
- ['diviner','祈祷師','祷','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：自分は1枚引き、相手の心臓ではない種類を1つ知る。'],
+ ['diviner','祈祷師','祷','info','R','コスト：自分の心臓ではない種類を3つ相手に知られる。効果：系統を2つ指定し、相手の心臓がそのどちらかの系統か判定する。共鳴：自分は1枚引き、相手の心臓ではない種類を1つ知る。'],
  ['tracker','追跡者','跡','info','C','相手の山札の上から5枚を見る（見たカードはそのまま相手の山札に残る）。そのあと自分は1枚引く。'],
  ['confessor','告解師','告','info','R','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の心臓ではない種類を4つ知る。共鳴：コストなし。'],
  ['stargazer','星読み','星','info','C','相手の心臓の名前が偶数文字か奇数文字かを知る。共鳴：相手の心臓ではない種類を2つ知る。'],
@@ -1986,7 +1986,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112025321';
+const APP_VER='20261112041049';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3197,7 +3197,7 @@ async function payCost(p,c,R){
     case 'astrologer':if(!R)giveAway(p,1);break;
     case 'vampire':case 'poisoner':if(!R)giveAway(p,1);break;
     case 'necro':giveAway(p,1);break;
-    case 'diviner':giveAway(p,1);break;
+    case 'diviner':giveAway(p,3);break;
     case 'cursewolf':if(!R&&p.hand.length){const x=rand(p.hand);toDiscard(p,x);log(`コスト：${p.name}は〈${N(x.type)}〉を捨てた。`,w)}break;
     case 'saint':if(p.life===1){const mc=C[p.heart.type].cat;narrow(o,typesOf(p).filter(t=>C[t].cat===mc));p.f.guesses=0;const hn=p.hand.length;[...p.hand].forEach(x=>toDiscard(p,x));log(`コスト：${p.name}の心臓は「${CAT[mc]}」系統だと知られた。このターンは宣言できず、手札${hn}枚を捨てた。`,w)}break;
     case 'oracle':{const b=cands(o,3);log(`コスト：${p.name}の心臓は ${b.map(x=>'〈'+N(x)+'〉').join('')} のどれかだと知られた。`,whoOf(o));break}
@@ -4543,6 +4543,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:67,d:'2026-11-12',t:'祈祷師のコストを重くしました。自分の心臓ではない種類を、1つではなく3つ相手に知られます（霊媒師より強すぎたため）。'},
   {id:66,d:'2026-11-12',t:'デッキ編成の上に、いまのデッキが小さく並んで固定されるようになりました（押すと外れます）。言霊師は2枚引けるようになりました。設定に、記録を「ほかの端末と合わせる」ボタンを足しました。'},
   {id:65,d:'2026-11-12',t:'ログインしていれば、銀貨・称号・買ったものが、どの端末でも同じになるようにしました（スマホとPCで別々だった記録は、多い方に合わせます）。'},
   {id:64,d:'2026-11-12',t:'デッキ編成に「デッキを一覧で見る」ボタンを追加。友達と対戦でも、先に準備ができた人は自分のデッキを眺められます。スタンダードデッキは〈罠師〉を〈口封じ〉に入れ替えました（罠師はこれまでどおり全員が使えます）。'},
