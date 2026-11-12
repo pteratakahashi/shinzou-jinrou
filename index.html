@@ -1931,10 +1931,10 @@ const RAW=[
  ['elder','長老','老','sup','S','自分は1枚引く。このターン、自分は宣言を2回まで行える。さらに、相手の心臓ではない種類を1つ知る。'],
  ['trapper','罠師','罠','grd','C','【伏せ専用】相手が宣言を外したとき発動。相手は追加で3枚捨てる。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['executioner','処刑人','刑','sup','S','次の自分の宣言は、外れてもペナルティなし。さらに、相手の心臓ではない種類を1つ知る。'],
- ['madman','狂人','狂','atk','S','次の相手ターン、相手は手札があれば必ず1回宣言しなければならず、外すと1枚多く捨てる。共鳴：相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
+ ['madman','狂人','狂','atk','S','次の相手ターン、相手は手札があれば必ず1回宣言しなければならない。共鳴：相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['watchdog','番犬','犬','info','C','次の相手ターン、相手がカードを使うたびに、そのカードが相手の心臓と同じ系統かどうかわかる。共鳴：自分は1枚引き、相手の心臓ではない種類を2つ知る。'],
  ['vampire','吸血鬼','血','atk','C','コスト：自分の心臓ではない種類を1つ相手に知られる。効果：相手の手札をランダムに1枚捨てさせ、自分は1枚引く。共鳴：コストなし。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
- ['priest','司祭','祈','sup','C','自分の捨て札からカードを2枚まで選び、手札に戻す。共鳴：3枚まで。'],
+ ['priest','司祭','祈','sup','C','自分の捨て札からカードを1枚選び、手札に戻す。さらに、相手の心臓ではない種類を1つ知る。共鳴：2枚まで戻せる。'],
  ['phantom','怪盗','盗','atk','C','相手の山札の上から2枚を捨て札にし、相手の手札をランダムに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['alchemist','錬金術師','錬','sup','C','条件：ほかに手札が2枚以上あるときだけ使える。手札を2枚選んで捨て、4枚引く。共鳴：5枚引く。'],
  ['twins','双子','双','sup','C','自分は1枚引く。自分の捨て札に別の双子があれば、さらに2枚引く。共鳴：自分はさらに1枚引き、相手の心臓ではない種類を1つ知る。'],
@@ -1982,9 +1982,9 @@ const RAW=[
  ['kidnapper','人さらい','攫','atk','C','相手の手札をランダムに1枚、相手の山札の一番下に戻す（捨て札にならないので反射されない）。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['howler','遠吠え','吠','atk','C','相手の手札をランダムに1枚捨てさせる。共鳴：相手の手札が4枚以上なら、さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
- ['wererat','鼠男','鼠','atk','C','相手の山札の上から5枚を捨て札にする。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
+ ['wererat','鼠男','鼠','atk','C','相手の山札の上から2枚を捨て札にする（捨て札になったカードは見える）。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['witch','魔女','魔','atk','R','相手は自分で選んだ手札を1枚捨てる。共鳴：相手は2枚捨てる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
- ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札に攻撃系が5枚以上あれば、さらに1枚捨てさせる。共鳴：さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
+ ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札が10枚以上あれば、さらに2枚捨てさせる。共鳴：さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['knight','騎士','騎','grd','R','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、自分は2枚引く。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['nun','修道女','尼','grd','C','自分は1枚引く。次の相手ターン、相手は宣言を外すと追加で1枚捨てる。さらに、相手の心臓ではない種類を1つ知る。'],
  ['watchman','夜警','警','grd','C','【伏せ専用】相手が宣言を外したとき発動。自分は2枚引き、相手の心臓ではない種類を3つ知る。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
@@ -2024,7 +2024,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112055420';
+const APP_VER='20261112071732';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2645,8 +2645,11 @@ function renderDeck(){
   });
 }
 /* ---- 構築済みデッキ（全カードから自由に組む） ---- */
-// CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
-const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":60,"types":["lookout","detective","wolf","prophet","pack","knight","sentinel","medium","diviner","twins","villager","tactician","mason"],"single":"mirror"},{"name":"白狼の狩り","wr":58,"types":["lookout","detective","wolf","villager","kidnapper","pack","chief","knight","poisoner","nightmare","mason","diviner","twins"],"single":"whitewolf"},{"name":"呪術師の呪い","wr":54,"types":["lookout","detective","wolf","villager","kidnapper","pack","chief","knight","poisoner","nightmare","mason","diviner","nun"],"single":"curser"}];
+// CPU のデッキ：強さ3段階 × 3デッキ（2026-11-12）。その段階の中からランダムに当たる。
+// 勝率のシミュレーション（CPU どうし、スタンダードデッキ相手に各3,000試合）で選んだ。wr＝スタンダード相手の勝率（%）。
+// 型は、情報と守り・攻撃・呪いの3つ。カードの効果を変えたら、scratchpad の sim（ga.mjs → pick.mjs）で選び直す
+const CPU_TIERS={"easy": [{"name": "名探偵の見習い", "wr": 37, "types": ["gambler", "peddler", "watchdog", "lookout", "mason", "executioner", "bastion", "vampire", "astrologer", "stargazer", "messenger", "thirst", "chain"], "single": "greatdet"}, {"name": "大狼の子分", "wr": 38, "types": ["cursewolf", "poisoner", "executioner", "drummer", "pack", "cryboy", "prophet", "phantom", "bodyguard", "madman", "warder", "kotodama", "medium"], "single": "greatwolf"}, {"name": "時の魔女のいたずら", "wr": 35, "types": ["decoy", "elder", "mute", "astrologer", "howler", "wolf", "warder", "dispel", "mason", "fangpull", "gatekeeper", "gravedigger", "confessor"], "single": "timewitch"}], "normal": [{"name": "聖女の調べもの", "wr": 54, "types": ["gatekeeper", "watchdog", "silencer", "executioner", "pack", "seer", "medium", "poisoner", "detective", "necro", "wererat", "prophet", "stargazer"], "single": "saint"}, {"name": "語り部の狩り", "wr": 53, "types": ["diviner", "pack", "executioner", "fox", "gatekeeper", "clairvoy", "warder", "wererat", "cursewolf", "phantom", "watchdog", "wolf", "stargazer"], "single": "teller"}, {"name": "呪術師の鎖", "wr": 51, "types": ["alchemist", "pack", "exorcist", "mute", "warder", "chain", "fortune", "stargazer", "bodyguard", "twins", "fox", "seer", "thirst"], "single": "curser"}], "strong": [{"name": "月の女王の占い館", "wr": 75, "types": ["fox", "prophet", "stargazer", "seer", "kotodama", "nekomata", "baker", "gatekeeper", "warder", "astrologer", "hunter", "medium", "sentinel"], "single": "moonqueen"}, {"name": "大狼の群れ", "wr": 67, "types": ["phantom", "blind", "alchemist", "wolf", "pack", "nekomata", "cursewolf", "alpha", "bodyguard", "chief", "clairvoy", "silencer", "wererat"], "single": "greatwolf"}, {"name": "呪術師の結界", "wr": 73, "types": ["stargazer", "astrologer", "tracker", "warder", "messenger", "mute", "hunter", "seal", "silencer", "fox", "seer", "gatekeeper", "blind"], "single": "curser"}]};
+const CPU_TIER_N={easy:'やさしい',normal:'ふつう',strong:'つよい'};
 let FF='all';
 /* デッキは6つまで保存でき、名前を付けられる（2026-11-12）。SV.decks＝[{name,types,single}]、SV.deckIx＝いま編集・使用しているデッキ。
    SV.freeDeck は前の版との互換のため、いまのデッキの写しを入れておく */
@@ -2670,7 +2673,7 @@ function deckDel(){deckInit();if(SV.decks.length<=1)return;SV.decks.splice(SV.de
 const deckLegal=d=>freeOk(d)&&d.types.every(owns)&&owns(d.single);
 const myDeck=()=>{const d=freeDeck();return deckLegal(d)?{types:[...d.types],single:d.single}:stdDeck()};
 const freeOk=d=>d&&d.types.length===13&&d.types.every(k=>C[k]&&!C[k].single)&&d.single&&C[d.single]&&C[d.single].single;
-const freeCpu=()=>SV.freeCpu==='pack'||!SV.freeCpu?'std':SV.freeCpu;
+const freeCpu=()=>['easy','normal','strong','mirror'].includes(SV.freeCpu)?SV.freeCpu:'normal';
 function renderFree(){
   const d=freeDeck(),n=d.types.length,ok=deckLegal(d),bad=d.types.filter(k=>!owns(k)).concat(d.single&&!owns(d.single)?[d.single]:[]);
   const sortOwn=a=>[...a].sort((x,y)=>(owns(y.k)?1:0)-(owns(x.k)?1:0));
@@ -2692,7 +2695,7 @@ function renderFree(){
   <div class="dkList">${list.map(c=>row(c,false)).join('')}</div>
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
   <div class="dkList">${sgl.map(c=>row(c,true)).join('')}</div>
-  <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['std','スタンダード'],['mirror','同じデッキ'],['strong','強豪デッキ']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
+  <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['easy','やさしい'],['normal','ふつう'],['strong','つよい'],['mirror','同じデッキ']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
    <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキでCPUと対戦</button></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   // NEW の印は、この画面を出るときに消す
@@ -2739,7 +2742,8 @@ function startFree(quick){
 function freeCpuDeck(){
   const m=freeCpu(),d=freeDeck();
   if(m==='mirror')return{types:[...d.types],single:d.single};
-  if(m==='strong'&&FREE_PRESETS.length){const x=rand(FREE_PRESETS);return{types:[...x.types],single:x.single,name:x.name}}
+  const xs=(CPU_TIERS[m]||[]).filter(x=>x.types.length===13&&x.types.every(k=>C[k]&&!C[k].single)&&C[x.single]);
+  if(xs.length){const x=rand(xs);return{types:[...x.types],single:x.single,name:x.name,tier:CPU_TIER_N[m]}}
   return stdDeck();
 }
 function flash(t){const n=document.querySelector('.note');if(n){n.textContent=t;n.style.color='var(--blood)'}}
@@ -3391,9 +3395,9 @@ async function playCard0(p,c,copy=false){
       const xs=p.isCpu?top.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]):await pickCards(top,'賢者：手札に加えるカード',`山札の上3枚から${n}枚を選びます。`,Math.min(n,top.length),n);
       xs.forEach(x=>{rm(p.deck,x);p.hand.push(x)});break;}
     case 'priest':{
-      const pool=p.discard.filter(x=>x!==c);if(!pool.length){log('戻せるカードがない。');break}
-      const mx=R?3:2;const xs=p.isCpu?pool.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]).slice(0,mx).map(e=>e[0]):await pickCards(pool,'司祭：手札に戻すカード',`自分の捨て札から${mx}枚まで選びます。`,1,mx);
-      xs.forEach(x=>{rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)});break;}
+      const pool=p.discard.filter(x=>x!==c);if(!pool.length){log('戻せるカードがない。');learnNot(p,1,'司祭');break}
+      const mx=R?2:1;const xs=p.isCpu?pool.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1]).slice(0,mx).map(e=>e[0]):await pickCards(pool,'司祭：手札に戻すカード',mx>1?`自分の捨て札から${mx}枚まで選びます。`:'自分の捨て札から1枚選びます。',1,mx);
+      xs.forEach(x=>{rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)});learnNot(p,1,'司祭');break;}
     case 'elder':draw(p,1);if(p.f.blocked)log('狩人の効果で宣言できないままです。');else p.f.guesses=Math.max(p.f.guesses,0)+1;learnNot(p,1,'長老');break;
     case 'cryboy':draw(p,2);if(!R)p.f.harsh=true;if(!p.f.blocked)p.f.guesses++;break;
     case 'executioner':p.f.safe=true;learnNot(p,1,'処刑人');break;
@@ -3453,9 +3457,9 @@ async function playCard0(p,c,copy=false){
     case 'kidnapper':{const n=1;draw(p,1);for(let i=0;i<n&&o.hand.length;i++){const x=rand(o.hand);rm(o.hand,x);o.deck.unshift(x);log(`${o.name}の手札が1枚、山札の一番下に戻された。`,w)}await raid(p,o);break}
     case 'howler':{const n=1+(R&&o.hand.length>=4?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'nightmare':{draw(p,1);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
-    case 'wererat':{const n=5;let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);await raid(p,o);break}
+    case 'wererat':{const n=2;let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);draw(p,1);await raid(p,o);break}
     case 'witch':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++){let x;if(o.isCpu)x=o.hand.map(h=>[h,cpuScore(o,h)]).sort((a,b)=>a[1]-b[1])[0][0];else x=await by(o,()=>pickCard(o.hand,`魔女：捨てるカードを選ぶ（${i+1}/${n}）`,'手札から捨てるカードを選んでください。'));forcedDiscard(o,x,p)}await raid(p,o);break}
-    case 'alpha':{const atkN=p.discard.filter(x=>C[x.type].cat==='atk').length;const n=1+(atkN>=5?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
+    case 'alpha':{const n=1+(p.discard.length>=10?2:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'nun':draw(p,1);o.f.nun=true;log(`${o.name}は次のターン、宣言を外すと1枚多く捨てる。`,w);learnNot(p,1,'修道女');break;
     case 'shieldbearer':draw(p,2);p.f.atkWard=true;log(`${p.name}は次の相手ターン、攻撃系カードの効果を受けない。`,w);break;
     case 'lookout':draw(p,1);if(o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`物見：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w)}else log('相手は伏せていなかった。',w);learnNot(p,1,'物見');break;
@@ -3551,7 +3555,7 @@ function cpuScore(p,c){
     case 'fortune':s=live>3?3.4:.6;break;case 'listener':s=o.hand.length>=3&&live>3?2.6:.8;break;case 'diviner':s=live>3?3.6:.6;break;case 'tracker':s=o.deck.length>5&&live>3?2.2:.5;break;
     case 'confessor':s=live>5?4:.6;break;case 'stargazer':s=live>3?3.2:.6;break;case 'clairvoy':s=maxP>.25?4.4:(live>3?2.4:1);break;
     case 'berserker':s=o.hand.length>=2?3.2:1.5;break;case 'ghoul':s=o.hand.length?2.6:1.2;break;case 'kidnapper':s=o.hand.length?2.4:.8;break;case 'howler':s=o.hand.length>=4?2.9:2;break;
-    case 'nightmare':s=o.hand.length?3:1.5;break;case 'wererat':s=o.deck.length<=8?3.5:1.6;break;case 'witch':s=o.hand.length>=2?3:1.5;break;case 'alpha':s=p.discard.filter(x=>C[x.type].cat==='atk').length>=5?3.6:2;break;
+    case 'nightmare':s=o.hand.length?3:1.5;break;case 'wererat':s=1.9;break;case 'witch':s=o.hand.length>=2?3:1.5;break;case 'alpha':s=!o.hand.length?.3:p.discard.length>=10?3.8:2;break;
     case 'knight':s=2.4;break;case 'watchman':s=2.2;break;case 'nun':s=2;break;case 'shieldbearer':s=threat>.2?2:1.8;break;case 'lookout':s=o.setCard?3:1.6;break;
     case 'cleric':s=p.discard.some(x=>C[x.type].cat==='grd'&&x!==c)?2:.4;break;case 'exorcist':s=(K(o).excluded.size>=3?2.4+threat*3:.5);break;
     case 'banker':s=p.hand.length>=4?1.4:.6;break;case 'gravedigger':s=p.discard.length>1?1.8:.3;break;case 'messenger':s=1.9;break;case 'tactician':s=maxP>.15?2.6:1.4;break;
@@ -3683,7 +3687,7 @@ async function runTurn(p){
     // ブラフ成功：伏せ専用でないカードを伏せていて、そのあとの相手のターンに相手がカードを1枚も使わなかった
     if(!C[c.type].set&&typesOf(p).some(t=>C[t].set)&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;act({who:whoOf(p),kind:'bluff'});if(p===S.me&&!S.guest&&!S.sim){const st=ST();st.bluff=(st.bluff||0)+1}p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p));learnNot(p,1,'ブラフ成功')}
     else{p.discard.push(c);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}}
-  p.f.blocked=!!p.f.noGuess||czOn(p,'kotodama');p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;if(czOn(p,'kotodama'))log(`呪い：${p.name}はこのターン宣言できない。`);p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;if(p.f.mustGuess)p.f.harsh=true;
+  p.f.blocked=!!p.f.noGuess||czOn(p,'kotodama');p.f.noGuess=false;p.f.guesses=p.f.blocked?0:1;if(czOn(p,'kotodama'))log(`呪い：${p.name}はこのターン宣言できない。`);p.f.mustGuess=!!p.f.forceGuess&&!p.f.blocked;p.f.forceGuess=false;
   p.f.req=p.f.mustPlay||1;p.f.mustPlay=0;p.f.setFree=RULES.freeSet?1:0;p.f.opt=p.f.nextOpt||0;p.f.boosted=p.f.opt>0;p.f.nextOpt=0;p.f.played=0;
   if(bluffWin&&!p.f.boosted){p.f.opt++;p.f.boosted=true}
   const plays=p.f.req;
@@ -3779,7 +3783,7 @@ async function startBattle(){
   if(S.tut){S.me.tut={first:['wolf','villager','seer','stargazer','silencer'],draws:['chief','greatdet','pack','astrologer']};S.cpu.tut={first:['wolf','pack','prophet','villager','sentinel','baker'],heart:'baker'}}
   mkPool(S.me);mkPool(S.cpu);render();
   if(D.quick)D.quick=false;else await fxVs();
-  if(D.free&&cb.name)log(`CPUのデッキは強豪デッキ「${cb.name}」。`,'sys');
+  if(D.free&&cb.name)log(`CPUのデッキは「${cb.name}」（${cb.tier||''}）。`,'sys');
   // 先攻・後攻はランダム。先攻は5枚、後攻は6枚から心臓を選ぶ
   const meFirst=S.tut?true:Math.random()<.5;
   const h=await dealHeart(S.me,'心臓に隠すカードを選ぶ',S.tut?'【チュートリアル】このゲームは、自分のデッキの1枚を「心臓」として隠し、相手の心臓が何のカードかを当て合います。3回当てた方の勝ち。<b>今回は〈人狼〉を心臓にしてください。</b>（残りの4枚が手札になります）':`${meFirst?'先攻なので、最初に引いた5枚から1枚を心臓にします。残りの4枚が手札になります。':'後攻なので、最初に引いた6枚から1枚を心臓にします。残りの5枚が手札になります。'}この種類を当てられるとライフが1減ります。CPUのシングルは〈${N(S.cpu.single)}〉です。`,meFirst?5:6);
@@ -4702,6 +4706,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:77,d:'2026-11-12',t:'CPUの強さを「やさしい・ふつう・つよい」の3段階から選べるようになりました（デッキ編成の下）。それぞれ3つのデッキがあり、その中からランダムに当たります。カードの調整：狂人は「外すと1枚多く捨てる」をなくしました／鼠男は「山札の上から2枚を捨て札にして、自分は1枚引く」に／狼王は「自分の捨て札が10枚以上なら、さらに2枚捨てさせる」に／司祭は「捨て札から1枚戻し、相手の心臓ではない種類を1つ知る（共鳴で2枚）」に変わりました。'},
   {id:76,d:'2026-11-12',t:'スタンダードデッキに呪いのカード〈沈黙僧〉を入れました（〈パン屋〉と入れ替え。パン屋はこれまでどおり全員が使えます）。'},
   {id:75,d:'2026-11-12',t:'ランクマッチは、先に使うデッキを選んでから「マッチング開始」を押す形になりました。相手が見つかると、選んだデッキでそのまま対戦が始まります。待ち画面が下までスクロールできない不具合も直しました。'},
   {id:74,d:'2026-11-12',t:'スマホで遊んでいる人へ：ホーム画面に追加すると、アプリのように全画面で遊べます。設定（歯車）の「アプリとしてホーム画面に追加」から、追加のしかたを見られます。'},
