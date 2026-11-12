@@ -93,6 +93,23 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 
 /* チュートリアルの説明：ほかの画面と同じ落ちついた見た目に（2026-11-12） */
 #tutBox{background:rgba(22,9,13,.96);border:1px solid var(--gold);border-radius:3px;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+
+/* ブラフ成功・伏せカードの不発の演出（2026-11-12） */
+.blfWrap,.fizWrap{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:0 16px}
+.blfCard{width:min(46vw,210px);perspective:900px}
+.blfIn{position:relative;aspect-ratio:5/7;transform-style:preserve-3d;animation:blfFlip .6s cubic-bezier(.3,.7,.3,1) .15s both}
+.blfFace{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex}.blfFace>*{width:100%}
+.blfFace.front{transform:rotateY(180deg)}
+.blfWrap .blfCard{filter:drop-shadow(0 0 26px rgba(243,207,109,.75))}
+.blfT{font:800 clamp(34px,9vw,64px)/1.1 var(--pcf);letter-spacing:.1em;color:#ffe9a8;text-shadow:0 0 26px rgba(243,207,109,.9),0 3px 0 rgba(0,0,0,.6);animation:blfPop .5s cubic-bezier(.2,1.6,.4,1) .55s both}
+.blfS{font:500 13px var(--body);color:var(--ivory);opacity:.9;animation:dimIn .4s ease-out .8s both}
+.blfB{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;animation:dimIn .4s ease-out 1s both}
+.blfB span{font:700 12px var(--pcf);color:var(--gold);border:1px solid var(--gold);padding:3px 10px;background:rgba(20,8,10,.8)}
+.fizT{font:800 clamp(24px,6vw,40px)/1.1 var(--pcf);letter-spacing:.14em;color:#b8b0a4;animation:dimIn .3s ease-out .55s both}
+.blfCard.fiz{animation:fizDrop .5s ease-in 1s both}.blfCard.fiz .blfIn{animation-duration:.5s}
+@keyframes blfFlip{from{transform:rotateY(0) scale(.86)}to{transform:rotateY(180deg) scale(1)}}
+@keyframes blfPop{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:none}}
+@keyframes fizDrop{to{transform:translateY(60vh) rotate(14deg) scale(.5);opacity:0;filter:grayscale(1)}}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2027,7 +2044,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112074639';
+const APP_VER='20261112080437';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3079,6 +3096,20 @@ async function fxShow(html,ms,skip){const g0=S;if(g0&&g0.aborted)return new Prom
 function fxClear(){const fx=$('#fx');fx.hidden=true;fx.innerHTML=''}
 async function fxSet(who){await fxShow(`<div class="fxcard">${backHTML('l','伏せ')}<div class="by">${who==='me'?MYN():OPN()}がカードを伏せた</div></div>`,who==='me'?800:1300);fxClear()}
 async function fxTrap(k){VOICE.say('Trap card!');await fxStamp('発動','guard',k)}
+// ブラフ成功の特別な演出（2026-11-12）：伏せていたカードがめくれて、金の「ブラフ成功！」が出る
+async function fxBluff(who,k){
+  if(!S||S.sim||!C[k])return;
+  SFX.flip();setTimeout(()=>{SFX.legend();screenFlash('gold');quake();FXC.burst('#f3cf6d',120,10);FXC.ring('#f3cf6d');FXC.ring('#ffffff');FXC.embers('#f0c060')},520);
+  await fxShow(`<div class="dim"></div><div class="blfWrap"><div class="blfCard"><div class="blfIn"><div class="blfFace">${backHTML('l','伏せ')}</div><div class="blfFace front">${cardHTML(k,'l')}</div></div></div><div class="blfT">ブラフ成功！</div><div class="blfS">${who==='me'?OPN():MYN()}は警戒して、カードを使わなかった</div><div class="blfB"><span>手札に戻る</span><span>1枚多く使える</span><span>心臓ではない種類を1つ知る</span></div><span class="tapHint fixed">タップで次へ</span></div>`,3000,true);
+  fxClear();
+}
+// 伏せたカードが発動しなかった時：めくれて、捨て札に落ちていく
+async function fxFizzle(who,k){
+  if(!S||S.sim||!C[k])return;
+  SFX.flip();setTimeout(()=>SFX.miss(),480);
+  await fxShow(`<div class="dim"></div><div class="fizWrap"><div class="blfCard fiz"><div class="blfIn"><div class="blfFace">${backHTML('l','伏せ')}</div><div class="blfFace front">${cardHTML(k,'l')}</div></div></div><div class="fizT">発動せず</div><div class="blfS">${who==='me'?MYN():OPN()}が伏せていた〈${N(k)}〉は、捨て札になった</div></div>`,1500);
+  fxClear();
+}
 async function fxRaid(){VOICE.say('Raid!');await fxStamp('襲撃','hit')}
 async function fxRes(){VOICE.say('Resonance!',{pitch:.7});screenFlash('gold');FXC.embers('#f0c060');await fxShow(`<div class="banner res">共鳴</div>`,700);fxClear()}
 async function fxVs(){SFX.match();await fxShow(`<div class="vs"><div class="vsSide l">${cardHTML(S.me.single,'m')}<b>${MYN()}</b><span>${catSummary(S.me.types)}</span></div><div class="vsMid">VS</div><div class="vsSide r">${cardHTML(S.cpu.single,'m')}<b>${OPN()}</b><span>${catSummary(S.cpu.types)}</span></div></div>`,1900);fxClear()}
@@ -3687,8 +3718,8 @@ async function runTurn(p){
   saveGame(whoOf(p));
   if(g.online&&!g.guest){g.deadline=Date.now()+TURN_MS;g.timeUpAt=0;onlineSave(whoOf(p))}
   g.turnNo++;g.cur=p;act({who:whoOf(p),kind:'start'});p.f.ward=false;p.f.atkWard=false;p.f.shield=false;p.f.decoy=false;
-  let bluffWin=false;
-  if(p.setCard){const c=p.setCard,o=opp(p);p.setCard=null;K(o).known.add(c.id);
+  let bluffWin=false,setEnd=null;
+  if(p.setCard){const c=p.setCard,o=opp(p);p.setCard=null;K(o).known.add(c.id);setEnd=c.type;
     // ブラフ成功：伏せ専用でないカードを伏せていて、そのあとの相手のターンに相手がカードを1枚も使わなかった
     if(!C[c.type].set&&typesOf(p).some(t=>C[t].set)&&o.f.lastEnd>(p.f.setTurn||0)&&!o.f.lastPlayed){bluffWin=true;act({who:whoOf(p),kind:'bluff'});if(p===S.me&&!S.guest&&!S.sim){const st=ST();st.bluff=(st.bluff||0)+1}p.hand.push(c);log(`ブラフ成功！${o.name}は警戒してカードを使わなかった。伏せていた〈${N(c.type)}〉は手札に戻り、このターンはカードを1枚多く使える。`,whoOf(p));learnNot(p,1,'ブラフ成功')}
     else{p.discard.push(c);log(`${p.name}が伏せていた〈${N(c.type)}〉は発動せず、捨て札になった。`,whoOf(p))}}
@@ -3700,6 +3731,7 @@ async function runTurn(p){
   g.phase=p.isCpu?'cpu':'none';render();
   await fxBanner(whoOf(p));
   if(g!==S)return;
+  if(setEnd){if(bluffWin)await fxBluff(whoOf(p),setEnd);else await fxFizzle(whoOf(p),setEnd);if(g!==S)return}
   log(`― ${g.turnNo}ターン目：${p.name} ―`);
   const got=draw(p,nd);
   if(p.f.blocked)log(`${p.name}は狩人の効果でこのターン宣言できない。`);
@@ -3829,12 +3861,12 @@ const TUT_STEPS=[
  {when:()=>S.turnNo>=9&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>12,allow:{btns:['skip','guess'],types:['hunter']},sel:'#bSkip,#bGuess',text:'「この中に心臓はない」ので、残った候補は<b>〈狩人〉だけ</b>。これで確定です。<b>「心臓を宣言」</b>を押して、<b>〈狩人〉</b>と宣言しよう（外れると手札を2枚捨てますが、今回は当たります）。'},
  {allow:{},when:()=>!!lastGuess()&&!S.busy,btn:'次へ',textFn:()=>lastGuess().r==='hit'?'<b>的中！</b> 相手のライフが1減りました（タコの心臓が1つ止まります）。当てられた側は、全部のカードを混ぜ直して心臓を選び直します。これを<b>3回</b>当てたら勝ちです。':'外れ…。でも外れた種類は候補から消えました。残りの候補から、次のターンにもう一度宣言しよう。'},
  {when:()=>S.cur===S.me&&S.turnNo>=11&&PH()==='play'&&!S.busy,enter:tutRaidSetup,done:()=>tutActed('raid')||!myTurnAt(),allow:{cards:['wolf'],btns:['play']},sel:'.hc[aria-label="人狼"]',text:'勝ち方はもう1つあります。<b>攻撃系のカード</b>で相手の手札を<b>0枚</b>にすると<b>「襲撃」</b>になり、相手のライフが1減ります。練習のため、相手の手札を1枚にしました。<b>〈人狼〉</b>を使って0枚にしよう。'},
- {allow:{},when:()=>tutActed('raid')&&!S.busy,btn:'次へ',text:'<b>襲撃成功！</b> 宣言しなくてもライフを削れました。襲撃された側は、<b>心臓はそのまま</b>で手札が5枚になるまで引き直します。襲撃したターンはそこで終わります。'},
+ {allow:{},when:()=>tutActed('raid')&&S.cur===S.me&&PH()==='play'&&!S.busy,btn:'次へ',text:'<b>襲撃成功！</b> 宣言しなくてもライフを削れました。襲撃された側は、<b>心臓はそのまま</b>で手札が5枚になるまで引き直します。襲撃したターンはそこで終わります。'},
  {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true;tutNeed('villager');render()},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません。これも1ターンに1枚のうちに入ります）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
  {allow:{btns:['skip','end']},when:()=>S.cur===S.me&&!S.busy,done:()=>S.cur!==S.me,sel:'#bSkip,#bEnd',text:'伏せられました。このまま「宣言に進む」→「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu,done:()=>S.cur===S.me&&PH()==='play'&&!S.busy,text:'相手のターンです。あなたの伏せカードを警戒しているようです…。'},
  {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。さらに、<b>相手の心臓ではない種類を1つ</b>知りました。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類も1つわかります。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
- {when:()=>!S.busy,btn:'チュートリアルを終える',text:'<b>勝ち方は3つ</b>：①宣言で相手の心臓を<b>3回当てる</b>　②攻撃カードの<b>襲撃</b>でライフを削る　③相手の<b>山札が切れる</b>（山札がないのに引くと負け）。ほかに、友達対戦は1ターン90秒の制限時間があり、切断しても2分以内なら「対戦に戻る」で再開できます。ここからは自由に最後まで戦ってみよう！'},
+ {when:()=>!S.busy,btn:'チュートリアルを終える',text:'チュートリアルはここまでです。勝ち方は、①宣言で心臓を<b>3回当てる</b>　②攻撃カードの<b>襲撃</b>でライフを削る　③相手の<b>山札が切れる</b>、の3つ。<br><b>相手の心臓は、あと1つ。ここからは、自分で相手の心臓を当ててみよう！</b>'},
 ];
 function tutAllow(){if(!TUT.on||!S||!S.tut)return null;if(TUT.pickOnly)return{};const st=TUT_STEPS[TUT.i];return st&&TUT.act===TUT.i?st.allow||null:{}}
 function tutOk(btn,type){if(TUT.bypass)return true;const a=tutAllow();if(!a)return true;if(btn&&!(a.btns||[]).includes(btn))return tutNudge();if(type&&!(a.cards||[]).includes(type))return tutNudge();return true}
@@ -3877,7 +3909,8 @@ function tutTick(){
   if(!st){TUT.on=false;tutHide();return}
   if(TUT.act!==TUT.i){if(!st.when()){tutHide();return}TUT.act=TUT.i;TUT.enterTurn=S.turnNo;if(st.enter)st.enter()}
   if(!st.btn&&st.done&&st.done()){TUT.i++;TUT.act=-1;return tutTick()}
-  const free=$('#modal').hidden&&$('#fx').hidden;
+  if(!$('#modal').hidden||!$('#fx').hidden)TUT.fxAt=Date.now();
+  const free=$('#modal').hidden&&$('#fx').hidden&&Date.now()-(TUT.fxAt||0)>650;
   if(free){tutShow(st);tutApply()}else{const b=document.getElementById('tutBox');if(b)b.style.display='none'}
   const b=document.getElementById('tutBox');if(b&&free)b.style.display='';
 }
@@ -4716,6 +4749,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:79,d:'2026-11-12',t:'ブラフが成功したときに、特別な「ブラフ成功！」の演出が出るようになりました。伏せたカードが発動しなかったときは、めくれて捨て札に落ちる演出が入ります。チュートリアルの最後は「相手の心臓はあと1つ。自分で当ててみよう」で終わるようにしました。'},
   {id:78,d:'2026-11-12',t:'チュートリアルを作り直しました。スタンダードデッキを使い、占い師 → 霊媒師 → 村人（共鳴）→ もう一度霊媒師・占い師と、候補を少しずつ絞って、1つに確定させてから宣言する流れを体験できます。'},
   {id:77,d:'2026-11-12',t:'CPUの強さを「やさしい・ふつう・つよい」の3段階から選べるようになりました（デッキ編成の下）。それぞれ3つのデッキがあり、その中からランダムに当たります。カードの調整：狂人は「外すと1枚多く捨てる」をなくしました／鼠男は「山札の上から2枚を捨て札にして、自分は1枚引く」に／狼王は「自分の捨て札が10枚以上なら、さらに2枚捨てさせる」に／司祭は「捨て札から1枚戻し、相手の心臓ではない種類を1つ知る（共鳴で2枚）」に変わりました。'},
   {id:76,d:'2026-11-12',t:'スタンダードデッキに呪いのカード〈沈黙僧〉を入れました（〈パン屋〉と入れ替え。パン屋はこれまでどおり全員が使えます）。'},
@@ -5194,11 +5228,11 @@ function hostCmd(m){
 }
 // 演出はホストで呼ばれたらゲストにも同じものを流す（入れ子で呼ばれた分は送らない）
 let MXin=0;
-['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow'].forEach(n=>{
+['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle'].forEach(n=>{
   const f=window[n];
   window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a})}MXin++;try{return await f(...a)}finally{MXin--}};
 });
-const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow']);
+const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle']);
 
 /* ゲスト側 */
 function guestApply(sn){
