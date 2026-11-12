@@ -2004,12 +2004,12 @@ const RAW=[
  ['nightmare','夢魔','夢','atk','R','次の相手ターン、相手はターンのはじめにカードを引かない。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['wererat','鼠男','鼠','atk','C','相手の山札の上から2枚を捨て札にする（捨て札になったカードは見える）。そのあと自分は1枚引く。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['witch','魔女','魔','atk','R','相手は自分で選んだ手札を1枚捨てる。共鳴：相手は2枚捨てる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
- ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札が10枚以上あれば、さらに2枚捨てさせる。共鳴：さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
+ ['alpha','狼王','王','atk','R','相手の手札をランダムに1枚捨てさせる。自分の捨て札が10枚以上あれば、さらに1枚捨てさせる。共鳴：さらに1枚捨てさせる。襲撃：使ったあと相手の手札が0枚なら（もともと0枚でも）、相手のライフ-1。'],
  ['knight','騎士','騎','grd','R','【伏せ専用】相手が攻撃系カードを使ったとき発動。その効果を無効にし、自分は2枚引く。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['nun','修道女','尼','grd','C','自分は1枚引く。次の相手ターン、相手は宣言を外すと追加で1枚捨てる。さらに、相手の心臓ではない種類を1つ知る。'],
- ['watchman','夜警','警','grd','C','【伏せ専用】相手が宣言を外したとき発動。自分は2枚引き、相手の心臓ではない種類を3つ知る。発動したら、さらに相手の心臓ではない種類を1つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
+ ['watchman','夜警','警','grd','C','【伏せ専用】相手が宣言を外したとき発動。自分は2枚引き、相手の心臓ではない種類を3つ知る。伏せずに使うことはできない。共鳴：発動したとき、自分はさらに1枚引き、もう1つ知る。'],
  ['shieldbearer','盾持ち','楯','grd','C','自分は2枚引く。次の相手ターン、自分は攻撃系カードの効果を受けない。'],
- ['lookout','物見','見','grd','C','自分は1枚引く。相手の伏せカードを公開して捨て札にする。さらに、相手の心臓ではない種類を1つ知る。'],
+ ['lookout','物見','見','grd','C','自分は1枚引く。相手の伏せカードを公開して捨て札にする。それが伏せ専用のカードだったら、自分はさらに1枚引く。さらに、相手の心臓ではない種類を1つ知る。'],
  ['cleric','癒し手','癒','grd','C','自分の捨て札から防御系カードを1枚選んで手札に戻し、さらに自分は1枚引く。共鳴：防御系カードをもう1枚戻す。'],
  ['exorcist','祓い師','祓','grd','R','相手が知っている「自分の心臓ではない種類」を2つ忘れさせる（相手の推理から消える）。共鳴：3つ忘れさせる。'],
  ['banker','両替商','両','sup','C','自分の手札をすべて自分の山札に戻して混ぜ、戻した枚数より1枚多く引く。'],
@@ -2044,7 +2044,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112082518';
+const APP_VER='20261112083620';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2467,6 +2467,7 @@ function renderMenu(){
       <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
+      ${side('hmDc','<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9.5L4 20z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>','Discord','')}
       ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):''}
     </nav>
       ${coinsHTML()}
@@ -2502,7 +2503,7 @@ function renderMenu(){
   on('mRank',()=>{NET.err='';rankPrep()});
   on('updAll',showUpdates);on('updAll2',showUpdates);on('pAvatar',pickAvatar);on('mFriend',()=>go('online'));bindMissions();
   on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});on('hmTitle',()=>{OCTO_PV=null;go('octo')});
-  on('hmMsn',showMissions);on('hmSet',showSettings);
+  on('hmMsn',showMissions);on('hmSet',showSettings);on('hmDc',()=>{window.open(DISCORD_URL,'_blank','noopener')});
   bindTabBar();
   setTimeout(showGifts,300);setTimeout(showUnlocks,700);
   setTimeout(async()=>{if(VIEW==='menu'&&$('#modal').hidden){await loginBonus();if(VIEW==='menu'&&$('#modal').hidden)a2hsHint()}},400);
@@ -2673,6 +2674,7 @@ const CPU_TIER_N={easy:'やさしい',normal:'ふつう',strong:'つよい'};
 let FF='all';
 /* デッキは6つまで保存でき、名前を付けられる（2026-11-12）。SV.decks＝[{name,types,single}]、SV.deckIx＝いま編集・使用しているデッキ。
    SV.freeDeck は前の版との互換のため、いまのデッキの写しを入れておく */
+const DISCORD_URL='https://discord.gg/UStDz8PTmB';  // 公式 Discord の招待（期限なし）
 const DECK_MAX=6;
 const deckName=s=>String(s||'').replace(/[<>&"]/g,'').trim().slice(0,12);
 function deckInit(){
@@ -3030,7 +3032,7 @@ function triggerNow(owner){
   const c=owner.setCard;owner.setCard=null;owner.discard.push(c);K(opp(owner)).known.add(c.id);
   S.hist.push({who:whoOf(owner),k:c.type,turn:S.turnNo});
   log(`${owner.name}の伏せカード〈${N(c.type)}〉が発動！`,whoOf(owner));act({who:whoOf(owner),kind:'trig',k:c.type});
-  learnNot(owner,1);
+  if(c.type!=='watchman')learnNot(owner,1);  // 夜警だけは「発動したら1つ知る」のおまけなし（2026-11-12）
   if(owner.lastAttr&&owner.lastAttr===C[c.type].attr){draw(owner,1);log(`共鳴！（${C[c.type].attr}の属性）1枚引く。`,whoOf(owner));learnNot(owner,1)}
   // 発動した伏せカードも「直前に使ったカード」になる。次の自分のターンに同じ属性を使えば共鳴する
   owner.lastCat=C[c.type].cat;if(C[c.type].attr)owner.lastAttr=C[c.type].attr;
@@ -3343,7 +3345,9 @@ async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.eff
 async function playCard0(p,c,copy=false){
   const o=opp(p),w=whoOf(p);
   S.me.f.reflect=S.cpu.f.reflect=false;
-  const at=C[c.type].attr;const R=!!at&&((p.lastAttr&&p.lastAttr===at)||!!p.f.forceRes);if(at)p.f.forceRes=false;p.lastCat=C[c.type].cat;if(!C[c.type].single)p.lastAttr=at;
+  const at=C[c.type].attr;const R=!!at&&((p.lastAttr&&p.lastAttr===at)||!!p.f.forceRes);if(at)p.f.forceRes=false;
+  // 妖狐で化けたカードは「直前に使ったカード」にならない（妖狐＝月のまま。人狼に化けても、次に血が共鳴したりしない）
+  if(!copy){p.lastCat=C[c.type].cat;if(!C[c.type].single)p.lastAttr=at}
   if(copy)log(`${p.name}は妖狐で〈${N(c.type)}〉に化けた。`,w);
   else{toDiscard(p,c);p.f.played=(p.f.played||0)+1;log(`${p.name}は〈${N(c.type)}〉を使った。`,w);S.hist.push({who:w,k:c.type,turn:S.turnNo})}
   render();await fxPlay(c.type,w);
@@ -3495,10 +3499,10 @@ async function playCard0(p,c,copy=false){
     case 'nightmare':{draw(p,1);o.f.skipDraw=true;log(`${o.name}は次のターン、はじめにカードを引かない。`,w);await raid(p,o);break}
     case 'wererat':{const n=2;let k=0;for(let i=0;i<n&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);k++;if(x.type==='nekomata')nekoCurse(o)}log(`${o.name}の山札の上から${k}枚が捨て札になった。`,w);draw(p,1);await raid(p,o);break}
     case 'witch':{const n=R?2:1;for(let i=0;i<n&&o.hand.length;i++){let x;if(o.isCpu)x=o.hand.map(h=>[h,cpuScore(o,h)]).sort((a,b)=>a[1]-b[1])[0][0];else x=await by(o,()=>pickCard(o.hand,`魔女：捨てるカードを選ぶ（${i+1}/${n}）`,'手札から捨てるカードを選んでください。'));forcedDiscard(o,x,p)}await raid(p,o);break}
-    case 'alpha':{const n=1+(p.discard.length>=10?2:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
+    case 'alpha':{const n=1+(p.discard.length>=10?1:0)+(R?1:0);for(let i=0;i<n&&o.hand.length;i++)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break}
     case 'nun':draw(p,1);o.f.nun=true;log(`${o.name}は次のターン、宣言を外すと1枚多く捨てる。`,w);learnNot(p,1,'修道女');break;
     case 'shieldbearer':draw(p,2);p.f.atkWard=true;log(`${p.name}は次の相手ターン、攻撃系カードの効果を受けない。`,w);break;
-    case 'lookout':draw(p,1);if(o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`物見：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w)}else log('相手は伏せていなかった。',w);learnNot(p,1,'物見');break;
+    case 'lookout':draw(p,1);if(o.setCard){const x=o.setCard;o.setCard=null;o.discard.push(x);K(p).known.add(x.id);log(`物見：${o.name}の伏せカード〈${N(x.type)}〉を捨て札にした。`,w);if(C[x.type].set){draw(p,1);log('伏せ専用のカードだったので、さらに1枚引いた。',w)}}else log('相手は伏せていなかった。',w);learnNot(p,1,'物見');break;
     case 'cleric':{const n=R?2:1;for(let i=0;i<n;i++){const gs=p.discard.filter(x=>x!==c&&C[x.type].cat==='grd');if(!gs.length)break;let x;if(p.isCpu)x=gs.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1])[0][0];else x=await by(p,()=>pickCard(gs,'癒し手：手札に戻すカード','捨て札の防御系カードから1枚選びます。'));rm(p.discard,x);p.hand.push(x);log(`${p.name}は〈${N(x.type)}〉を手札に戻した。`,w)}draw(p,1);break}
     case 'exorcist':{const k=K(o),n=R?3:2;const ex=shuffle([...k.excluded].filter(t=>typesOf(p).includes(t))).slice(0,n);ex.forEach(t=>k.excluded.delete(t));if(k.allowed&&!ex.length){}log(ex.length?`祓い：${o.name}は ${ex.map(t=>'〈'+N(t)+'〉').join('')} が心臓ではないことを忘れた。`:'祓い：相手は忘れる情報を持っていなかった。',w);break}
     case 'banker':{const n=p.hand.length;p.deck.push(...p.hand);p.hand=[];p.deck=shuffle(p.deck);draw(p,n+1);log(`${p.name}は手札を入れ替えた。`,w);break}
@@ -3591,7 +3595,7 @@ function cpuScore(p,c){
     case 'fortune':s=live>3?3.4:.6;break;case 'listener':s=o.hand.length>=3&&live>3?2.6:.8;break;case 'diviner':s=live>3?3.6:.6;break;case 'tracker':s=o.deck.length>5&&live>3?2.2:.5;break;
     case 'confessor':s=live>5?4:.6;break;case 'stargazer':s=live>3?3.2:.6;break;case 'clairvoy':s=maxP>.25?4.4:(live>3?2.4:1);break;
     case 'berserker':s=o.hand.length>=2?3.2:1.5;break;case 'ghoul':s=o.hand.length?2.6:1.2;break;case 'kidnapper':s=o.hand.length?2.4:.8;break;case 'howler':s=o.hand.length>=4?2.9:2;break;
-    case 'nightmare':s=o.hand.length?3:1.5;break;case 'wererat':s=1.9;break;case 'witch':s=o.hand.length>=2?3:1.5;break;case 'alpha':s=!o.hand.length?.3:p.discard.length>=10?3.8:2;break;
+    case 'nightmare':s=o.hand.length?3:1.5;break;case 'wererat':s=1.9;break;case 'witch':s=o.hand.length>=2?3:1.5;break;case 'alpha':s=!o.hand.length?.3:p.discard.length>=10?3.2:2;break;
     case 'knight':s=2.4;break;case 'watchman':s=2.2;break;case 'nun':s=2;break;case 'shieldbearer':s=threat>.2?2:1.8;break;case 'lookout':s=o.setCard?3:1.6;break;
     case 'cleric':s=p.discard.some(x=>C[x.type].cat==='grd'&&x!==c)?2:.4;break;case 'exorcist':s=(K(o).excluded.size>=3?2.4+threat*3:.5);break;
     case 'banker':s=p.hand.length>=4?1.4:.6;break;case 'gravedigger':s=p.discard.length>1?1.8:.3;break;case 'messenger':s=1.9;break;case 'tactician':s=maxP>.15?2.6:1.4;break;
@@ -4749,6 +4753,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:80,d:'2026-11-12',t:'ホームに公式Discordへのリンクを置きました。カードの調整：狼王は「捨て札が10枚以上なら、さらに1枚」に／妖狐で化けたあとも、直前に使ったカードは妖狐（月）のあつかいに／物見は、伏せ専用のカードを捨て札にしたら、さらに1枚引く／夜警は「発動したら1つ知る」のおまけをなくしました。'},
   {id:79,d:'2026-11-12',t:'ブラフが成功したときに、特別な「ブラフ成功！」の演出が出るようになりました。伏せたカードが発動しなかったときは、めくれて捨て札に落ちる演出が入ります。チュートリアルの最後は「相手の心臓はあと1つ。自分で当ててみよう」で終わるようにしました。'},
   {id:78,d:'2026-11-12',t:'チュートリアルを作り直しました。スタンダードデッキを使い、占い師 → 霊媒師 → 村人（共鳴）→ もう一度霊媒師・占い師と、候補を少しずつ絞って、1つに確定させてから宣言する流れを体験できます。'},
   {id:77,d:'2026-11-12',t:'CPUの強さを「やさしい・ふつう・つよい」の3段階から選べるようになりました（デッキ編成の下）。それぞれ3つのデッキがあり、その中からランダムに当たります。カードの調整：狂人は「外すと1枚多く捨てる」をなくしました／鼠男は「山札の上から2枚を捨て札にして、自分は1枚引く」に／狼王は「自分の捨て札が10枚以上なら、さらに2枚捨てさせる」に／司祭は「捨て札から1枚戻し、相手の心臓ではない種類を1つ知る（共鳴で2枚）」に変わりました。'},
