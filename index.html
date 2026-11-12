@@ -1998,7 +1998,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112042809';
+const APP_VER='20261112044423';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4731,8 +4731,10 @@ function mmFound(){
   mmChip();
 }
 // CPU 対戦中に出す「ランクマッチ待ち」の表示（対戦画面の案内の行の中。render0 が #mmInline を描き、ここで時間を書きかえる）
-const mmInlineHTML=()=>MM.on&&MM.side?`<span class="mmInline" id="mmInline">ランクマッチ待ち ${mmElapsed()}</span>`:'';
-function mmChip(){const el=document.getElementById('mmInline');if(!el)return;if(MM.on&&MM.side)el.textContent=`ランクマッチ待ち ${mmElapsed()}`;else el.remove()}
+// 「探している人」はサーバーに4秒ごとに聞いた数（自分をふくむ）。これが動いていれば、相手探しは続いている
+const mmWaitText=()=>`ランクマッチ待ち ${mmElapsed()}・探している人 ${MM.waiting||1}人`;
+const mmInlineHTML=()=>MM.on&&MM.side?`<span class="mmInline" id="mmInline">${mmWaitText()}</span>`:'';
+function mmChip(){const el=document.getElementById('mmInline');if(!el)return;if(MM.on&&MM.side)el.textContent=mmWaitText();else el.remove()}
 async function mmStart(){
   if(!LADDER.uid()){NET.err='ランクマッチはGoogleでログインすると遊べます。';return go('online')}
   if(NET.conn)return go('online');
