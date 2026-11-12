@@ -49,6 +49,7 @@ html.fit-wide .dvGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
 .dm{position:relative;aspect-ratio:1/1;min-width:0;padding:0;border:1px solid var(--hair2);border-bottom:3px solid var(--cc,var(--hair2));background:#1a0d10 var(--art) center 12%/cover no-repeat;image-rendering:pixelated;overflow:hidden;cursor:pointer;display:block}
 .dm span{position:absolute;left:0;right:0;bottom:0;padding:8px 1px 1px;font:500 9px/1.15 var(--body);color:#fff;text-align:center;background:linear-gradient(transparent,rgba(0,0,0,.9));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;image-rendering:auto}
 .dm.sg{border-color:var(--gold)}
+.dm .dmA{left:1px;top:1px;right:auto;bottom:auto;padding:0 3px;border-radius:99px;background:var(--ac);color:#140c1c;font:700 9px/1.4 var(--body);overflow:visible}.dm .dmA.pl{background:rgba(0,0,0,.7);color:#fff}
 .dm.em{border-style:dashed;border-bottom-width:1px;background:rgba(0,0,0,.25);cursor:default}.dm.em span{position:static;display:flex;height:100%;align-items:center;justify-content:center;background:none;color:var(--dim);padding:0}
 @media (max-width:700px){.dmRow{grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.dmHint{display:none}}
 @media (max-height:520px) and (orientation:landscape){.dmRow{grid-template-columns:repeat(14,minmax(0,1fr))}.dm{aspect-ratio:1.5/1}}
@@ -1489,6 +1490,8 @@ html.fit-wide .btAct{gap:7px}
 html.fit-wide .btAct .phase{font-size:15px;text-align:center}
 html.fit-wide .btAct .detail{height:4.75em;max-height:none;font-size:13.5px;line-height:1.5;padding:6px 14px;text-align:center;overflow:hidden;border-radius:10px}
 html.fit-wide .btAct .detail.ph{display:block;visibility:hidden}
+/* 説明が長いカードは、切れないように枠を広げる（それでも入りきらないときはスクロール） */
+html.fit-wide:not(.fit-ws) .btAct .detail:not(.ph){height:auto;min-height:4.75em;max-height:11em;overflow-y:auto}
 html.fit-wide .btAct .detail .bluffNote{display:none}
 html.fit-wide .actBtns{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-columns:none;gap:10px;max-width:980px;margin:0 auto;width:100%}
 html.fit-wide .actBtns .b{min-height:52px;font-size:16px;padding:8px 6px}
@@ -2641,7 +2644,7 @@ function bindFilter(st,redraw){
 let DKV=false;
 // 小さな顔の並び（デッキ編成の上に固定。押すと外す）
 function deckMiniHTML(d){
-  const ts=[...d.types].sort(byCat),cell=(k,sg)=>`<button type="button" class="dm cat-${C[k].cat} ${sg?'sg':''}" data-dm="${k}" style="--art:url(art/${k}.png)" aria-label="${N(k)}を外す"><span>${N(k)}</span></button>`;
+  const ts=[...d.types].sort(byCat),cell=(k,sg)=>`<button type="button" class="dm cat-${C[k].cat} ${sg?'sg':''}" data-dm="${k}" style="--art:url(art/${k}.png)" aria-label="${N(k)}${C[k].attr?'（属性：'+C[k].attr+'）':C[k].plain?'（通常カード）':''}を外す">${C[k].attr?`<span class="dmA" style="--ac:${ATTR_COL[C[k].attr]}">${C[k].attr}</span>`:C[k].plain?'<span class="dmA pl">通常</span>':''}<span>${N(k)}</span></button>`;
   return`<div class="dmRow">${ts.map(k=>cell(k)).join('')}${Array.from({length:Math.max(0,13-ts.length)},()=>'<span class="dm em"></span>').join('')}${d.single?cell(d.single,true):'<span class="dm em sg"><span>シングル</span></span>'}</div>`;
 }
 function deckViewHTML(d){
@@ -3873,7 +3876,7 @@ const lastGuess=()=>{const g=((S&&S.acts)||[]).filter(a=>a.who==='me'&&a.kind===
 const myTurn=t=>S&&S.cur===S.me&&S.turnNo===t;
 const inHand=k=>S&&S.me.hand.some(c=>c.type===k);
 const TUT_STEPS=[
- {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',allow:{},sel:'.btMid',text:'あなたのターンです。まん中の「推理の状況」に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を少しずつ減らしていきます。'},
+ {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',allow:{},sel:'.btMid',text:'あなたのターンです。いま光っている「推理の状況」（スマホではまん中、PCでは右）に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を少しずつ減らしていきます。'},
  {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>(myPlayed('seer')&&!S.busy)||!myTurn(1),allow:{cards:['seer'],btns:['play'],types:['wolf','madman']},sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を選ぶと、相手の心臓がその中にあるかがわかります。今回は<b>〈人狼〉と〈狂人〉</b>を選んでください。'},
  {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'「この中に心臓はない」とわかったので、表から<b>2つ消えました</b>（14→12）。カードを使えるのは<b>1ターンに1枚</b>です。宣言（心臓を当てる）はまだ早いので、「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===2,done:()=>myTurn(3),text:'相手のターンです。相手がどう動くか見ていよう。'},
@@ -4784,6 +4787,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:87,d:'2026-11-12',t:'デッキ編成の上に固定されている「いまのデッキ」の小さなカードに、属性（月・血・聖・影・通常）の印が付きました。PCの対戦画面で、説明が長いカードを選ぶと文が途中で切れて読めなかったのを直しました。チュートリアルの「まん中の推理の状況」という案内を、PCでも分かる言い方に直しました（Discordでいただいた要望です）。'},
   {id:86,d:'2026-11-12',t:'デッキ編成の下に「デッキを保存する」ボタンを置きました。押すと、名前とアイコンを決めて「完成」で保存できます（カードの出し入れは、これまでどおりその場でも保存されます）。'},
   {id:85,d:'2026-11-12',t:'不具合の直し：デイリーミッションの銀貨を受け取ったあと、別の端末（PC・スマホ・タブレットなど）で開くと、同じ日にもう一度受け取れてしまうのを直しました（Discordでいただいた報告です）。'},
   {id:84,d:'2026-11-12',t:'不具合の直し：ランクマッチの「使用するデッキ」に、自分で選んだデッキのアイコンではなくシングルカードの絵が出ていたのを直しました（Discordでいただいた報告です）。'},
