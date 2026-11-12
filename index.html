@@ -2024,7 +2024,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112054535';
+const APP_VER='20261112055134';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4898,12 +4898,13 @@ addEventListener('pagehide',()=>{if(MM.on)mmStop()});
 async function showBoard(){
   const close=`<div class="btns"><button type="button" class="b" id="bdClose">閉じる</button></div>`;
   const p=modal(`<h2>ランキング</h2><p class="note">読み込み中…</p>${close}`,(m,done)=>{m.querySelector('#bdClose').onclick=()=>done();m.onclick=e=>{if(e.target===m){m.onclick=null;done()}}});
-  const {data,error}=await LADDER.sb.rpc('leaderboard',{p_limit:50});
+  const {data,error}=await LADDER.sb.rpc('leaderboard',{p_limit:100});
+  const total=error||!data?0:data.length;  // サーバーが返すのは最大100人。100人ちょうどなら「100人以上」と出す
   const sh=document.querySelector('#modal .sheet');if(!sh)return p;
   const me=LADDER.prof;
-  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span><span class="bdWl">${r.wins}-${r.losses}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
+  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).slice(0,50).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span><span class="bdWl">${r.wins}-${r.losses}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
   const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt':''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
-  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
+  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。${total?`上位50人まで表示しています（ランクマッチで対戦した人は、ぜんぶで <b>${total>=100?'100人以上':total+'人'}</b>）。`:''}</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
   sh.querySelector('#bdClose').onclick=()=>{const m=$('#modal');m.hidden=true;m.innerHTML=''};
   return p;
 }
