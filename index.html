@@ -110,6 +110,12 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 @keyframes blfFlip{from{transform:rotateY(0) scale(.86)}to{transform:rotateY(180deg) scale(1)}}
 @keyframes blfPop{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:none}}
 @keyframes fizDrop{to{transform:translateY(60vh) rotate(14deg) scale(.5);opacity:0;filter:grayscale(1)}}
+
+/* デッキ編成の下のボタン（保存・CPUと対戦） */
+.fBar .fBtns{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+@media (max-width:700px){.fBar .fBtns{width:100%}.fBar .fBtns .b{flex:1;min-width:0;padding-left:6px;padding-right:6px}}
+@media (max-width:700px){.fBar{gap:6px;padding-top:6px}.fCpu{flex-wrap:nowrap;gap:4px;width:100%}.fCpu .label{font-size:10px;white-space:nowrap}.fCpu .chip{padding:4px 8px;font-size:11px;white-space:nowrap}}
+#svNm,#dkNm{box-sizing:border-box}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2044,7 +2050,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112090339';
+const APP_VER='20261112104548';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2725,7 +2731,7 @@ function renderFree(){
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
   <div class="dkList">${sgl.map(c=>row(c,true)).join('')||'<span class="note">当てはまるシングルカードはありません</span>'}</div>
   <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['easy','やさしい'],['normal','ふつう'],['strong','つよい'],['mirror','同じデッキ']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
-   <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキでCPUと対戦</button></div>`;
+   <div class="btns fBtns"><button type="button" class="b primary" id="fSave">デッキを保存する</button><button type="button" class="b" id="fGo" ${ok?'':'disabled'}>このデッキでCPUと対戦</button></div></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   // NEW の印は、この画面を出るときに消す
   $('#back').onclick=()=>{markCollSeen();if(MM.prep){MM.pick=deckLegal(freeDeck())?SV.deckIx:MM.pick;go('online')}else go('menu')};
@@ -2761,6 +2767,21 @@ function renderFree(){
   });
   document.querySelectorAll('.dm[data-dm]').forEach(b=>b.onclick=()=>{const k=b.dataset.dm;if(C[k].single)d.single=null;else rm(d.types,k);keep(()=>{})()});
   $('#fGo').onclick=()=>{markCollSeen();startFree()};
+  // 「保存する」→ 名前とアイコンを決める →「完成」。カードの出し入れはその場で保存されているが、作り終えた区切りをはっきりさせる
+  $('#fSave').onclick=async()=>{
+    if(!deckLegal(d)){const f=$('#fNote');f.textContent=bad.length?'持っていないカードが入っているので、まだ保存できません。':n!==13?`カードを13種にしてから保存してください（いま${n}種）。`:'シングルカードを1枚選んでから保存してください。';f.style.color='var(--blood)';f.scrollIntoView({block:'center'});return}
+    const ks=[...d.types].sort(byCat).concat([d.single]).filter(k=>C[k]);let ic=deckIcon(d);
+    const v=await modal(`<h2>デッキを保存</h2>
+      <p class="label">デッキの名前（12文字まで）</p><input id="svNm" class="codeIn" style="width:100%;text-align:left;letter-spacing:0" maxlength="12" value="${esc(d.name)}">
+      <p class="label" style="margin-top:14px">アイコン（このデッキを代表するカード）</p><div class="avGrid" style="max-height:38vh">${ks.map(k=>`<button type="button" class="avOpt ${k===ic?'on':''}" data-ic="${k}" aria-label="${N(k)}"><img src="art/${k}.png" alt="" loading="lazy"><span>${N(k)}</span></button>`).join('')}</div>
+      <div class="btns" style="margin-top:14px"><button type="button" class="b primary" id="svOk">完成</button><button type="button" class="b" id="svNo">編成に戻る</button></div>`,(m,done)=>{
+      m.querySelectorAll('[data-ic]').forEach(b=>b.onclick=()=>{ic=b.dataset.ic;m.querySelectorAll('[data-ic]').forEach(x=>x.classList.toggle('on',x===b))});
+      m.querySelector('#svOk').onclick=()=>done(m.querySelector('#svNm').value);m.querySelector('#svNo').onclick=()=>done(null)},()=>null);
+    if(typeof v!=='string')return;
+    d.name=deckName(v)||d.name;d.icon=ic;save();markCollSeen();
+    await modal(`<div style="text-align:center"><div class="dkIcBig" style="width:72px;height:72px;margin:0 auto 10px;cursor:default">${deckIcHTML(d)}</div><h2 style="margin:0 0 6px">「${esc(d.name)}」を保存しました</h2><p class="note">${catSummary(d.types)}・シングル〈${N(d.single)}〉</p><div class="btns" style="justify-content:center;margin-top:14px"><button type="button" class="b primary" id="dnHome">ホームへ</button><button type="button" class="b" id="dnStay">編成をつづける</button></div></div>`,(m,done)=>{m.querySelector('#dnHome').onclick=()=>done(1);m.querySelector('#dnStay').onclick=()=>done(0)},()=>0)
+      .then(r=>{if(r===1){if(MM.prep){MM.pick=SV.deckIx;go('online')}else go('menu')}else if(VIEW==='free'){const y=window.scrollY;renderFree();window.scrollTo(0,y)}});
+  };
 }
 function startFree(quick){
   const d=freeDeck();if(!deckLegal(d))return go('free');
@@ -3879,7 +3900,9 @@ const TUT_STEPS=[
  {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。さらに、<b>相手の心臓ではない種類を1つ</b>知りました。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類も1つわかります。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
  {when:()=>!S.busy,btn:'チュートリアルを終える',text:'チュートリアルはここまでです。勝ち方は、①宣言で心臓を<b>3回当てる</b>　②攻撃カードの<b>襲撃</b>でライフを削る　③相手の<b>山札が切れる</b>、の3つ。<br><b>相手の心臓は、あと1つ。ここからは、自分で相手の心臓を当ててみよう！</b>'},
 ];
-function tutAllow(){if(!TUT.on||!S||!S.tut)return null;if(TUT.pickOnly)return{};const st=TUT_STEPS[TUT.i];return st&&TUT.act===TUT.i?st.allow||null:{}}
+function tutAllow(){if(!TUT.on||!S||!S.tut)return null;if(TUT.pickOnly)return{};const st=TUT_STEPS[TUT.i];if(st&&TUT.act===TUT.i)return st.allow||null;
+  // 次の説明を待っている合間：自分の番でもうやることがないときは、自分でターンを終えられるようにしておく（自動で終わらなかったときに止まらないように）
+  return S.cur===S.me&&!S.busy&&PH()==='guess'?{btns:['end']}:{}}
 function tutOk(btn,type){if(TUT.bypass)return true;const a=tutAllow();if(!a)return true;if(btn&&!(a.btns||[]).includes(btn))return tutNudge();if(type&&!(a.cards||[]).includes(type))return tutNudge();return true}
 function tutNudge(){const b=document.getElementById('tutBox');if(b){b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge')}return false}
 function tutApply(){
@@ -3926,6 +3949,7 @@ function tutTick(){
   const b=document.getElementById('tutBox');if(b&&free)b.style.display='';
 }
 setInterval(tutTick,300);
+setInterval(()=>{if(TUT.on&&S&&S.tut&&VIEW==='battle'&&nothingLeft()&&$('#modal').hidden&&$('#fx').hidden){TUT.bypass=true;try{onEnd()}finally{TUT.bypass=false}}},6000);
 function startTutorial(){
   lsDel(GAME_KEY);lsDel(DRAFT_KEY);
   TUT.on=true;TUT.i=0;TUT.act=-1;TUT.narrowed=false;TUT.bluffWait=false;TUT.raidTurn=0;TUT.enterTurn=0;TUT.pickOnly='wolf';tutHide();
@@ -4760,6 +4784,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:86,d:'2026-11-12',t:'デッキ編成の下に「デッキを保存する」ボタンを置きました。押すと、名前とアイコンを決めて「完成」で保存できます（カードの出し入れは、これまでどおりその場でも保存されます）。'},
   {id:85,d:'2026-11-12',t:'不具合の直し：デイリーミッションの銀貨を受け取ったあと、別の端末（PC・スマホ・タブレットなど）で開くと、同じ日にもう一度受け取れてしまうのを直しました（Discordでいただいた報告です）。'},
   {id:84,d:'2026-11-12',t:'不具合の直し：ランクマッチの「使用するデッキ」に、自分で選んだデッキのアイコンではなくシングルカードの絵が出ていたのを直しました（Discordでいただいた報告です）。'},
   {id:83,d:'2026-11-12',t:'お知らせ（アップデート情報）の画面の上にも「閉じる」ボタンを置きました。下までスクロールしなくても閉じられます（Discordでいただいた要望です）。'},
