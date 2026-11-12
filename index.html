@@ -1974,7 +1974,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112022231';
+const APP_VER='20261112023904';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2243,11 +2243,12 @@ let SV;
 try{SV=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
 if(!SV||!SV.coll)SV=defaultSave();
 CARDS.forEach(c=>{if(SV.coll[c.k]==null)SV.coll[c.k]=maxOwn(c.k)});
-function save(){SV.at=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}if(typeof CLOUD!=='undefined')CLOUD.push()}
+function save(){SV.at=Date.now();SV.dirty=1;try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}if(typeof CLOUD!=='undefined')CLOUD.push()}
 /* 端末の記録（銀貨・称号・実績・買ったものなど）を、ログインしているアカウントにも預ける（2026-11-12）。
    端末の記録はブラウザごとなので、別のブラウザやアプリからログインし直すと空になっていた。
    ・はじめてそのアカウントとつながった端末：サーバーの記録と合わせる（多い方・両方を持つ）
-   ・つながったあと：新しい方（最後に保存した時刻）を使う
+   ・つながったあと：預ける前に毎回サーバーの記録を見て、別の端末で進んでいたら取りこむ（古い端末が新しい記録を上書きしない）
+   ・画面に戻ってきたときにも突き合わせる
    サーバーに save_get / save_put が無いあいだは何もしない（setup.sql を実行すると動き出す） */
 const CLOUD_KEYS=['coins','owned','equip','unlocked','stat','wins','losses','ow','ol','login','daily','tutDone','altOff','freeDeck','deck'];
 const CLOUD={t:0,ok:true,
@@ -2263,24 +2264,49 @@ const CLOUD={t:0,ok:true,
     if(d.tutDone)SV.tutDone=true;
     ['login','daily','freeDeck','altOff'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
   },
-  async pull(){
-    const me=CLOUD.me();if(!me)return;
-    const {data,error}=await LADDER.sb.rpc('save_get');
-    if(error){CLOUD.ok=false;return}
-    CLOUD.ok=true;
-    if(data&&typeof data==='object'&&data.at){
-      if(SV.cloudUid===me){if(data.at>(SV.at||0))CLOUD.adopt(data)}
-      else if(SV.cloudUid)CLOUD.adopt(data);   // 別のアカウントの記録が残っている端末：このアカウントの記録に入れ替える
-      else CLOUD.merge(data);                  // はじめてつながった端末：合わせる
-    }
-    SV.cloudUid=me;ecoInit();applyFrame();save();CLOUD.push(true);
+  // サーバーの記録と突き合わせる。SV.cloudAt＝最後に突き合わせたときの時刻（サーバーの記録の at と同じ値）
+  //  ・サーバーが前回のまま → 端末の方が進んでいるので、そのまま預ける
+  //  ・端末が前回のまま（SV.dirty なし。サーバーだけ進んだ＝別の端末で遊んだ）→ サーバーの記録を使う
+  //  ・両方進んだ／はじめてつながる → 合わせる（銀貨は多い方、称号や買ったものは両方）
+  busy:false,again:false,
+  async sync(){
+    const me=CLOUD.me();if(!me||!CLOUD.ok)return;
+    if(CLOUD.busy){CLOUD.again=true;return}
+    CLOUD.busy=true;
+    try{
+      const {data,error}=await LADDER.sb.rpc('save_get');
+      if(error){if(/PGRST202|save_get/.test((error.code||'')+error.message))CLOUD.ok=false;return}
+      if(CLOUD.me()!==me)return;
+      const linked=SV.cloudUid===me,has=data&&typeof data==='object'&&data.at;
+      let changed=false;
+      if(has){
+        if(!linked){if(SV.cloudUid)CLOUD.adopt(data);else CLOUD.merge(data);changed=true}
+        else if(SV.cloudAt==null){CLOUD.merge(data);changed=true}  // この仕組みになってからまだ突き合わせていない端末：消さずに合わせる
+        else if(data.at===SV.cloudAt){}
+        else if(!SV.dirty){CLOUD.adopt(data);changed=true}
+        else{CLOUD.merge(data);changed=true}
+      }
+      const same=has&&linked&&data.at===SV.cloudAt&&!SV.dirty;
+      SV.cloudUid=me;
+      if(!same){
+        // 預けているあいだに端末側で変わったら dirty が立ち直るので、次の突き合わせでまた預ける
+        const at=Math.max(Date.now(),has?data.at+1:0);SV.at=at;SV.dirty=0;const put=await LADDER.sb.rpc('save_put',{p_data:CLOUD.pack()});
+        if(put.error){console.error(put.error);SV.dirty=1;return}
+        SV.cloudAt=at;
+      }
+      ecoInit();applyFrame();
+      try{localStorage.setItem(SAVE_KEY,JSON.stringify(SV))}catch(e){}
+      if(changed&&typeof VIEW!=='undefined'&&$('#modal').hidden&&['menu','shop','octo'].includes(VIEW))draw_();
+    }finally{CLOUD.busy=false;if(CLOUD.again){CLOUD.again=false;CLOUD.push()}}
   },
+  pull(){return CLOUD.sync()},
   push(now){
-    const me=CLOUD.me();if(!CLOUD.ok||!me||SV.cloudUid!==me)return;
-    clearTimeout(CLOUD.t);CLOUD.t=setTimeout(()=>{if(CLOUD.me()!==me)return;LADDER.sb.rpc('save_put',{p_data:CLOUD.pack()}).then(({error})=>{if(error){console.error(error);if(/PGRST202|save_put/.test((error.code||'')+error.message))CLOUD.ok=false}})},now?0:4000);
+    if(!CLOUD.ok||!CLOUD.me())return;
+    clearTimeout(CLOUD.t);CLOUD.t=setTimeout(()=>CLOUD.sync(),now?0:4000);
   }
 };
 ecoInit();applyFrame();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)CLOUD.push(true)});
 // カードの所持：スタンダードデッキの14種は全員が持っている。それ以外はランクマッチの報酬（サーバーの collection）
 const STD_SINGLE='greatdet';
 const stdDeck=()=>({types:[...STARTER],single:STD_SINGLE});
@@ -4493,6 +4519,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:65,d:'2026-11-12',t:'ログインしていれば、銀貨・称号・買ったものが、どの端末でも同じになるようにしました（スマホとPCで別々だった記録は、多い方に合わせます）。'},
   {id:64,d:'2026-11-12',t:'デッキ編成に「デッキを一覧で見る」ボタンを追加。友達と対戦でも、先に準備ができた人は自分のデッキを眺められます。スタンダードデッキは〈罠師〉を〈口封じ〉に入れ替えました（罠師はこれまでどおり全員が使えます）。'},
   {id:63,d:'2026-11-12',t:'ルールと不具合の直し：友達との対戦はランクと戦績に関係しなくなりました／心臓を当てたあとは、すぐ相手が心臓を選ぶ番になり、選び終わってから90秒を数えます／占い師は「2つまで」選べます／錬金術師は「ほかに手札が2枚以上あるときだけ使え、2枚捨てて4枚引く（共鳴で5枚）」に変更／祈祷師は系統を2つ押して選ぶ形に／妖狐は化けるカードがないときは使えません／パックのカードは説明が長くても絵が消えません／チュートリアルを正規のルール（1ターンに1枚）に直しました／狼少年と呪いの説明文をはっきりさせました。'},
   {id:62,d:'2026-11-11',t:'効果音をさらに作り直しました。勝ったとき・負けたときの音は短く静かな合図に、ほかの音も短く整った音に替え、音楽と効果音の大きさをそろえました。'},
