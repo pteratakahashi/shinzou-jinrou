@@ -2024,7 +2024,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112071732';
+const APP_VER='20261112072404';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3156,7 +3156,9 @@ function pickTypes(target,count,title,sub,cancelable,viewer,min=count){
 function pickOption(title,sub,opts){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'opt',title,sub,opts});
   const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div style="display:flex;flex-direction:column;gap:8px">${opts.map((o,i)=>`<button type="button" class="b" style="text-align:left;display:flex;flex-direction:column;gap:2px" data-i="${i}"><span style="font-family:var(--display);font-size:17px;font-weight:400">${o.label}</span><span class="note">${o.desc}</span></button>`).join('')}</div>`;
-  return modal(html,(m,done)=>{m.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>done(opts[+b.dataset.i].value))},()=>opts[0].value);
+  return modal(html,(m,done)=>{
+    {const a=tutAllow();if(a&&a.opts)m.querySelectorAll('[data-i]').forEach(b=>{if(!a.opts.includes(opts[+b.dataset.i].value)){b.disabled=true;b.classList.add('tutDim')}})}
+    m.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{if(!b.disabled)done(opts[+b.dataset.i].value)})},()=>opts[0].value);
 }
 // いくつかの選択肢から count 個を選んで決定する（祈祷師の系統選びなど）
 function pickMulti(title,sub,opts,count){
@@ -3589,7 +3591,7 @@ async function cpuTurn(p,plays,g){
   await sleep(900);
   if(g.tut&&TUT.on&&TUT.bluffWait&&opp(p).setCard&&!C[opp(p).setCard.type].set){TUT.bluffWait=false;log(`${p.name}は伏せカードを警戒して、カードを使わなかった。`,'cpu');return}
   if(g.tut&&g.turnNo===6){const w=p.hand.find(c=>c.type==='wolf');if(w){if(p.f.req>0)p.f.req--;await playCard(p,w);await sleep(800)}return}
-  if(g.tut&&TUT.on){const c=p.hand.find(x=>x.type==='prophet'||x.type==='baker'||x.type==='sage');if(c){if(p.f.req>0)p.f.req--;await playCard(p,c);await sleep(800)}return}
+  if(g.tut&&TUT.on){const c=p.hand.find(x=>x.type==='mason'||x.type==='villager'||x.type==='executioner');if(c){if(p.f.req>0)p.f.req--;await playCard(p,c);await sleep(800)}return}
   const use=()=>{if(p.f.req>0)p.f.req--;else p.f.opt--};
   const freeSetNow=async()=>{
     if(!p.f.setFree||g.over)return;
@@ -3778,9 +3780,10 @@ async function startBattle(){
   if(NET.conn){const dk={types:[...D.deck.types],single:D.deck.single};if(!D.free&&!D.tut)dk.draft=true;return netDeck(dk)}
   lsDel(DRAFT_KEY);
   VIEW='battle';window.scrollTo(0,0);
-  let cb;if(D.tut)cb={types:[...TUT_CPU],single:'saint'};else if(D.free)cb=freeCpuDeck();else{const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);cb=autoBuild(cd.pool,cd.singles,8)}
+  let cb;if(D.tut)cb=stdDeck();else if(D.free)cb=freeCpuDeck();else{const cd=newDraft();cd.packs.forEach(pk=>addPulls(cd,pk));fillPool(cd);cb=autoBuild(cd.pool,cd.singles,8)}
   S={me:{...newPlayer('@me',false,[...D.deck.types],D.deck.single),octo:SV.equip.octo||''},cpu:{...newPlayer('@cpu',true,cb.types,cb.single),octo:D.tut?'':rand(['',...Object.keys(OCTO_SKINS)])},know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,free:!!D.free,tut:!!D.tut};
-  if(S.tut){S.me.tut={first:['wolf','villager','seer','stargazer','silencer'],draws:['chief','greatdet','pack','astrologer']};S.cpu.tut={first:['wolf','pack','prophet','villager','sentinel','baker'],heart:'baker'}}
+  // チュートリアル：自分も相手もスタンダードデッキ。自分の心臓は人狼、相手の心臓は狩人。手札と引く順番を決めておく
+  if(S.tut){S.me.tut={first:['wolf','seer','medium','villager','silencer','mason'],draws:['hunter','greatdet','elder','executioner','mute','detective','madman','fox']};S.cpu.tut={first:['hunter','wolf','mason','villager','elder','executioner'],heart:'hunter'}}
   mkPool(S.me);mkPool(S.cpu);render();
   if(D.quick)D.quick=false;else await fxVs();
   if(D.free&&cb.name)log(`CPUのデッキは「${cb.name}」（${cb.tier||''}）。`,'sys');
@@ -3796,32 +3799,32 @@ async function startBattle(){
 }
 
 /* ---- チュートリアル ---- */
-const TUT_ME=['seer','stargazer','astrologer','silencer','wolf','pack','villager','chief','baker','hunter','bodyguard','decoy','mason'];
-const TUT_CPU=['wolf','pack','baker','villager','prophet','sentinel','nekomata','hunter','mason','sage','elder','peddler','cursewolf'];
+// チュートリアルは、自分も相手もスタンダードデッキで行う（2026-11-12）
 const TUT={on:false,i:0,act:-1,narrowed:false};
 const myPlayed=k=>((S&&S.acts)||[]).some(a=>a.who==='me'&&a.kind==='play'&&a.k===k);
 const lastGuess=()=>{const g=((S&&S.acts)||[]).filter(a=>a.who==='me'&&a.kind==='guess');return g[g.length-1]||null};
 const myTurn=t=>S&&S.cur===S.me&&S.turnNo===t;
 const inHand=k=>S&&S.me.hand.some(c=>c.type===k);
 const TUT_STEPS=[
- {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',allow:{},sel:'.btMid',text:'あなたのターンです。まん中の「推理の状況」に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を減らしていきます。'},
- {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>myPlayed('seer')||!myTurn(1),allow:{cards:['seer'],btns:['play'],types:['wolf','pack']},sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を選ぶと、相手の心臓がその中にあるかがわかります。今回は<b>〈人狼〉と〈群狼〉</b>を選んでください。'},
- {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'判定の結果で、表のマスが消えました（候補から外れた）。カードを使えるのは<b>1ターンに1枚</b>です。宣言（心臓を当てる）はまだ早いので、「ターン終了」を押そう。'},
+ {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',allow:{},sel:'.btMid',text:'あなたのターンです。まん中の「推理の状況」に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を少しずつ減らしていきます。'},
+ {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>myPlayed('seer')||!myTurn(1),allow:{cards:['seer'],btns:['play'],types:['wolf','madman']},sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を選ぶと、相手の心臓がその中にあるかがわかります。今回は<b>〈人狼〉と〈狂人〉</b>を選んでください。'},
+ {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'「この中に心臓はない」とわかったので、表から<b>2つ消えました</b>（14→12）。カードを使えるのは<b>1ターンに1枚</b>です。宣言（心臓を当てる）はまだ早いので、「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===2,done:()=>myTurn(3),text:'相手のターンです。相手がどう動くか見ていよう。'},
- {when:()=>myTurn(3)&&PH()==='play'&&!S.busy,skip:()=>!inHand('stargazer'),done:()=>myPlayed('stargazer')||!myTurn(3),allow:{cards:['stargazer'],btns:['play']},sel:'.hc[aria-label="星読み"]',text:'今度は<b>〈星読み〉</b>を使おう。前のターンに使った占い師と同じ<b>「月」の属性</b>なので<b>共鳴</b>して、効果が上乗せされます（光っているのが共鳴できるカード）。'},
- {when:()=>myTurn(3)&&!S.busy,done:()=>!myTurn(3),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'共鳴で、候補がさらに減りました。まだ候補が多いので、今回も「ターン終了」を押そう。'},
+ {when:()=>myTurn(3)&&PH()==='play'&&!S.busy,skip:()=>!inHand('medium'),done:()=>myPlayed('medium')||!myTurn(3),allow:{cards:['medium'],btns:['play'],opts:['info']},sel:'.hc[aria-label="霊媒師"]',text:'次は<b>〈霊媒師〉</b>でさらに絞ろう。このカードには<b>コスト</b>があり、使うと自分の心臓ではない種類を1つ、相手に知られます。効果は、系統を1つ選んで、相手の心臓がその系統かどうかの判定です。今回は<b>「情報」</b>を選んでください。'},
+ {when:()=>myTurn(3)&&!S.busy,done:()=>!myTurn(3),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'「情報」系統ではなかったので、情報系の3種が消えました（12→9）。こうやって<b>少しずつ候補を絞っていく</b>のが、このゲームの基本です。「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===4,done:()=>myTurn(5),text:'相手のターンです。'},
- {when:()=>myTurn(5)&&PH()==='play'&&!S.busy,skip:()=>!inHand('silencer'),done:()=>!!S.me.setCard||!myTurn(5),allow:{cards:['silencer'],btns:['set']},sel:'.hc[aria-label="口封じ"]',text:'カードは、使うかわりに<b>伏せる</b>こともできます（伏せるのも「1ターンに1枚」のうちに入ります）。<b>〈口封じ〉</b>をタップして「伏せる」を押そう。伏せたカードは<b>相手のターンに自動で発動</b>します。口封じは、相手が使ったカードを1回無効にします。'},
+ {when:()=>myTurn(5)&&PH()==='play'&&!S.busy,skip:()=>!inHand('villager'),done:()=>myPlayed('villager')||!myTurn(5),allow:{cards:['villager'],btns:['play']},sel:'.hc[aria-label="村人"]',text:'今度は<b>〈村人〉</b>を使おう。前のターンに使った霊媒師と同じ<b>「聖」の属性</b>なので<b>共鳴</b>して、効果が上乗せされます（光っているのが共鳴できるカード）。共鳴すると、候補がもう1つ消えます。'},
+ {when:()=>myTurn(5)&&!S.busy&&myPlayed('villager'),skip:()=>!inHand('silencer'),done:()=>!!S.me.setCard||!myTurn(5),allow:{cards:['silencer'],btns:['set']},sel:'.hc[aria-label="口封じ"]',text:'村人の効果で、このターンは<b>もう1枚</b>使えます。カードは、使うかわりに<b>伏せる</b>こともできます。<b>〈口封じ〉</b>をタップして「伏せる」を押そう。伏せたカードは<b>相手のターンに自動で発動</b>します。口封じは、相手が使ったカードを1回無効にします。'},
  {when:()=>myTurn(5)&&!S.busy,done:()=>!myTurn(5),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'伏せられました。「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===6,done:()=>myTurn(7),text:'相手のターンです。伏せたカードがどうなるか見ていよう。'},
- {when:()=>myTurn(7)&&PH()==='play'&&!S.busy,allow:{},btn:'次へ',sel:'.oppLast',text:'相手は〈人狼〉で手札を捨てさせようとしましたが、<b>伏せていた口封じが発動して無効</b>にしました！ 相手が前のターンに何をしたかは、相手の欄の<b>「前のターン」</b>で確認できます。'},
+ {when:()=>myTurn(7)&&PH()==='play'&&!S.busy,allow:{},btn:'次へ',sel:'.oppLast',text:'相手は〈人狼〉で手札を捨てさせようとしましたが、<b>伏せていた口封じが発動して無効</b>にしました！ 口封じは発動すると、相手の心臓ではない種類も1つ教えてくれます。相手が前のターンに何をしたかは、相手の欄の<b>「前のターン」</b>で確認できます。'},
  {when:()=>myTurn(7)&&!S.busy,allow:{},btn:'次へ',sel:'.disBtn',text:'<b>捨て札</b>をタップすると、捨てられたカードの一覧が見られます。捨て札の数で効果が変わるカードもあるので、ときどき確認しよう。カードを<b>長押し</b>すると効果の説明も見られます。'},
- {when:()=>myTurn(7)&&!S.busy,skip:()=>!inHand('greatdet'),done:()=>myPlayed('greatdet')||!myTurn(7),allow:{cards:['greatdet'],btns:['play']},sel:'.hc[aria-label="名探偵"]',text:'手札の<b>〈名探偵〉</b>は、デッキに1枚だけの強力な<b>シングルカード</b>。相手の心臓を含む5種類まで、いっきに候補を絞れます。使ってみよう。'},
- {when:()=>S.turnNo>=7&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>10,allow:{btns:['skip','guess'],types:['baker']},sel:'#bSkip,#bGuess',text:'候補がここまで絞れました。消えずに残っているマスの中に、相手の心臓があります。<b>「心臓を宣言」</b>を押して、今回は<b>〈パン屋〉</b>と宣言してみよう（外れると手札を2枚捨てます）。'},
+ {when:()=>myTurn(7)&&!S.busy,skip:()=>!inHand('greatdet'),done:()=>myPlayed('greatdet')||!myTurn(7),allow:{cards:['greatdet'],btns:['play']},sel:'.hc[aria-label="名探偵"]',text:'ここまでで候補はだいぶ減りました。手札の<b>〈名探偵〉</b>は、デッキに1枚だけの強力な<b>シングルカード</b>。相手の心臓を含む5種類まで、いっきに候補を絞れます。使ってみよう。'},
+ {when:()=>S.turnNo>=7&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>10,allow:{btns:['skip','guess'],types:['hunter']},sel:'#bSkip,#bGuess',text:'候補がここまで絞れました。消えずに残っているマスの中に、相手の心臓があります。<b>「心臓を宣言」</b>を押して、今回は<b>〈狩人〉</b>と宣言してみよう（外れると手札を2枚捨てます）。'},
  {allow:{},when:()=>!!lastGuess()&&!S.busy,btn:'次へ',textFn:()=>lastGuess().r==='hit'?'<b>的中！</b> 相手のライフが1減りました（タコの心臓が1つ止まります）。当てられた側は、全部のカードを混ぜ直して心臓を選び直します。これを<b>3回</b>当てたら勝ちです。':'外れ…。でも外れた種類は候補から消えました。残りの候補から、次のターンにもう一度宣言しよう。'},
- {when:()=>S.cur===S.me&&S.turnNo>=9&&PH()==='play'&&!S.busy,enter:tutRaidSetup,done:()=>tutActed('raid')||!myTurnAt(),allow:{cards:['pack'],btns:['play']},sel:'.hc[aria-label="群狼"]',text:'勝ち方はもう1つあります。<b>攻撃系のカード</b>で相手の手札を<b>0枚</b>にすると<b>「襲撃」</b>になり、相手のライフが1減ります。練習のため、相手の手札を1枚にしました。<b>〈群狼〉</b>を使って0枚にしよう。'},
+ {when:()=>S.cur===S.me&&S.turnNo>=9&&PH()==='play'&&!S.busy,enter:tutRaidSetup,done:()=>tutActed('raid')||!myTurnAt(),allow:{cards:['wolf'],btns:['play']},sel:'.hc[aria-label="人狼"]',text:'勝ち方はもう1つあります。<b>攻撃系のカード</b>で相手の手札を<b>0枚</b>にすると<b>「襲撃」</b>になり、相手のライフが1減ります。練習のため、相手の手札を1枚にしました。<b>〈人狼〉</b>を使って0枚にしよう。'},
  {allow:{},when:()=>tutActed('raid')&&!S.busy,btn:'次へ',text:'<b>襲撃成功！</b> 宣言しなくてもライフを削れました。襲撃された側は、<b>心臓はそのまま</b>で手札が5枚になるまで引き直します。襲撃したターンはそこで終わります。'},
- {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません。これも1ターンに1枚のうちに入ります）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
+ {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true;tutNeed('villager');render()},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません。これも1ターンに1枚のうちに入ります）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
  {allow:{btns:['skip','end']},when:()=>S.cur===S.me&&!S.busy,done:()=>S.cur!==S.me,sel:'#bSkip,#bEnd',text:'伏せられました。このまま「宣言に進む」→「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu,done:()=>S.cur===S.me&&PH()==='play'&&!S.busy,text:'相手のターンです。あなたの伏せカードを警戒しているようです…。'},
  {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。さらに、<b>相手の心臓ではない種類を1つ</b>知りました。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類も1つわかります。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
@@ -3839,9 +3842,11 @@ function tutApply(){
 function myTurnAt(){return S&&S.cur===S.me&&S.turnNo===TUT.enterTurn}
 function tutActed(kind){return((S&&S.acts)||[]).some(a=>a.who==='me'&&a.kind===kind&&a.turn>=(TUT.enterTurn||0))}
 // 襲撃の練習：相手の手札を1枚に、自分の手札に群狼を用意する
+// チュートリアル：そのカードが手札になければ、山札か捨て札から持ってくる
+function tutNeed(k){if(S.me.hand.some(c=>c.type===k))return;const c=S.me.deck.find(x=>x.type===k)||S.me.discard.find(x=>x.type===k);if(c){rm(S.me.deck,c);rm(S.me.discard,c);S.me.hand.push(c)}}
 function tutRaidSetup(){
   const o=S.cpu;while(o.hand.length>1){const x=o.hand[o.hand.length-1];toDiscard(o,x)}
-  if(!S.me.hand.some(c=>C[c.type].cat==='atk'&&C[c.type].e.includes('襲撃：'))){const c=S.me.deck.find(x=>x.type==='pack')||S.me.discard.find(x=>x.type==='pack');if(c){rm(S.me.deck,c);rm(S.me.discard,c);S.me.hand.push(c)}}
+  tutNeed('wolf');
   if(S.me.f.req<1&&S.me.f.opt<1)S.me.f.req=1;
   log('（チュートリアル：練習のため、相手の手札を1枚にしました）','sys');TUT.raidTurn=S.turnNo;render();
 }
@@ -3875,7 +3880,7 @@ setInterval(tutTick,300);
 function startTutorial(){
   lsDel(GAME_KEY);lsDel(DRAFT_KEY);
   TUT.on=true;TUT.i=0;TUT.act=-1;TUT.narrowed=false;TUT.bluffWait=false;TUT.raidTurn=0;TUT.enterTurn=0;TUT.pickOnly='wolf';tutHide();
-  D={...newDraft(),deck:{types:[...TUT_ME],single:'greatdet'},stage:'build',tut:true};
+  D={...newDraft(),deck:stdDeck(),stage:'build',tut:true};
   startBattle();
 }
 
@@ -4706,6 +4711,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:78,d:'2026-11-12',t:'チュートリアルを作り直しました。スタンダードデッキを使い、占い師 → 霊媒師 → 村人（共鳴）と、候補を少しずつ絞っていく流れを体験できます。'},
   {id:77,d:'2026-11-12',t:'CPUの強さを「やさしい・ふつう・つよい」の3段階から選べるようになりました（デッキ編成の下）。それぞれ3つのデッキがあり、その中からランダムに当たります。カードの調整：狂人は「外すと1枚多く捨てる」をなくしました／鼠男は「山札の上から2枚を捨て札にして、自分は1枚引く」に／狼王は「自分の捨て札が10枚以上なら、さらに2枚捨てさせる」に／司祭は「捨て札から1枚戻し、相手の心臓ではない種類を1つ知る（共鳴で2枚）」に変わりました。'},
   {id:76,d:'2026-11-12',t:'スタンダードデッキに呪いのカード〈沈黙僧〉を入れました（〈パン屋〉と入れ替え。パン屋はこれまでどおり全員が使えます）。'},
   {id:75,d:'2026-11-12',t:'ランクマッチは、先に使うデッキを選んでから「マッチング開始」を押す形になりました。相手が見つかると、選んだデッキでそのまま対戦が始まります。待ち画面が下までスクロールできない不具合も直しました。'},
