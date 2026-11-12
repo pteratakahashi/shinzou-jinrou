@@ -2022,7 +2022,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112053248';
+const APP_VER='20261112054018';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2477,7 +2477,7 @@ function renderMenu(){
   on('mBattle',()=>startFree());on('mResume',resumeGame);on('mRejoin',onlineRejoin);
   on('mRules',()=>go('howto'));on('mFree',()=>go('free'));on('mInstall',installApp);on('mOnline',()=>go('online'));
   on('mPacks',()=>{P=null;go('packs')});on('mGift',()=>{P=null;go('packs')});
-  on('mRank',()=>{NET.err='';mmStart()});
+  on('mRank',()=>{NET.err='';rankPrep()});
   on('updAll',showUpdates);on('updAll2',showUpdates);on('pAvatar',pickAvatar);on('mFriend',()=>go('online'));bindMissions();
   on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});on('hmTitle',()=>{OCTO_PV=null;go('octo')});
   on('hmMsn',showMissions);on('hmSet',showSettings);
@@ -2694,7 +2694,7 @@ function renderFree(){
    <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキでCPUと対戦</button></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   // NEW の印は、この画面を出るときに消す
-  $('#back').onclick=()=>{markCollSeen();go('menu')};
+  $('#back').onclick=()=>{markCollSeen();if(MM.prep){MM.pick=deckLegal(freeDeck())?SV.deckIx:MM.pick;go('online')}else go('menu')};
   document.querySelectorAll('[data-slot]').forEach(b=>b.onclick=keep(()=>{SV.deckIx=+b.dataset.slot}));
   {const a=$('#dkAdd');if(a)a.onclick=keep(()=>{deckAdd()})}
   $('#dkRen').onclick=async()=>{
@@ -3730,7 +3730,7 @@ async function gameOver(w){
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu'],['#rRank','rank']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     document.body.classList.remove('resultOn');
-    if(on){if(v==='rank'){netLeave();setTimeout(()=>mmStart(),450);return}if(!NET.conn)return go('menu');if(v==='new'){NET.ready.me=null;go('online')}else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
+    if(on){if(v==='rank'){netLeave();setTimeout(()=>rankPrep(),450);return}if(!NET.conn)return go('menu');if(v==='new'){NET.ready.me=null;go('online')}else if(v==='same')netDeck(NET.lastDeck);else netLeave();return}
     if(S.tut){if(v==='same')startTutorial();else go('menu');return}
     if(MM.side){if(v==='same'&&MM.on&&!NET.conn)mmSide();else mmSideBack();return}if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu')});
 }
@@ -4393,7 +4393,7 @@ function battleSheet(){
       <button type="button" class="mi" id="bsFriend"><img class="miArt" src="art/twins.png" alt=""><b>友達と対戦</b><span>部屋を作ってリンクを送る</span></button>
     </div>`,(m,done)=>{
     m.querySelector('#bsX').onclick=()=>done();m.onclick=e=>{if(e.target===m)done()};
-    m.querySelector('#bsRank').onclick=()=>{done();NET.err='';mmStart()};
+    m.querySelector('#bsRank').onclick=()=>{done();NET.err='';rankPrep()};
     m.querySelector('#bsCpu').onclick=()=>{done();startFree()};
     m.querySelector('#bsFriend').onclick=()=>{done();go('online')};
   });
@@ -4609,7 +4609,7 @@ function bindRankCard(){
   gsiRender();
   const c=$('#rkRetry');if(c)c.onclick=()=>{LADDER.state='loading';LADDER.redraw();LADDER.sb?LADDER.refresh():LADDER.init()};
   const d=$('#rkBoard');if(d)d.onclick=showBoard;
-  const mt=$('#rkMatch');if(mt)mt.onclick=()=>{NET.err='';mmStart()};
+  const mt=$('#rkMatch');if(mt)mt.onclick=()=>{NET.err='';rankPrep()};
 }
 
 
@@ -4700,6 +4700,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:75,d:'2026-11-12',t:'ランクマッチは、先に使うデッキを選んでから「マッチング開始」を押す形になりました。相手が見つかると、選んだデッキでそのまま対戦が始まります。待ち画面が下までスクロールできない不具合も直しました。'},
   {id:74,d:'2026-11-12',t:'スマホで遊んでいる人へ：ホーム画面に追加すると、アプリのように全画面で遊べます。設定（歯車）の「アプリとしてホーム画面に追加」から、追加のしかたを見られます。'},
   {id:73,d:'2026-11-12',t:'デッキごとにアイコン（代表のカード）を決められるようになりました。デッキ編成の「アイコンを変える」から選べます。'},
   {id:72,d:'2026-11-12',t:'デッキを6つまで保存して、名前を付けられるようになりました（デッキ編成のいちばん上）。友達との対戦やランクマッチでは、保存したデッキから選べます。'},
@@ -4819,7 +4820,7 @@ const MM={fails:0,on:false,timer:0,t0:0,waiting:0,joining:false,clock:0,side:fal
 // ランクマッチの相手を待っている間に、CPU と対戦する（2026-11-12）。相手が見つかったら CPU 対戦は打ち切って、ランクマッチに移る
 function mmSide(){
   if(!MM.on||NET.conn)return;
-  const d=deckLegal(freeDeck())?freeDeck():stdDeck();
+  const d=MM.deck||(deckLegal(freeDeck())?freeDeck():stdDeck());
   MM.side=true;lsDel(GAME_KEY);lsDel(DRAFT_KEY);
   D={...newDraft(),deck:{types:[...d.types],single:d.single},stage:'build',free:true,quick:true};
   startBattle();
@@ -4839,13 +4840,31 @@ function mmFound(){
 const mmWaitText=()=>`ランクマッチ待ち ${mmElapsed()}・探している人 ${MM.waiting||1}人`;
 const mmInlineHTML=()=>MM.on&&MM.side?`<span class="mmInline" id="mmInline">${mmWaitText()}</span>`:'';
 function mmChip(){const el=document.getElementById('mmInline');if(!el)return;if(MM.on&&MM.side)el.textContent=mmWaitText();else el.remove()}
+/* ランクマッチは、押してすぐ相手を探すのではなく、先にデッキを選ぶ（2026-11-12）。
+   rankPrep()＝デッキを選ぶ画面 →「マッチング開始」で mmStart()。選んだデッキ（MM.deck）は、相手が見つかったら自動で出す */
+function rankPrep(){
+  if(!LADDER.uid()){NET.err='ランクマッチはGoogleでログインすると遊べます。';return go('online')}
+  if(NET.conn||MM.on)return go('online');
+  deckInit();
+  if(MM.pick==null||(MM.pick!=='std'&&!(SV.decks[MM.pick]&&deckLegal(SV.decks[MM.pick]))))MM.pick=deckLegal(SV.decks[SV.deckIx])?SV.deckIx:'std';
+  MM.prep=true;go('online');
+}
+const rankDeck=()=>{deckInit();const x=MM.pick==='std'?null:SV.decks[MM.pick];return x&&deckLegal(x)?{name:x.name,types:[...x.types],single:x.single}:{name:'スタンダードデッキ',...stdDeck()}};
+function rankPrepHTML(){
+  deckInit();
+  return`<div class="onCard"><p class="onBig">ランクマッチ</p><p class="note">使うデッキを選んで、「マッチング開始」を押してください。相手が見つかると、そのまま対戦が始まります。</p>
+    <div class="menu">${SV.decks.map((x,i)=>deckLegal(x)?`<button type="button" class="mi ${MM.pick===i?'main':''}" data-rdeck="${i}"><b>${deckIcHTML(x)}${esc(x.name)}</b><span>${catSummary(x.types)}・シングル〈${N(x.single)}〉</span></button>`:`<div class="mi" style="opacity:.5"><b>${deckIcHTML(x)}${esc(x.name)}</b><span>まだ使えません（13種とシングルがそろっていない、または持っていないカードがあります）</span></div>`).join('')}
+      <button type="button" class="mi ${MM.pick==='std'?'main':''}" data-rdeck="std"><b>スタンダードデッキ</b><span>最初に全員が持っているデッキです</span></button></div>
+    <div class="btns" style="margin-top:14px"><button type="button" class="b primary" id="rpStart">マッチング開始</button><button type="button" class="b" id="rpEdit">デッキを編成する</button><button type="button" class="b" id="rpNo">やめる</button></div></div>`;
+}
 async function mmStart(){
   if(!LADDER.uid()){NET.err='ランクマッチはGoogleでログインすると遊べます。';return go('online')}
   if(NET.conn)return go('online');
   if(!MM.on)MM.fails=0;MM.on=true;MM.joining=false;MM.t0=MM.t0||Date.now();MM.waiting=0;
   clearInterval(MM.timer);MM.timer=setInterval(mmTick,4000);
   clearInterval(MM.clock);MM.clock=setInterval(()=>{const el=$('#mmTime');if(el)el.textContent=mmElapsed();mmChip()},1000);
-  if(!(MM.side&&VIEW==='battle'))VIEW='online';await netHost();
+  // ホームから来たときは、ホーム用の「スクロールしない」設定を外す（待ち画面の下が見られなかった）
+  if(!(MM.side&&VIEW==='battle')){VIEW='online';document.body.classList.remove('onHome','hasTabs')}await netHost();
 }
 function mmElapsed(){const t=Math.floor((Date.now()-MM.t0)/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`}
 async function mmTick(){
@@ -4924,7 +4943,8 @@ function netBind(c,rejoin){
       if(NET.host&&S&&S.online){NET.send({t:'resume',mid:NET.mid,gid:S.gid});netResumed();NET.lastSnap='';NET.sentQ=0;NET.sync(true);for(const q of Object.values(NET.askQ))NET.send(q);
         if(NET.resumeNext){const nx=NET.resumeNext;NET.resumeNext=null;runTurn(nx==='me'?S.me:S.cpu)}else render()}
       else netResumed();
-      return}if(MM.on){NET.ranked=true;MM.fails=0;mmStop();mmFound()}NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,octo:SV.equip.octo||'',uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});SFX.res();if(VIEW==='online')renderOnline()});
+      return}if(MM.on){NET.ranked=true;MM.fails=0;mmStop();mmFound()}NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,octo:SV.equip.octo||'',uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});SFX.res();if(VIEW==='online')renderOnline();
+    if(NET.ranked&&MM.deck){const dk=MM.deck;setTimeout(()=>{if(NET.conn===c&&NET.ranked&&!NET.ready.me&&!(S&&S.online&&!S.over))netDeck({types:[...dk.types],single:dk.single})},700)}});
   c.on('data',m=>{try{netRecv(m)}catch(e){console.error(e)}});
   c.on('close',()=>{if(c.__dead||NET.conn!==c)return;netDrop()});
   c.on('error',()=>{if(c.__dead||NET.conn!==c)return;netDrop()});
@@ -5317,7 +5337,8 @@ function renderOnline(){
   setBg(null);
   const st=NET.state,on=!!(NET.conn&&NET.conn.open);
   let body='';
-  if(on){
+  if(MM.prep&&!on&&!MM.on&&LADDER.uid())body=rankPrepHTML();
+  else if(on){
     const me=NET.ready.me,op=NET.ready.cpu;
     body=`<div class="onCard"><p class="onBig">${esc(NET.opp||'相手')} さんとつながりました</p>
       <div class="onStat"><span>あなた：<b>${me?'デッキ準備OK':'デッキ準備中'}</b></span><span>${esc(NET.opp||'相手')}：<b>${op?'デッキ準備OK':'デッキ準備中'}</b></span></div>
@@ -5332,7 +5353,7 @@ function renderOnline(){
     body=MM.on?`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${MM.joining?'相手が見つかりました。つないでいます…':'対戦相手を探しています…'}</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b></p><div class="btns"><button type="button" class="b" id="mmCancel">探すのをやめる</button></div>${triviaHTML()}</div>`
     :`<div class="onCard"><p class="onBig">${st==='opening'?'部屋を用意しています…':'部屋につないでいます…'}</p>${st==='joining'?`<p class="note">部屋コード <b>${esc(NET.code)}</b></p>`:''}${triviaHTML()}</div>`;
   }else if(st==='waiting'&&MM.on){
-    body=`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">対戦相手を探しています…</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b>・いま探している人 <b id="mmCount">${MM.waiting||1}</b>人</p><p class="note">見つかると自動でつながります。待っている間に CPU と対戦もできます（見つかったら、その対戦は打ち切ってランクマッチに移ります）。</p><div class="btns"><button type="button" class="b primary" id="mmSideB">待っている間に CPU と対戦</button><button type="button" class="b" id="mmCancel">探すのをやめる</button></div><div class="mmProf"><span class="label">待っている間にプロフィールを変える</span><div class="mmProfRow"><button type="button" class="avatar" id="mmAv" aria-label="アイコンを変える">${avatarImg()}</button>${nameEdHTML('mmName')}<button type="button" class="b small" id="mmOcto">称号とタコ</button></div></div>${triviaHTML()}</div>`;
+    body=`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">対戦相手を探しています…</p><p class="note">待ち時間 <b id="mmTime">${mmElapsed()}</b>・いま探している人 <b id="mmCount">${MM.waiting||1}</b>人</p>${MM.deck?`<p class="note">使うデッキ：<b>${esc(MM.deck.name||'')}</b></p>`:''}<p class="note">見つかると自動でつながります。待っている間に CPU と対戦もできます（見つかったら、その対戦は打ち切ってランクマッチに移ります）。</p><div class="btns"><button type="button" class="b primary" id="mmSideB">待っている間に CPU と対戦</button><button type="button" class="b" id="mmCancel">探すのをやめる</button></div><div class="mmProf"><span class="label">待っている間にプロフィールを変える</span><div class="mmProfRow"><button type="button" class="avatar" id="mmAv" aria-label="アイコンを変える">${avatarImg()}</button>${nameEdHTML('mmName')}<button type="button" class="b small" id="mmOcto">称号とタコ</button></div></div>${triviaHTML()}</div>`;
   }else if(st==='waiting'){
     body=`<div class="onCard"><p class="label">部屋コード</p><div class="roomCode">${esc(NET.code)}</div>
       <p class="note">このリンクを友達に送ってください。友達がリンクを開いて「参加する」を押すとつながります。</p>
@@ -5351,14 +5372,18 @@ function renderOnline(){
     ${NET.err?`<div class="onErr">${esc(NET.err)}</div>`:''}
     ${body}
     <p class="note">通信はブラウザどうしで直接つなぎます（PeerJS）。学校や会社のネットワークでは、つながらないことがあります。</p>`;
-  const bk=$('#oBack');bk.onclick=()=>{if(on||NET.peer){NET.err='';netLeave()}else{NET.err='';go('menu')}};
+  const bk=$('#oBack');bk.onclick=()=>{MM.prep=false;if(on||NET.peer){NET.err='';netLeave()}else{NET.err='';go('menu')}};
   bindNameEd('oName',renderOnline);
   const h=$('#oHost');if(h)h.onclick=()=>netHost();
-  const om=$('#oMatch');if(om)om.onclick=()=>{NET.err='';mmStart()};
+  const om=$('#oMatch');if(om)om.onclick=()=>{NET.err='';rankPrep()};
   const ol=$('#oLogin');if(ol)ol.onclick=()=>LADDER.login();
   gsiRender();
   const mc=$('#mmCancel');if(mc)mc.onclick=()=>{mmStop();netReset();NET.err='';renderOnline()};
   const ms=$('#mmSideB');if(ms)ms.onclick=()=>mmSide();
+  document.querySelectorAll('[data-rdeck]').forEach(b=>b.onclick=()=>{MM.pick=b.dataset.rdeck==='std'?'std':+b.dataset.rdeck;const y=window.scrollY;renderOnline();window.scrollTo(0,y)});
+  {const a=$('#rpStart');if(a)a.onclick=()=>{const d=rankDeck();MM.deck=d;if(MM.pick!=='std'){SV.deckIx=MM.pick;save()}MM.prep=false;NET.err='';mmStart()};
+   const e=$('#rpEdit');if(e)e.onclick=()=>{if(MM.pick!=='std'){SV.deckIx=MM.pick;save()}go('free')};
+   const n=$('#rpNo');if(n)n.onclick=()=>{MM.prep=false;go('menu')}}
   {const a=$('#mmAv');if(a)a.onclick=()=>pickAvatar();const o=$('#mmOcto');if(o)o.onclick=()=>{VIEW='octo';window.scrollTo(0,0);draw_()};bindNameEd('mmName',renderOnline)}
   const j=$('#oJoin');if(j){const ci=$('#oCode');j.onclick=()=>netJoin(ci.value);ci.onkeydown=e=>{if(e.key==='Enter')netJoin(ci.value)}}
   const cp=$('#oCopy');if(cp)cp.onclick=async()=>{const li=$('#oLink');try{await navigator.clipboard.writeText(li.value);cp.textContent='コピーしました'}catch(e){li.select();try{document.execCommand('copy');cp.textContent='コピーしました'}catch(_){cp.textContent='上の文字を長押ししてコピー'}}};
