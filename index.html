@@ -67,6 +67,11 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 
 .mmProf{margin-top:16px;padding-top:12px;border-top:1px solid var(--hair);text-align:left}
 .mmProfRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px}.mmProfRow .avatar{width:48px;height:48px}
+
+/* ランクマッチでもらったカードの演出（2026-11-12） */
+.reveal.gotRev{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:12px 0 4px;width:100%}
+.reveal.gotRev .flip{width:128px;flex:none}
+.gotRev .res.dup{color:var(--dim)}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2001,7 +2006,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112045019';
+const APP_VER='20261112050631';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2521,6 +2526,7 @@ function renderPacks(){
     pb.classList.remove('shake');
     if(res.error){console.error(res.error);const m=$('#pkMsg');if(m)m.textContent=/no packs/.test(res.error.message)?'パックがありません':'パックを開けられませんでした。通信を確かめて、もう一度試してください。';await LADDER.loadPacks();pb.disabled=!LADDER.packs;return}
     LADDER.packs=res.data.n;
+    if(SV.pendGot)res.data.cards.forEach(c=>{SV.pendGot.base[c.k]=(SV.pendGot.base[c.k]||0)+1});
     P={cards:res.data.cards.filter(c=>C[c.k]).map(c=>({k:c.k,on:false,res:c.new?{type:'new',txt:C[c.k].single?'NEW':'NEW ×3'}:{type:'dup',txt:'かぶり'}}))};
     pb.classList.add('tear');await sleep(450);
     await LADDER.loadColl();
@@ -3658,7 +3664,7 @@ async function gameOver(w){
     :`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを編成する</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
   await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
-      el.innerHTML=(st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。')+gotHTML(d)});
+      el.innerHTML=(st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。')+gotHTML(d);gotRun(m)});
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu'],['#rRank','rank']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     document.body.classList.remove('resultOn');
@@ -3667,13 +3673,38 @@ async function gameOver(w){
     if(MM.side){if(v==='same'&&MM.on&&!NET.conn)mmSide();else mmSideBack();return}if(v==='new')go('free');else if(v==='same')startFree(true);else go('menu')});
 }
 // ランクマッチの報酬（結果画面）
+/* ランクマッチでもらったカードの演出（2026-11-12）。伏せたカードが順にめくれる。かぶっていても出す。
+   ・結果がその場で確定したとき：結果の画面の中でめくる（gotHTML → gotRun）
+   ・相手の報告待ち（pending）のとき：SV.pendGot にその時の所持を覚えておき、あとでカードが増えたら「届きました」と出す（gotCheck） */
+const ownedIn=(base,k)=>STARTER.includes(k)||FREE_OWN.includes(k)||k===STD_SINGLE||((base||{})[k]||0)>0;
+function gotRevealHTML(keys,base){
+  return`<div class="reveal gotRev">${keys.filter(k=>C[k]).map((k,i)=>{const dup=ownedIn(base,k);return`<button type="button" class="flip rr-${tierRR(k)}" data-k="${k}" style="animation-delay:${i*90}ms" aria-label="${N(k)}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(k,'p')}</div></div><div class="res ${dup?'dup':'new'}">${dup?'かぶり':'NEW'}</div></button>`}).join('')}</div>`;
+}
+// 伏せたカードを順にめくる（押してもめくれる。めくったカードを押すと効果）
+function gotRun(root){
+  const bs=[...root.querySelectorAll('.gotRev .flip')];
+  const open=b=>{if(b.classList.contains('on'))return;b.classList.add('on');b.style.animation='none';const rr=tierRR(b.dataset.k),r=b.getBoundingClientRect();
+    setTimeout(()=>{if(rr==='L'){SFX.legend();screenFlash('gold');FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2)}else if(rr==='R'){SFX.rare();FXC.burst('#b9c7e8',35,6,r.left+r.width/2,r.top+r.height/2)}else SFX.flip()},300)};
+  bs.forEach((b,i)=>{b.onclick=()=>{if(b.classList.contains('on'))showCardInfo(b.dataset.k);else open(b)};setTimeout(()=>{if(b.isConnected)open(b)},700+i*650)});
+}
 function gotHTML(d){
   if(!d||!d.ranked)return'';
-  if(d.status==='pending')return'<br><span class="note">もらえるカードは、相手の結果報告のあとで届きます（デッキ編成で確認できます）。</span>';
+  if(d.status==='pending'){SV.pendGot={at:Date.now(),base:{...COLL.map}};save();return'<br><span class="note">もらえるカードは、相手の結果報告のあとで届きます。届いたらお知らせします。</span>'}
   if(d.status!=='done'||!Array.isArray(d.got)||!d.got.length)return'';
-  const was=k=>owns(k);
-  return`<br><b>カードをもらいました</b><div class="gotList">${d.got.filter(k=>C[k]).map(k=>`<div>${cardHTML(k,'s')}<span>${N(k)}</span><span class="${was(k)?'muted':'newTag'}">${was(k)?'かぶり':'NEW'}</span></div>`).join('')}</div>`;
+  return`<br><b>カードを手に入れました</b>${gotRevealHTML(d.got,COLL.map)}`;
 }
+// 報告待ちだったカードが届いたか（所持が増えたか）を見て、届いていたら演出を出す
+function gotCheck(){
+  const pg=SV.pendGot;if(!pg)return;
+  if(Date.now()-pg.at>30*60000){SV.pendGot=null;save();return}
+  const got=[];for(const k in COLL.map){const n=(COLL.map[k]||0)-((pg.base||{})[k]||0);for(let i=0;i<n&&got.length<6;i++)got.push(k)}
+  if(!got.length)return;
+  // 対戦中や、ほかの画面を開いている間は出さない（次に確かめたときに出す）
+  if(VIEW==='battle'||!$('#modal').hidden||!$('#fx').hidden)return;
+  SV.pendGot=null;save();
+  modal(`<div class="result"><span class="big win" style="font-size:26px">カードが届きました</span><p class="note">さっきのランクマッチでもらったカードです。</p>${gotRevealHTML(got,pg.base)}<div class="btns"><button type="button" class="b primary" id="gotOk">閉じる</button></div></div>`,(m,done)=>{m.querySelector('#gotOk').onclick=()=>done();gotRun(m)}).then(()=>{if(VIEW==='menu')renderMenu()});
+}
+setInterval(()=>{if(SV.pendGot&&!document.hidden&&LADDER.sb&&LADDER.uid())LADDER.loadColl()},20000);
 async function startBattle(){
   if(!D||D.deck.types.length!==13||!D.deck.single)return go('free');
   if(NET.conn){const dk={types:[...D.deck.types],single:D.deck.single};if(!D.free&&!D.tut)dk.draft=true;return netDeck(dk)}
@@ -4475,6 +4506,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     if(error){console.error(error);return}
     if(LADDER.uid()!==me)return;
     COLL.map=data&&typeof data==='object'?data:{};SV.collCache={uid:me,map:COLL.map};save();
+    gotCheck();
   },
   redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='packs'&&!P)renderPacks();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
   login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
@@ -4606,6 +4638,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:71,d:'2026-11-12',t:'ランクマッチのあと、もらったカードがめくれる演出が入るようになりました。相手の報告を待っている場合は、カードが届いたときに出ます。'},
   {id:70,d:'2026-11-12',t:'ランクマッチの相手を待っている間に、アイコン・名前・称号とタコを変えられるようになりました。'},
   {id:69,d:'2026-11-12',t:'相手の接続が切れたとき、戻ってくるのを待てる残り時間（最大2分）が秒で出るようになりました。ランクマッチを待ちながらのCPU対戦では、いま探している人の数も出ます。'},
   {id:68,d:'2026-11-12',t:'ランクマッチの相手を待っている間に、CPUと対戦できるようになりました（相手が見つかると、その対戦は打ち切ってランクマッチに移ります）。プロフィールのアイコンを、ドット絵で自分で描けるようになりました（アイコンを押して「自分で描く」）。'},
