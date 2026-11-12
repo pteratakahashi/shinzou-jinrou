@@ -72,6 +72,15 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 .reveal.gotRev{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:12px 0 4px;width:100%}
 .reveal.gotRev .flip{width:128px;flex:none}
 .gotRev .res.dup{color:var(--dim)}
+
+/* 保存したデッキの切りかえ（2026-11-12） */
+.dkSlots{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 8px}
+.dkSlots .chip{border-radius:2px;border:1px solid var(--hair);color:var(--dim);font:700 13px var(--pcf);padding:6px 12px;max-width:11em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dkSlots .chip.on{border-color:var(--gold);color:var(--ivory);background:rgba(163,29,46,.35)}
+.dkSlots .chip.ng:not(.on){border-style:dashed}
+.dkSlots .chip.add{border-style:dashed;color:var(--gold)}
+.dkSlotN{font-size:11px}
+.dkSlotAct{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.dkNameNow{font:800 18px var(--pcf);color:var(--ivory);margin-right:4px}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2006,7 +2015,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112050631';
+const APP_VER='20261112051158';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2283,7 +2292,7 @@ function save(){SV.at=Date.now();SV.dirty=1;try{localStorage.setItem(SAVE_KEY,JS
    ・つながったあと：預ける前に毎回サーバーの記録を見て、別の端末で進んでいたら取りこむ（古い端末が新しい記録を上書きしない）
    ・画面に戻ってきたときにも突き合わせる
    サーバーに save_get / save_put が無いあいだは何もしない（setup.sql を実行すると動き出す） */
-const CLOUD_KEYS=['coins','owned','equip','avatarPx','unlocked','stat','wins','losses','ow','ol','login','daily','tutDone','altOff','freeDeck','deck'];
+const CLOUD_KEYS=['coins','owned','equip','avatarPx','decks','deckIx','unlocked','stat','wins','losses','ow','ol','login','daily','tutDone','altOff','freeDeck','deck'];
 const CLOUD={t:0,ok:true,
   // LADDER はこのあとで作られる。起動直後の save() から呼ばれても落ちないようにする
   me(){try{return LADDER.sb&&LADDER.uid()||null}catch(e){return null}},
@@ -2295,7 +2304,7 @@ const CLOUD={t:0,ok:true,
     const a=SV.stat=SV.stat||{},b=d.stat||{};for(const k in b)if(typeof b[k]==='number')a[k]=Math.max(+a[k]||0,b[k]);else if(a[k]===undefined)a[k]=b[k];
     const eq=SV.equip||{};if(d.equip&&!eq.title&&!eq.frame&&!eq.octo&&(!eq.avatar||eq.avatar==='villager'))SV.equip=d.equip;
     if(d.tutDone)SV.tutDone=true;
-    ['login','daily','freeDeck','altOff','avatarPx'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
+    ['login','daily','freeDeck','altOff','avatarPx','decks','deckIx'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
   },
   // サーバーの記録と突き合わせる。SV.cloudAt＝最後に突き合わせたときの時刻（サーバーの記録の at と同じ値）
   //  ・サーバーが前回のまま → 端末の方が進んでいるので、そのまま預ける
@@ -2619,7 +2628,21 @@ function renderDeck(){
 // CPU用の強豪デッキ：全カード自由のシミュレーション（遺伝的アルゴリズム）で勝率が高かった構築
 const FREE_PRESETS=[{"name":"鏡の巫女の千里眼","wr":60,"types":["lookout","detective","wolf","prophet","pack","knight","sentinel","medium","diviner","twins","villager","tactician","mason"],"single":"mirror"},{"name":"白狼の狩り","wr":58,"types":["lookout","detective","wolf","villager","kidnapper","pack","chief","knight","poisoner","nightmare","mason","diviner","twins"],"single":"whitewolf"},{"name":"呪術師の呪い","wr":54,"types":["lookout","detective","wolf","villager","kidnapper","pack","chief","knight","poisoner","nightmare","mason","diviner","nun"],"single":"curser"}];
 let FF='all';
-const freeDeck=()=>{if(!SV.freeDeck||!Array.isArray(SV.freeDeck.types))SV.freeDeck=stdDeck();return SV.freeDeck};
+/* デッキは6つまで保存でき、名前を付けられる（2026-11-12）。SV.decks＝[{name,types,single}]、SV.deckIx＝いま編集・使用しているデッキ。
+   SV.freeDeck は前の版との互換のため、いまのデッキの写しを入れておく */
+const DECK_MAX=6;
+const deckName=s=>String(s||'').replace(/[<>&"]/g,'').trim().slice(0,12);
+function deckInit(){
+  if(!Array.isArray(SV.decks)||!SV.decks.length){const d=SV.freeDeck&&Array.isArray(SV.freeDeck.types)?SV.freeDeck:stdDeck();SV.decks=[{name:'デッキ1',types:[...d.types],single:d.single||null}];SV.deckIx=0}
+  SV.decks=SV.decks.filter(d=>d&&Array.isArray(d.types)).slice(0,DECK_MAX);if(!SV.decks.length)SV.decks=[{name:'デッキ1',...stdDeck()}];
+  SV.decks.forEach((d,i)=>{d.name=deckName(d.name)||`デッキ${i+1}`;if(d.single===undefined)d.single=null});
+  if(!(SV.deckIx>=0&&SV.deckIx<SV.decks.length))SV.deckIx=0;
+}
+const freeDeck=()=>{deckInit();const d=SV.decks[SV.deckIx];SV.freeDeck={types:d.types,single:d.single};return d};
+// いまのデッキの中身を入れ替える（名前はそのまま）
+function setFreeDeck(x){deckInit();const d=SV.decks[SV.deckIx];d.types=[...x.types];d.single=x.single||null}
+function deckAdd(){deckInit();if(SV.decks.length>=DECK_MAX)return false;const used=SV.decks.map(d=>d.name);let i=1;while(used.includes(`デッキ${i}`))i++;SV.decks.push({name:`デッキ${i}`,...stdDeck()});SV.deckIx=SV.decks.length-1;return true}
+function deckDel(){deckInit();if(SV.decks.length<=1)return;SV.decks.splice(SV.deckIx,1);SV.deckIx=Math.max(0,SV.deckIx-1)}
 // 持っているカードだけで組めているか
 const deckLegal=d=>freeOk(d)&&d.types.every(owns)&&owns(d.single);
 const myDeck=()=>{const d=freeDeck();return deckLegal(d)?{types:[...d.types],single:d.single}:stdDeck()};
@@ -2634,6 +2657,8 @@ function renderFree(){
   const msg=bad.length?`持っていないカードが入っています（${bad.map(k=>'〈'+N(k)+'〉').join('')}）。外すか、スタンダードデッキに戻してください。`:ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください';
   $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
   <p class="note" style="margin-top:0">持っているカードからデッキを組めます（カード13種×3枚＋シングル1枚＝40枚）。所持 <b>${ownedCount()}/${CARDS.length}</b>種。<br>カードは<b>ランクマッチ</b>で、勝つと2種、負けても1種もらえます${LADDER.uid()?'':'（Googleでログインが必要）'}。</p>
+  <div class="dkSlots"><span class="label">デッキ</span>${SV.decks.map((x,i)=>`<button type="button" class="chip ${i===SV.deckIx?'on':''} ${deckLegal(x)?'':'ng'}" data-slot="${i}">${esc(x.name)}</button>`).join('')}${SV.decks.length<DECK_MAX?'<button type="button" class="chip add" id="dkAdd">＋ 新しいデッキ</button>':''}<span class="muted dkSlotN">${SV.decks.length}/${DECK_MAX}</span></div>
+  <div class="dkSlotAct"><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button>${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
   <div class="dkTop"><div class="dkTopH"><span><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></span><span class="muted dmHint">いまのデッキ（押すと外れます）</span></div>${deckMiniHTML(d)}</div>
   <div class="dkHead dkStatic">${deckSum(d.types)}
    ${filterBar(FFS,{inDeck:true})}
@@ -2649,12 +2674,20 @@ function renderFree(){
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   // NEW の印は、この画面を出るときに消す
   $('#back').onclick=()=>{markCollSeen();go('menu')};
+  document.querySelectorAll('[data-slot]').forEach(b=>b.onclick=keep(()=>{SV.deckIx=+b.dataset.slot}));
+  {const a=$('#dkAdd');if(a)a.onclick=keep(()=>{deckAdd()})}
+  $('#dkRen').onclick=async()=>{
+    const v=await modal(`<h2>デッキの名前</h2><p class="note" style="margin-top:0">12文字まで。</p><input id="dkNm" class="codeIn" style="width:100%;text-align:left;letter-spacing:0" maxlength="12" value="${esc(d.name)}"><div class="btns" style="margin-top:12px"><button type="button" class="b primary" id="dkNmOk">決定</button><button type="button" class="b" id="dkNmNo">やめる</button></div>`,(m,done)=>{const i=m.querySelector('#dkNm');setTimeout(()=>{i.focus();i.select()},50);const ok=()=>done(i.value);m.querySelector('#dkNmOk').onclick=ok;i.onkeydown=e=>{if(e.key==='Enter')ok()};m.querySelector('#dkNmNo').onclick=()=>done(null)},()=>null);
+    if(typeof v==='string'&&deckName(v)){d.name=deckName(v);save()}
+    if(VIEW==='free'){const y=window.scrollY;renderFree();window.scrollTo(0,y)}
+  };
+  {const x=$('#dkDel');if(x){let armed=false;x.onclick=()=>{if(!armed){armed=true;x.textContent='本当に消す（もう一度押す）';return}keep(()=>{deckDel()})()}}}
   $('#fView').onclick=()=>{DKV=!DKV;const y=window.scrollY;renderFree();window.scrollTo(0,y)};
   bindFilter(FFS,()=>{const y=window.scrollY;renderFree();window.scrollTo(0,y)});
   document.querySelectorAll('[data-cpu]').forEach(b=>b.onclick=keep(()=>{SV.freeCpu=b.dataset.cpu}));
-  $('#fStd').onclick=keep(()=>{SV.freeDeck=stdDeck()});
-  $('#fAuto').onclick=keep(()=>{SV.freeDeck=autoBuild(NORMAL.filter(c=>owns(c.k)).map(c=>c.k),SINGLE.filter(c=>owns(c.k)).map(c=>c.k),6)});
-  $('#fClear').onclick=keep(()=>{SV.freeDeck={types:[],single:null}});
+  $('#fStd').onclick=keep(()=>{setFreeDeck(stdDeck())});
+  $('#fAuto').onclick=keep(()=>{setFreeDeck(autoBuild(NORMAL.filter(c=>owns(c.k)).map(c=>c.k),SINGLE.filter(c=>owns(c.k)).map(c=>c.k),6))});
+  $('#fClear').onclick=keep(()=>{setFreeDeck({types:[],single:null})});
   document.querySelectorAll('.dk').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k,f=$('#fNote');
     if(!owns(k)&&!d.types.includes(k)&&d.single!==k){f.textContent=`〈${N(k)}〉はまだ持っていません。ランクマッチで手に入ります。`;f.style.color='var(--blood)';return}
@@ -4638,6 +4671,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:72,d:'2026-11-12',t:'デッキを6つまで保存して、名前を付けられるようになりました（デッキ編成のいちばん上）。友達との対戦やランクマッチでは、保存したデッキから選べます。'},
   {id:71,d:'2026-11-12',t:'ランクマッチのあと、もらったカードがめくれる演出が入るようになりました。相手の報告を待っている場合は、カードが届いたときに出ます。'},
   {id:70,d:'2026-11-12',t:'ランクマッチの相手を待っている間に、アイコン・名前・称号とタコを変えられるようになりました。'},
   {id:69,d:'2026-11-12',t:'相手の接続が切れたとき、戻ってくるのを待てる残り時間（最大2分）が秒で出るようになりました。ランクマッチを待ちながらのCPU対戦では、いま探している人の数も出ます。'},
@@ -5259,8 +5293,8 @@ function renderOnline(){
       ${LADDER.on()?`<p class="rateLine">${LADDER.rated()?`<b>ランク戦</b>　${esc(NET.opp||'相手')}さん：${NET.oppRp!=null?tierHTML(NET.oppRp):'？'}`:'友達との対戦は、ランクと戦績に関係しません。'}</p>`:''}
       ${me?`<p class="note">${op?'まもなく始まります…':`${esc(NET.opp||'相手')}さんのデッキができるのを待っています…`}</p><p class="label" style="margin-top:12px">あなたのデッキ（カードを押すと効果）</p>${deckSum(me.types)}${deckViewHTML(me)}`
         :`<p class="note">おたがいにデッキを用意すると対戦が始まります。</p><div class="menu">
-          ${deckLegal(freeDeck())?`<button type="button" class="mi main" id="oMine"><b>自分のデッキで対戦</b><span>${catSummary(freeDeck().types)}・シングル〈${N(freeDeck().single)}〉（ホームの「デッキ編成」で編集）</span></button>`:''}
-          <button type="button" class="mi ${deckLegal(freeDeck())?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
+          ${(freeDeck(),SV.decks).map((x,i)=>deckLegal(x)?`<button type="button" class="mi ${i===SV.deckIx?'main':''}" data-odeck="${i}"><b>「${esc(x.name)}」で対戦</b><span>${catSummary(x.types)}・シングル〈${N(x.single)}〉</span></button>`:'').join('')}
+          <button type="button" class="mi ${SV.decks.some(deckLegal)?'':'main'}" id="oStd"><b>スタンダードデッキで対戦</b><span>最初に全員が持っているデッキです</span></button>
           ${NET.ranked?'':`<button type="button" class="mi" id="oDraft"><b>パックを${DRAFT_N}つ開けて組む</b><span>その場で開けたカードから13種とシングル1枚を選びます。持っていないカードも使えます</span></button>`}
           ${NET.lastDeck?`<button type="button" class="mi" id="oSame"><b>前と同じデッキで対戦</b><span>${NET.lastDeck.draft?'パックで組んだデッキ・':''}${catSummary(NET.lastDeck.types)}・シングル〈${N(NET.lastDeck.single)}〉</span></button>`:''}</div>`}</div>`;
   }else if(st==='opening'||st==='joining'){
@@ -5298,7 +5332,7 @@ function renderOnline(){
   const j=$('#oJoin');if(j){const ci=$('#oCode');j.onclick=()=>netJoin(ci.value);ci.onkeydown=e=>{if(e.key==='Enter')netJoin(ci.value)}}
   const cp=$('#oCopy');if(cp)cp.onclick=async()=>{const li=$('#oLink');try{await navigator.clipboard.writeText(li.value);cp.textContent='コピーしました'}catch(e){li.select();try{document.execCommand('copy');cp.textContent='コピーしました'}catch(_){cp.textContent='上の文字を長押ししてコピー'}}};
   const sh=$('#oShare');if(sh)sh.onclick=()=>{navigator.share({title:'心臓人狼',text:'心臓人狼で対戦しよう！',url:roomLink()}).catch(()=>{})};
-  const om2=$('#oMine');if(om2)om2.onclick=()=>{NET.err='';netDeck(myDeck())};
+  document.querySelectorAll('[data-odeck]').forEach(b=>b.onclick=()=>{NET.err='';const x=SV.decks[+b.dataset.odeck];if(x&&deckLegal(x)){SV.deckIx=+b.dataset.odeck;save();netDeck({types:[...x.types],single:x.single})}});
   const odr=$('#oDraft');if(odr)odr.onclick=()=>{NET.err='';startDraft()};
   const ost=$('#oStd');if(ost)ost.onclick=()=>{NET.err='';netDeck(stdDeck())};
   const os=$('#oSame');if(os)os.onclick=()=>{NET.err='';netDeck(NET.lastDeck)};
