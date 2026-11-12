@@ -551,7 +551,7 @@ update public.cards c set tier = v.t from (values
 
 -- スタンダードデッキのカード（全員が最初から持っている扱い。パックではかぶり扱い）
 alter table public.cards add column if not exists starter boolean not null default false;
-update public.cards set starter = (k in ('villager','seer','medium','hunter','wolf','fox','mason','baker','detective','elder','executioner','madman','silencer','greatdet','trapper'));
+update public.cards set starter = (k in ('villager','seer','medium','hunter','wolf','fox','mason','detective','elder','executioner','madman','silencer','mute','greatdet','trapper','baker'));
 
 create table if not exists public.packs (
   uid uuid primary key references public.players(id) on delete cascade,

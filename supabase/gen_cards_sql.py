@@ -20,7 +20,7 @@ ins=',\n'.join(f"  ('{k}', {'true' if c=='one' else 'false'})" for k,c,r in rows
 q=re.sub(r"(insert into public\.cards\(k, single\) values\n).*?(\non conflict \(k\) do update set single = excluded\.single;)",lambda m:m.group(1)+ins+m.group(2),q,count=1,flags=re.S)
 tv=',\n  '.join(f"('{k}','{tier(k,c)}')" for k,c,r in rows)
 q=re.sub(r"(update public\.cards c set tier = v\.t from \(values\n  ).*?(\n\) as v\(k, t\) where c\.k = v\.k;)",lambda m:m.group(1)+tv+m.group(2),q,count=1,flags=re.S)
-st=[k for k,c,r in rows if r=='S']+[std]+['trapper']  # 罠師は前のスタンダード。全員が持っている扱いのまま（index.html の FREE_OWN）
+st=[k for k,c,r in rows if r=='S']+[std]+['trapper','baker']  # 罠師は前のスタンダード。全員が持っている扱いのまま（index.html の FREE_OWN）
 q=re.sub(r"update public\.cards set starter = \(k in \([^)]*\)\);","update public.cards set starter = (k in ("+','.join(f"'{k}'" for k in st)+"));",q,count=1)
 open(os.path.join(D,'setup.sql'),'w',encoding='utf-8').write(q)
 from collections import Counter
