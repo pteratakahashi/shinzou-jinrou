@@ -2053,7 +2053,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112104548';
+const APP_VER='20261112120123';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3952,6 +3952,18 @@ function tutTick(){
   const b=document.getElementById('tutBox');if(b&&free)b.style.display='';
 }
 setInterval(tutTick,300);
+/* いま遊んでいる人数を数えるための合図（2026-11-12）。1分ごとに、端末ごとのランダムな番号と「いまの状態」だけをサーバーに送る。
+   だれが遊んでいるかは送らない。サーバーの重さを調べるためのもの（サーバー側：setup.sql の beat / presence_now）。
+   サーバーに beat がまだ無いときは、あきらめて何もしない */
+const PRES={ok:true,id:'',
+  state(){try{if(VIEW==='battle'&&S)return S.spec?'watch':S.online?(NET.ranked?'rank':'friend'):S.tut?'tut':'cpu';if(MM.on)return'wait';if(VIEW==='online')return'lobby';if(VIEW==='watch')return'watch';return'menu'}catch(e){return'other'}},
+  beat(){
+    if(!PRES.ok||document.hidden||typeof RANK_CFG==='undefined'||!RANK_CFG.url||!RANK_CFG.key)return;
+    if(!PRES.id){try{PRES.id=localStorage.getItem('hw2_pid')||''}catch(e){}if(!/^[A-Za-z0-9_-]{8,40}$/.test(PRES.id)){PRES.id=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');try{localStorage.setItem('hw2_pid',PRES.id)}catch(e){}}}
+    fetch(RANK_CFG.url+'/rest/v1/rpc/beat',{method:'POST',headers:{apikey:RANK_CFG.key,Authorization:'Bearer '+RANK_CFG.key,'Content-Type':'application/json'},body:JSON.stringify({p_id:PRES.id,p_state:PRES.state(),p_ver:String(APP_VER)}),keepalive:true})
+      .then(r=>{if(r.status===404)PRES.ok=false}).catch(()=>{});
+  }};
+setTimeout(PRES.beat,8000);setInterval(PRES.beat,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)PRES.beat()});
 setInterval(()=>{if(TUT.on&&S&&S.tut&&VIEW==='battle'&&nothingLeft()&&$('#modal').hidden&&$('#fx').hidden){TUT.bypass=true;try{onEnd()}finally{TUT.bypass=false}}},6000);
 function startTutorial(){
   lsDel(GAME_KEY);lsDel(DRAFT_KEY);

@@ -641,3 +641,33 @@ revoke execute on function public.save_get() from public, anon;
 revoke execute on function public.save_put(jsonb) from public, anon;
 grant execute on function public.save_get() to authenticated;
 grant execute on function public.save_put(jsonb) to authenticated;
+
+
+-- ================= いま遊んでいる人数（2026-11-12） =================
+-- 遊んでいる端末が1分ごとに合図（beat）を送る。だれかは記録しない（端末ごとのランダムな番号と、いまの状態だけ）。
+-- サーバーの重さを調べるためのもの。presence_now() で、直近2分半に合図があった数を状態ごとに返す。
+create table if not exists public.presence (
+  id text primary key,
+  state text not null default '',
+  ver text not null default '',
+  at timestamptz not null default now()
+);
+alter table public.presence enable row level security;
+revoke all on public.presence from anon, authenticated;
+
+create or replace function public.beat(p_id text, p_state text, p_ver text default '')
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if p_id is null or p_id !~ '^[A-Za-z0-9_-]{8,40}$' then return; end if;
+  if p_state is null or p_state not in ('menu','cpu','tut','friend','rank','wait','lobby','watch','other') then p_state := 'other'; end if;
+  insert into presence(id, state, ver, at) values (p_id, p_state, left(coalesce(p_ver, ''), 20), now())
+  on conflict (id) do update set state = excluded.state, ver = excluded.ver, at = now();
+  if random() < 0.02 then delete from presence where at < now() - interval '1 day'; end if;
+end $$;
+create or replace function public.presence_now()
+returns json language sql security definer set search_path = public stable as $$
+  select json_build_object('total', coalesce(sum(c), 0), 'by', coalesce(json_object_agg(state, c), '{}'::json))
+  from (select state, count(*) c from presence where at > now() - interval '150 seconds' group by state) t
+$$;
+grant execute on function public.beat(text, text, text) to anon, authenticated;
+grant execute on function public.presence_now() to anon, authenticated;
