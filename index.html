@@ -2044,7 +2044,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112083620';
+const APP_VER='20261112090104';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2699,7 +2699,8 @@ const freeCpu=()=>['easy','normal','strong','mirror'].includes(SV.freeCpu)?SV.fr
 function renderFree(){
   const d=freeDeck(),n=d.types.length,ok=deckLegal(d),bad=d.types.filter(k=>!owns(k)).concat(d.single&&!owns(d.single)?[d.single]:[]);
   const sortOwn=a=>[...a].sort((x,y)=>(owns(y.k)?1:0)-(owns(x.k)?1:0));
-  const list=sortOwn(NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k)))),sgl=sortOwn(SINGLE);
+  // 系統で「シングル」を選ぶと、シングルカードだけが出る。属性と「デッキに入れたカードだけ」は、シングルにも効く
+  const list=sortOwn(NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k)))),sgl=sortOwn(SINGLE.filter(c=>fMatch({...FFS,cat:FFS.cat==='one'?'one':'all'},c,d.single===c.k)));
   const tag=k=>isNewCard(k)?'<span class="newTag">NEW</span>':'';
   const row=(c,sg)=>{const inn=sg?d.single===c.k:d.types.includes(c.k),has=owns(c.k);return`<button type="button" class="dk ${sg?'sg':''} ${inn?'in':''} ${has?'':'lock'}" data-k="${c.k}" ${has?'':'aria-disabled="true"'}>${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}${tag(c.k)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${has?'':'<span class="muted">未所持</span>'}${inn?'<span class="inTag">デッキ内</span>':''}${(COLL.map[c.k]||0)>1?`<span class="muted">×${COLL.map[c.k]}</span>`:''}</span></div></button>`};
   const msg=bad.length?`持っていないカードが入っています（${bad.map(k=>'〈'+N(k)+'〉').join('')}）。外すか、スタンダードデッキに戻してください。`:ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください';
@@ -2709,14 +2710,14 @@ function renderFree(){
   <div class="dkSlotAct"><button type="button" class="dkIcBig" id="dkIcB" aria-label="デッキのアイコンを変える">${deckIcHTML(d)}</button><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button><button type="button" class="b small" id="dkIcon">アイコンを変える</button>${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
   <div class="dkTop"><div class="dkTopH"><span><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></span><span class="muted dmHint">いまのデッキ（押すと外れます）</span></div>${deckMiniHTML(d)}</div>
   <div class="dkHead dkStatic">${deckSum(d.types)}
-   ${filterBar(FFS,{inDeck:true})}
+   ${filterBar(FFS,{inDeck:true,single:true})}
    <div class="btns"><button type="button" class="b small ${DKV?'primary':''}" id="fView">${DKV?'一覧を閉じる':'デッキを一覧で見る'}</button><button type="button" class="b small" id="fStd">スタンダードデッキに戻す</button><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
   <div class="note" id="fNote" ${bad.length?'style="color:var(--blood)"':''}>${msg}</div>
   ${DKV?`<h3 style="font-size:16px">いまのデッキ（カードを押すと効果）</h3>${deckViewHTML(d)}`:''}
-  <h3 style="font-size:16px">カード（13種・各3枚）</h3>
-  <div class="dkList">${list.map(c=>row(c,false)).join('')}</div>
+  ${FFS.cat==='one'?'':`<h3 style="font-size:16px">カード（13種・各3枚）</h3>
+  <div class="dkList">${list.map(c=>row(c,false)).join('')||'<span class="note">当てはまるカードはありません</span>'}</div>`}
   <h3 style="font-size:16px">シングルカード（1枚）</h3>
-  <div class="dkList">${sgl.map(c=>row(c,true)).join('')}</div>
+  <div class="dkList">${sgl.map(c=>row(c,true)).join('')||'<span class="note">当てはまるシングルカードはありません</span>'}</div>
   <div class="fBar"><div class="fCpu"><span class="label">CPUのデッキ</span>${[['easy','やさしい'],['normal','ふつう'],['strong','つよい'],['mirror','同じデッキ']].map(([k,l])=>`<button type="button" class="chip ${freeCpu()===k?'on':''}" data-cpu="${k}">${l}</button>`).join('')}</div>
    <button type="button" class="b primary" id="fGo" ${ok?'':'disabled'}>このデッキでCPUと対戦</button></div>`;
   const keep=fn=>()=>{fn();save();const y=window.scrollY;renderFree();window.scrollTo(0,y)};
@@ -4753,6 +4754,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:81,d:'2026-11-12',t:'デッキ編成の絞りこみに「シングル」を足しました。押すと、シングルカードだけが並びます。属性の絞りこみと「デッキに入れたカードだけ」も、シングルカードに効くようになりました（Discordでいただいた要望です）。'},
   {id:80,d:'2026-11-12',t:'ホームに公式Discordへのリンクを置きました。カードの調整：狼王は「捨て札が10枚以上なら、さらに1枚」に／妖狐で化けたあとも、直前に使ったカードは妖狐（月）のあつかいに／物見は、伏せ専用のカードを捨て札にしたら、さらに1枚引く／夜警は「発動したら1つ知る」のおまけをなくしました。'},
   {id:79,d:'2026-11-12',t:'ブラフが成功したときに、特別な「ブラフ成功！」の演出が出るようになりました。伏せたカードが発動しなかったときは、めくれて捨て札に落ちる演出が入ります。チュートリアルの最後は「相手の心臓はあと1つ。自分で当ててみよう」で終わるようにしました。'},
   {id:78,d:'2026-11-12',t:'チュートリアルを作り直しました。スタンダードデッキを使い、占い師 → 霊媒師 → 村人（共鳴）→ もう一度霊媒師・占い師と、候補を少しずつ絞って、1つに確定させてから宣言する流れを体験できます。'},
