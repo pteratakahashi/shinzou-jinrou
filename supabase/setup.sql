@@ -723,3 +723,76 @@ returns json language sql security definer set search_path = public stable as $$
 $$;
 grant execute on function public.stat_put(text, jsonb) to anon, authenticated;
 grant execute on function public.stat_get(integer) to anon, authenticated;
+
+
+-- ================= リプレイ（終わった対戦の記録。2026-11-13） =================
+-- ランクマッチが終わったとき、対戦した人の端末が記録（圧縮した文字）を replay_put で預ける。
+-- 見られるのは運営（admins 表にいる人）だけ：replay_list / replay_get。7日たった記録は消す（keep を付けたものは残す）。
+-- 運営の登録は、SQL Editor で1回だけ手で行う（メールアドレスをこのファイルに書かないため）：
+--   insert into public.admins(uid) select id from auth.users where email = '自分のメールアドレス' on conflict do nothing;
+create table if not exists public.admins (
+  uid uuid primary key references auth.users(id) on delete cascade
+);
+create table if not exists public.replays (
+  id text primary key,                       -- 対戦の番号（matches.id と同じ）
+  at timestamptz not null default now(),
+  p1 uuid, p2 uuid,
+  meta jsonb not null default '{}'::jsonb,   -- 名前・勝った人・ターン数・デッキなど（一覧に出す分）
+  data text not null,                        -- 記録の本体（gzip → base64）
+  keep boolean not null default false
+);
+create index if not exists replays_at on public.replays(at desc);
+alter table public.admins enable row level security;
+alter table public.replays enable row level security;
+revoke all on public.admins from anon, authenticated;
+revoke all on public.replays from anon, authenticated;
+
+create or replace function public.am_admin()
+returns boolean language sql security definer set search_path = public stable as $$
+  select exists (select 1 from admins where uid = auth.uid())
+$$;
+-- 記録を預ける。その対戦に参加した人だけ。同じ対戦の記録が先に届いていたら何もしない
+create or replace function public.replay_put(p_match text, p_meta jsonb, p_data text)
+returns boolean language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); m public.matches;
+begin
+  if me is null then return false; end if;
+  if p_match is null or length(p_match) < 8 or length(p_match) > 64 then return false; end if;
+  if p_data is null or length(p_data) < 20 or length(p_data) > 120000 then return false; end if;
+  if p_meta is null or jsonb_typeof(p_meta) <> 'object' or pg_column_size(p_meta) > 6000 then return false; end if;
+  select * into m from matches where id = p_match;
+  if m.id is null or me not in (m.p1, m.p2) or not coalesce(m.ranked, false) then return false; end if;
+  insert into replays(id, p1, p2, meta, data) values (p_match, m.p1, m.p2, p_meta, p_data) on conflict (id) do nothing;
+  if random() < 0.05 then delete from replays where at < now() - interval '7 days' and not keep; end if;
+  return true;
+end $$;
+create or replace function public.replay_list(p_limit integer default 50, p_before timestamptz default null)
+returns json language plpgsql security definer set search_path = public stable as $$
+begin
+  if not am_admin() then return json_build_object('ok', false); end if;
+  return json_build_object('ok', true, 'total', (select count(*) from replays), 'rows', coalesce((
+    select json_agg(x) from (select id, at, meta, keep, length(data) as size from replays
+      where p_before is null or at < p_before order by at desc limit least(greatest(p_limit, 1), 200)) x), '[]'::json));
+end $$;
+create or replace function public.replay_get(p_match text)
+returns json language plpgsql security definer set search_path = public stable as $$
+begin
+  if not am_admin() then return json_build_object('ok', false); end if;
+  return coalesce((select json_build_object('ok', true, 'id', id, 'at', at, 'meta', meta, 'keep', keep, 'data', data) from replays where id = p_match), json_build_object('ok', false));
+end $$;
+create or replace function public.replay_keep(p_match text, p_keep boolean)
+returns boolean language plpgsql security definer set search_path = public as $$
+begin
+  if not am_admin() then return false; end if;
+  update replays set keep = coalesce(p_keep, false) where id = p_match;
+  return found;
+end $$;
+revoke execute on function public.replay_put(text, jsonb, text) from public, anon;
+revoke execute on function public.replay_list(integer, timestamptz) from public, anon;
+revoke execute on function public.replay_get(text) from public, anon;
+revoke execute on function public.replay_keep(text, boolean) from public, anon;
+grant execute on function public.am_admin() to anon, authenticated;
+grant execute on function public.replay_put(text, jsonb, text) to authenticated;
+grant execute on function public.replay_list(integer, timestamptz) to authenticated;
+grant execute on function public.replay_get(text) to authenticated;
+grant execute on function public.replay_keep(text, boolean) to authenticated;

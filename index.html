@@ -117,6 +117,31 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 @media (max-width:700px){.fBar .fBtns{width:100%}.fBar .fBtns .b{flex:1;min-width:0;padding-left:6px;padding-right:6px}}
 @media (max-width:700px){.fBar{gap:6px;padding-top:6px}.fCpu{flex-wrap:nowrap;gap:4px;width:100%}.fCpu .label{font-size:10px;white-space:nowrap}.fCpu .chip{padding:4px 8px;font-size:11px;white-space:nowrap}}
 #svNm,#dkNm{box-sizing:border-box}
+
+/* リプレイ（運営用。2026-11-13） */
+.rvList{display:flex;flex-direction:column;gap:6px}
+.rvRow{display:flex;gap:8px;align-items:stretch}
+.rvOpen{flex:1;min-width:0;text-align:left;background:var(--panel);border:1px solid var(--hair);color:var(--ivory);padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.rvOpen b{font:700 15px var(--pcf)}.rvOpen i,.rvVs{font-style:normal;color:var(--dim);font-size:.8em;margin:0 4px}.rvOpen span{font-size:12px;color:var(--dim)}
+.rvBar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--dim);border-bottom:1px solid var(--hair);padding-bottom:6px;margin-bottom:8px}.rvBar b{color:var(--gold)}
+.rvCtl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:#12080b;padding:6px 0;margin-bottom:8px}.rvCtl input{flex:1;min-width:120px}
+.rvGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.rvSide{border:1px solid var(--hair);background:var(--panel);padding:10px 12px}.rvSide.on{border-color:var(--gold)}
+.rvSideH{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.rvSideH b{font:800 17px var(--pcf)}.rvSideH span{font-size:12px;color:var(--dim)}.rvSideH em{font-style:normal;font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:0 8px}
+.rvLife{display:inline-flex;gap:3px}.rvLife i{width:11px;height:11px;border-radius:50%;border:1px solid #c8283a;display:block}.rvLife i.on{background:#c8283a}
+.rvRowC{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.rvSlot{display:flex;flex-direction:column;gap:3px;align-items:center;font-size:11px;color:var(--dim);width:58px}.rvSlot .tcg,.rvSlot .emptySlot{width:54px}
+.rvHand{flex:1;min-width:150px;font-size:11px;color:var(--dim)}.rvHand>div{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}.rvHand .tcg{width:54px}
+.rvCandH{font:700 12px var(--pcf);color:var(--gold);letter-spacing:.06em;margin:10px 0 5px}.rvCandH b{color:var(--ivory);font-size:15px;margin:0 2px}
+.rvCand{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.rvCand .nwT span{font-size:9px}
+.rvCand .nwT.rvHeart{outline:2px solid var(--gold);outline-offset:-2px}.rvCand .nwT.rvHeart.dead{filter:grayscale(.6) brightness(.6)}
+.rvLog{border:1px solid var(--hair);background:var(--panel);padding:2px 12px 10px}.rvLogIn{max-height:260px;overflow:auto;font-size:12.5px;line-height:1.55}.rvLogIn p{margin:0;padding:2px 0;border-bottom:1px solid rgba(232,200,140,.07)}
+.rvLogIn p.me{color:#f3dcc0}.rvLogIn p.cpu{color:#c9d6ee}.rvLogIn p.sys{color:var(--dim)}
+/* PC では、ふつうの画面の幅より広く使う */
+html.fit-wide .rvRoot{position:relative;left:50%;transform:translateX(-50%);width:min(1360px,calc(100vw - 150px))}
+html.fit-wide .rvGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px}html.fit-wide .rvLogIn{max-height:600px}
+html.fit-wide .rvSlot{width:80px}html.fit-wide .rvSlot .tcg,html.fit-wide .rvSlot .emptySlot,html.fit-wide .rvHand .tcg{width:74px}html.fit-wide .rvCand .nwT span{font-size:11px}
+@media (min-width:1000px){.rvCand{grid-template-columns:repeat(7,minmax(0,1fr))}}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2453,6 +2478,7 @@ function draw_(){
   else if(VIEW==='watch')renderWatch();
   else if(VIEW==='shop')renderShop();
   else if(VIEW==='octo')renderOcto();
+  else if(VIEW==='replay')renderReplay();
   else if(VIEW==='cards')renderCards();
   else if(VIEW==='howto')renderHowto();
   else if(VIEW==='draft')renderDraft();
@@ -2540,6 +2566,7 @@ function showSettings(){
     <div class="sndSet"><span class="label">効果音</span><input type="range" id="mSfxVol" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}><button type="button" class="b small" id="mSfx">${sndOn()?'ON':'OFF'}</button></div>
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     ${LADDER.uid()?`<div class="btns"><span class="label">記録</span><button type="button" class="b small" id="clSync">ほかの端末と合わせる</button><span class="note" id="clSt">${CLOUD.last?(CLOUD.last.err?'合わせられませんでした：'+esc(CLOUD.last.err):new Date(CLOUD.last.t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+' '+CLOUD.last.how+'（銀貨 '+CLOUD.last.coins+'）'):'まだ合わせていません'}</span></div>`:''}
+    ${LADDER.admin?`<div class="btns"><span class="label">運営</span><button type="button" class="b small" id="stRep">リプレイを見る</button></div>`:''}
     <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   modal(html(),(m,done)=>{
     const bind=()=>{
@@ -2551,6 +2578,7 @@ function showSettings(){
       {const sv=m.querySelector('#mSfxVol');sv.oninput=e=>SFX.volume(+e.target.value);sv.onchange=()=>SFX.select()}
       m.querySelector('#mSfx').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.ui();m.querySelector('.sheet').innerHTML=html();bind()};
       {const cs=m.querySelector('#clSync');if(cs)cs.onclick=async()=>{cs.disabled=true;CLOUD.ok=true;await CLOUD.sync();m.querySelector('.sheet').innerHTML=html();bind()}}
+      {const rp=m.querySelector('#stRep');if(rp)rp.onclick=()=>{done();RPV.cur=null;VIEW='replay';window.scrollTo(0,0);draw_();rpvLoadList()}}
       m.querySelector('#tReset').onclick=()=>{if(!armed){armed=true;m.querySelector('#resetNote').textContent='もう一度押すと初期化します';return}SV=defaultSave();ecoInit();applyFrame();save();done();renderMenu()};
     };bind();
   });
@@ -3784,6 +3812,7 @@ async function gameOver(w){
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
   const rated=on&&LADDER.rated()&&NET.mid,rp=rated?LADDER.report(NET.mid,win,'ko'):null;
+  if(rated&&!S.guest)REC.send(win);
   if(!on)lsDel(GAME_KEY);else ONL.clear();
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);if(win)quake();FXC.burst('#ffffff',120,12);
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();
@@ -4187,6 +4216,7 @@ function render0(){
   if(VIEW==='battle'&&S&&!S.over)guardHist();
   if(VIEW==='battle')setBg('home_a','dark');
   if(S&&S.online&&!S.guest)NET.sync();
+  REC.snap();
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
   const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec;
@@ -4649,6 +4679,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     await LADDER.loadColl();
     await LADDER.loadPacks();
     await CLOUD.pull();
+    try{const a=await LADDER.sb.rpc('am_admin');LADDER.admin=!a.error&&a.data===true}catch(e){LADDER.admin=false}
     LADDER.redraw();
     showGifts();
   },
@@ -5019,6 +5050,98 @@ async function showBoard(){
   return p;
 }
 
+
+/* ================= リプレイ（2026-11-13） =================
+   ランクマッチを、ホスト側の端末が盤面の変わった所だけ記録し、終わったときに圧縮してサーバーに預ける（setup.sql の replay_put）。
+   見られるのは運営だけ（admins 表。LADDER.admin）。見る側は VIEW==='replay'（renderReplay）。対戦している人の手札と心臓もすべて見える。
+   1試合ぶんは圧縮して3KBほど。7日で消える（残す印を付けたものは残る） */
+const REC={on:false,fr:[],prev:{},t0:0,test:false,
+  start(){REC.on=true;REC.fr=[];REC.prev={};REC.t0=Date.now()},
+  // 盤面の変わった所だけを1コマとして足す（render のたびに呼ばれる）
+  snap(){
+    if(!REC.on||!S||S.guest||S.spec||!(S.online||REC.test)||!S.me.heart||!S.cpu.heart||REC.fr.length>=700)return;
+    const P=p=>({l:p.life,h:p.hand.map(c=>c.type),hr:p.heart.type,s:p.setCard?p.setCard.type:null,d:p.deck.length,x:p.discard.map(c=>c.type),a:p.lastAttr||''});
+    const Kx=k=>({e:[...k.excluded],a:k.allowed?[...k.allowed]:null});
+    const f={t:S.turnNo,r:S.round||1,c:S.cur?whoOf(S.cur):'',ph:S.phase,pk:S.picking?whoOf(S.picking):'',me:P(S.me),cpu:P(S.cpu),k:[Kx(S.know.me),Kx(S.know.cpu)],n:S.log.length,ov:S.over?1:0};
+    const d={};let ch=false;for(const k in f){const j=JSON.stringify(f[k]);if(REC.prev[k]!==j){d[k]=f[k];REC.prev[k]=j;ch=true}}
+    if(ch){d.at=Math.round((Date.now()-REC.t0)/1000);REC.fr.push(d)}
+  },
+  pack(win){
+    const dk=p=>({types:[...p.types],single:p.single});
+    return{v:1,ver:String(APP_VER),names:{me:S.online?netName():'あなた',cpu:S.online?(NET.opp||'相手'):'CPU'},decks:{me:dk(S.me),cpu:dk(S.cpu)},winner:win?'me':'cpu',
+      frames:REC.fr,log:S.log.map(e=>[e.who||'',e.t])};
+  },
+  async zip(obj){const cs=new CompressionStream('gzip'),w=cs.writable.getWriter();w.write(new TextEncoder().encode(JSON.stringify(obj)));w.close();const b=new Uint8Array(await new Response(cs.readable).arrayBuffer());let t='';for(let i=0;i<b.length;i+=8192)t+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(t)},
+  async unzip(b64){const bin=atob(b64),b=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);const ds=new DecompressionStream('gzip'),w=ds.writable.getWriter();w.write(b);w.close();return JSON.parse(await new Response(ds.readable).text())},
+  // 対戦が終わったとき：最後のコマを足して、サーバーに預ける。うまくいかなくても対戦には影響させない
+  async send(win){
+    try{
+      if(!REC.on||!S||!NET.mid||!LADDER.sb||!LADDER.uid()||typeof CompressionStream==='undefined')return;
+      REC.snap();const mid=NET.mid,data=REC.pack(win);REC.on=false;
+      const meta={names:[data.names.me,data.names.cpu],winner:data.names[data.winner],turns:S.turnNo,sec:Math.round((Date.now()-REC.t0)/1000),frames:data.frames.length,ver:data.ver,life:[S.me.life,S.cpu.life]};
+      const b64=await REC.zip(data);
+      const {error}=await LADDER.sb.rpc('replay_put',{p_match:mid,p_meta:meta,p_data:b64});if(error&&!/PGRST202/.test(error.code||''))console.error(error);
+    }catch(e){console.error(e)}
+  }};
+// ---- 見る側（運営だけ）
+const RPV={list:null,total:0,err:'',cur:null,full:[],i:0,play:false,sp:1,tm:0,meta:null};
+async function rpvLoadList(){
+  RPV.err='';RPV.list=null;if(VIEW==='replay')renderReplay();
+  const {data,error}=await LADDER.sb.rpc('replay_list',{p_limit:100});
+  if(error||!data||!data.ok){RPV.err=error?'一覧を読みこめませんでした。':'このアカウントは、リプレイを見られません。';RPV.list=[]}else{RPV.list=data.rows||[];RPV.total=data.total||0}
+  if(VIEW==='replay')renderReplay();
+}
+// 記録を開く：差分をたどって、1コマごとの盤面をぜんぶ作っておく
+function rpvOpen(data,meta){
+  const full=[];let cur={};for(const d of data.frames){cur={...cur,...d};full.push(cur)}
+  RPV.cur=data;RPV.full=full;RPV.i=0;RPV.play=false;RPV.meta=meta||null;clearInterval(RPV.tm);VIEW='replay';window.scrollTo(0,0);draw_();
+}
+async function rpvFetch(id){
+  const {data,error}=await LADDER.sb.rpc('replay_get',{p_match:id});
+  if(error||!data||!data.ok){RPV.err='記録を読みこめませんでした。';return renderReplay()}
+  try{rpvOpen(await REC.unzip(data.data),{id:data.id,at:data.at,keep:data.keep,...data.meta})}catch(e){console.error(e);RPV.err='記録をひらけませんでした（こわれているかもしれません）。';renderReplay()}
+}
+function rpvStep(n){RPV.i=Math.max(0,Math.min(RPV.full.length-1,n));if(RPV.i>=RPV.full.length-1)rpvPlay(false);renderReplay()}
+function rpvPlay(on){RPV.play=on;clearInterval(RPV.tm);if(on){if(RPV.i>=RPV.full.length-1)RPV.i=0;RPV.tm=setInterval(()=>{if(VIEW!=='replay'||!RPV.cur)return rpvPlay(false);rpvStep(RPV.i+1)},1100/RPV.sp)}}
+function renderReplay(){
+  if(VIEW!=='replay')return;setBg(null);
+  const top=(t,back)=>`<div class="top"><h1>${t}</h1><button type="button" class="b small" id="rvBack">${back}</button></div>`;
+  if(!RPV.cur){
+    const fmt=t=>new Date(t).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    $('#app').innerHTML=top('リプレイ（運営用）','戻る')+`<p class="note" style="margin-top:0">終わったランクマッチの記録です。両方の手札と心臓が見えます。7日たつと消えます（「残す」を付けたものは消えません）。${RPV.list?`いま ${RPV.total}件。`:''}</p>
+      ${RPV.err?`<div class="onErr">${esc(RPV.err)}</div>`:''}
+      ${RPV.list===null?'<p class="note">読みこみ中…</p>':RPV.list.length?`<div class="rvList">${RPV.list.map(r=>{const m=r.meta||{},nm=m.names||['?','?'];return`<div class="rvRow"><button type="button" class="rvOpen" data-rv="${esc(r.id)}"><b>${esc(nm[0])} <i>vs</i> ${esc(nm[1])}</b><span>${fmt(r.at)}・${m.turns||'?'}ターン・${m.sec?Math.round(m.sec/60)+'分':''}・勝ち：${esc(m.winner||'?')}</span></button><button type="button" class="b small ${r.keep?'primary':''}" data-keep="${esc(r.id)}" data-on="${r.keep?1:0}">${r.keep?'残す ✓':'残す'}</button></div>`}).join('')}</div>`:(RPV.err?'':'<p class="note">まだ記録がありません。ランクマッチが終わると、ここに並びます。</p>')}
+      <div class="btns" style="margin-top:12px"><button type="button" class="b small" id="rvReload">読みこみ直す</button></div>`;
+    $('#rvBack').onclick=()=>go('menu');$('#rvReload').onclick=()=>rpvLoadList();
+    document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>rpvFetch(b.dataset.rv));
+    document.querySelectorAll('[data-keep]').forEach(b=>b.onclick=async()=>{const on=b.dataset.on!=='1';await LADDER.sb.rpc('replay_keep',{p_match:b.dataset.keep,p_keep:on});const r=RPV.list.find(x=>x.id===b.dataset.keep);if(r)r.keep=on;renderReplay()});
+    return;
+  }
+  const D=RPV.cur,f=RPV.full[RPV.i]||{},NM={me:D.names.me,cpu:D.names.cpu},nmx=t=>esc(String(t).replace(/@me/g,NM.me).replace(/@cpu/g,NM.cpu));
+  const life=n=>'<span class="rvLife">'+[0,1,2].map(i=>`<i class="${i<n?'on':''}"></i>`).join('')+'</span>';
+  // その人の心臓の候補（相手から見て）：消えたものは暗く、本当の心臓は金の枠
+  const cand=(who,k)=>{const d=D.decks[who],ts=[...d.types].sort(byCat).concat([d.single]),ex=new Set(k&&k.e||[]),al=k&&k.a?new Set(k.a):null,hr=f[who]&&f[who].hr;
+    const alive=ts.filter(t=>!ex.has(t)&&(!al||al.has(t))).length;
+    return`<div class="rvCandH">${esc(NM[who])}の心臓の候補 <b>${alive}</b>種</div><div class="rvCand">${ts.filter(t=>C[t]).map(t=>`<div class="nwT ${ex.has(t)||(al&&!al.has(t))?'dead':''} ${t===hr?'rvHeart':''}" style="--art:url(art/${t}.png)"><span>${C[t].n}</span></div>`).join('')}</div>`};
+  const side=who=>{const p=f[who]||{h:[],x:[]};const turn=f.c===who&&!f.ov;return`<section class="rvSide ${turn?'on':''}">
+      <div class="rvSideH"><b>${esc(NM[who])}</b>${life(p.l||0)}<span>山札 ${p.d??'?'}・捨て札 ${(p.x||[]).length}${p.a?'・前回 '+esc(p.a):''}</span>${turn?'<em>ターン中</em>':''}${f.pk===who?'<em>心臓を選んでいる</em>':''}</div>
+      <div class="rvRowC"><div class="rvSlot"><span>心臓</span>${p.hr&&C[p.hr]?cardHTML(p.hr,'s'):''}</div><div class="rvSlot"><span>伏せ</span>${p.s&&C[p.s]?cardHTML(p.s,'s'):'<div class="emptySlot"></div>'}</div>
+        <div class="rvHand"><span>手札 ${(p.h||[]).length}枚</span><div>${(p.h||[]).filter(k=>C[k]).sort(byCat).map(k=>cardHTML(k,'s')).join('')||'<i class="note">なし</i>'}</div></div></div>
+      ${cand(who,who==='me'?(f.k&&f.k[1]):(f.k&&f.k[0]))}</section>`};
+  const logs=D.log.slice(0,f.n||0),PHN={play:'カードを使う',guess:'宣言',cpu:'考え中',none:''};
+  $('#app').innerHTML=`<div class="rvRoot">`+top(`${esc(NM.me)} <i class="rvVs">vs</i> ${esc(NM.cpu)}`,'一覧へ')+`
+    <div class="rvBar"><span>ROUND ${f.r||1}・${f.t||0}ターン目${f.c?'（'+esc(NM[f.c])+'）':''}${PHN[f.ph]?'・'+PHN[f.ph]:''}${f.ov?`・<b>決着：${esc(NM[D.winner])}の勝ち</b>`:''}</span><span>${RPV.i+1} / ${RPV.full.length}・${Math.floor((f.at||0)/60)}:${String((f.at||0)%60).padStart(2,'0')}</span></div>
+    <div class="rvCtl"><button type="button" class="b small" id="rv0" aria-label="最初へ">⏮</button><button type="button" class="b small" id="rvP" aria-label="1つ戻る">◀</button><button type="button" class="b primary" id="rvPlay">${RPV.play?'一時停止':'再生'}</button><button type="button" class="b small" id="rvN" aria-label="1つ進む">▶</button><button type="button" class="b small" id="rvT" aria-label="次のターンへ">次のターン</button>
+      <button type="button" class="b small" id="rvSp">速さ ×${RPV.sp}</button><input type="range" id="rvSl" min="0" max="${RPV.full.length-1}" value="${RPV.i}" aria-label="再生する場所"></div>
+    <div class="rvGrid">${side('cpu')}${side('me')}<section class="rvLog"><div class="rvCandH">対戦の記録</div><div class="rvLogIn" id="rvLogIn">${logs.slice(-60).map(e=>`<p class="${e[0]}">${nmx(e[1])}</p>`).join('')||'<p class="note">まだありません</p>'}</div></section></div></div>`;
+  $('#rvBack').onclick=()=>{rpvPlay(false);RPV.cur=null;RPV.list?renderReplay():rpvLoadList()};
+  $('#rv0').onclick=()=>{rpvPlay(false);rpvStep(0)};$('#rvP').onclick=()=>{rpvPlay(false);rpvStep(RPV.i-1)};$('#rvN').onclick=()=>{rpvPlay(false);rpvStep(RPV.i+1)};
+  $('#rvT').onclick=()=>{rpvPlay(false);const t=f.t;let j=RPV.i;while(j<RPV.full.length-1&&RPV.full[j].t===t)j++;rpvStep(j)};
+  $('#rvPlay').onclick=()=>{rpvPlay(!RPV.play);renderReplay()};
+  $('#rvSp').onclick=()=>{RPV.sp=RPV.sp>=4?1:RPV.sp*2;if(RPV.play)rpvPlay(true);renderReplay()};
+  $('#rvSl').oninput=e=>{rpvPlay(false);rpvStep(+e.target.value)};
+  const li=$('#rvLogIn');if(li)li.scrollTop=li.scrollHeight;
+}
 const swR=r=>r==='me'?'cpu':r==='cpu'?'me':r;
 const deckOk=d=>d&&Array.isArray(d.types)&&d.types.length===13&&new Set(d.types).size===13&&d.types.every(k=>C[k]&&!C[k].single)&&C[d.single]&&C[d.single].single;
 
@@ -5245,6 +5368,7 @@ async function startOnline(a,b){
   NET.sentQ=LOGQ;NET.lastSnap='';
   VIEW='battle';window.scrollTo(0,0);
   NET.mid=(a.draft||b.draft)?null:(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,'');
+  if(NET.ranked&&NET.mid)REC.start();else REC.on=false;
   const gid0=Date.now();NET.send({t:'start',mid:NET.mid,gid:gid0});NET.cast({t:'start'});LADDER.startMatch(NET.mid);liveStart();
   S={me:{...newPlayer('@me',false,[...a.types],a.single),octo:SV.equip.octo||''},cpu:{...newPlayer('@cpu',false,[...b.types],b.single),octo:NET.oppOcto||''},know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:gid0,names:{me:netName(),cpu:NET.opp||'相手'}};
   S.cpu.remote=true;const g=S;
