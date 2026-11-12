@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><title>心臓人狼 モニター</title>
+<link rel="icon" href="icons/favicon-96.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="theme-color" content="#0d0707">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#0d0707;--panel:#170a0d;--hair:rgba(232,200,140,.28);--gold:#e8c88c;--ivory:#f1e8d8;--dim:#a89c8c;--red:#c8283a;--pcf:"Shippori Mincho B1",serif;--body:"Zen Kaku Gothic New",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ivory);font:400 14px/1.6 var(--body)}
+.wrap{max-width:980px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 40px}
+h1{font:800 22px var(--pcf);letter-spacing:.08em;margin:0}h1 span{color:var(--red)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--hair);padding-bottom:10px;margin-bottom:14px}
+.upd{font-size:12px;color:var(--dim)}
+.big{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.card{border:1px solid var(--hair);background:var(--panel);padding:12px 14px;min-width:0}
+.card .l{font:700 12px var(--pcf);color:var(--gold);letter-spacing:.1em}
+.card .v{font:800 34px/1.15 var(--pcf);font-variant-numeric:tabular-nums}.card .v small{font:500 13px var(--body);color:var(--dim);margin-left:4px}
+.card .s{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.main .v{font-size:52px;color:#fff}
+.by{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.by span{border:1px solid var(--hair);padding:3px 10px;font-size:12px;color:var(--dim)}.by b{color:var(--ivory);font:700 14px var(--pcf);margin-left:6px}
+.rng{display:flex;gap:6px;margin:6px 0 10px;flex-wrap:wrap}.rng button{font:700 13px var(--pcf);background:none;color:var(--dim);border:1px solid var(--hair);padding:5px 14px;cursor:pointer}
+.rng button.on{color:var(--ivory);border-color:var(--gold);background:rgba(163,29,46,.35)}
+.ch{border:1px solid var(--hair);background:var(--panel);padding:10px 12px 6px;margin-bottom:10px}
+.ch h2{font:700 13px var(--pcf);color:var(--gold);letter-spacing:.1em;margin:0 0 2px;display:flex;justify-content:space-between;gap:8px}.ch h2 em{font:400 12px var(--body);color:var(--dim);font-style:normal}
+svg{width:100%;height:auto;display:block}
+.ax{font:400 10px var(--body);fill:#8c8174}.gl{stroke:rgba(232,200,140,.12)}
+.msg{border:1px solid var(--red);padding:12px 14px;color:#f0a8ae;margin:12px 0}
+input{width:100%;background:#120708;border:1px solid var(--hair);color:var(--ivory);padding:10px;font:14px var(--body)}
+.b{font:700 14px var(--pcf);background:#8c1a2a;color:#fff;border:1px solid var(--gold);padding:8px 18px;cursor:pointer;margin-top:8px}
+@media (max-width:640px){.ch h2{flex-direction:column;gap:2px}.ch h2 em{font-size:11px}.big{grid-template-columns:repeat(2,minmax(0,1fr))}.card.main{grid-column:1/-1}.card .v{font-size:28px}.card.main .v{font-size:46px}}
+</style></head><body><div class="wrap">
+<div class="top"><h1>心臓<span>人狼</span>　モニター</h1><span class="upd" id="upd">読みこみ中…</span></div>
+<div id="app"></div>
+</div>
+<script>
+const URL_='https://evxljdiiyzynvhcznpou.supabase.co',PK='sb_publishable_QlWNeJa-wZmJ3Cq8v5Pbpg_MFcu_Q-T';
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+// 合言葉は、リンクの # のうしろ（#k=…）で受け取って、この端末に覚える。ページのソースやサーバーには書かない
+let KEY=(location.hash.match(/k=([A-Za-z0-9]+)/)||[])[1]||LS.get('sj_mon_key')||'';
+if(KEY){LS.set('sj_mon_key',KEY);if(location.hash)history.replaceState(null,'',location.pathname)}
+let HOURS=+LS.get('sj_mon_h')||12,ROWS=[],ERR='';
+const NAME={menu:'ホーム',cpu:'CPU対戦',tut:'チュートリアル',friend:'友達と対戦',rank:'ランクマッチ',wait:'相手待ち',lobby:'対戦の入口',watch:'観戦',other:'そのほか'};
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hm=t=>new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+const md=t=>new Date(t).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+' '+hm(t);
+async function load(){
+  if(!KEY)return draw();
+  try{
+    const r=await fetch(URL_+'/rest/v1/rpc/stat_get',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+PK,'Content-Type':'application/json'},body:JSON.stringify({p_key:KEY,p_hours:HOURS})});
+    if(r.status===404){ERR='サーバーの準備がまだです（SQL を流すと動き出します）。';ROWS=[]}
+    else{const j=await r.json();if(!j.ok){ERR='合言葉がちがうか、まだ記録が始まっていません。';ROWS=[]}else{ERR='';ROWS=(j.rows||[]).filter(x=>x&&x.t)}}
+  }catch(e){ERR='読みこめませんでした（'+esc(e.message)+'）。'}
+  draw();
+}
+// 折れ線グラフ。series：[{k,label,color}]。値がない所は線を切る
+function chart(title,series,fmt=v=>v,note=''){
+  const SM=innerWidth<640,W=SM?420:900,H=SM?240:200,L=34,R=8,T=10,B=22,rows=ROWS;  // スマホでは小さい図面で描いて、文字が読める大きさにするif(rows.length<2)return`<div class="ch"><h2>${title}</h2><p class="upd">記録がたまると、ここにグラフが出ます。</p></div>`;
+  const t0=Date.parse(rows[0].t),t1=Date.parse(rows[rows.length-1].t)||t0+1;
+  let mx=0;for(const r of rows)for(const s of series){const v=s.get(r);if(v!=null&&v>mx)mx=v}
+  mx=mx<=0?1:mx;const step=Math.pow(10,Math.floor(Math.log10(mx)));const nice=[1,2,5,10].map(m=>m*step).find(v=>v>=mx)||mx;const top=nice;
+  const X=t=>L+(W-L-R)*(t-t0)/Math.max(1,t1-t0),Y=v=>T+(H-T-B)*(1-v/top);
+  let g='';for(let i=0;i<=4;i++){const v=top*i/4,y=Y(v);g+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/><text class="ax" x="${L-5}" y="${y+3}" text-anchor="end">${fmt(+v.toFixed(2))}</text>`}
+  const n=Math.min(6,Math.max(2,Math.floor((W-L-R)/(SM?110:140))));for(let i=0;i<=n;i++){const t=t0+(t1-t0)*i/n;g+=`<text class="ax" x="${X(t)}" y="${H-6}" text-anchor="${i===0?'start':i===n?'end':'middle'}">${(t1-t0)>36*3600e3?md(t):hm(t)}</text>`}
+  let lines='';for(const s of series){let d='',pen=false,last=0;for(const r of rows){const v=s.get(r),t=Date.parse(r.t);if(v==null||t-last>5*60e3&&pen){pen=false}if(v==null){last=t;continue}d+=(pen?'L':'M')+X(t).toFixed(1)+' '+Y(v).toFixed(1);pen=true;last=t}
+    lines+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round"/>`}
+  const lg=series.length>1?series.map(s=>`<span style="color:${s.color}">■</span> ${s.label}`).join('　'):note;
+  return`<div class="ch"><h2>${title}<em>${lg}</em></h2><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">${g}${lines}</svg></div>`;
+}
+function draw(){
+  if(!KEY){$('#upd').textContent='';$('#app').innerHTML=`<div class="card"><p>このページを見るには合言葉が要ります。もらったリンク（最後に #k=… が付いたもの）から開くか、下に合言葉を入れてください。</p><input id="k" placeholder="合言葉" autocomplete="off"><button class="b" id="ok">決定</button></div>`;
+    $('#ok').onclick=()=>{KEY=$('#k').value.trim();if(KEY){LS.set('sj_mon_key',KEY);load()}};return}
+  const last=ROWS[ROWS.length-1],age=last?Math.round((Date.now()-Date.parse(last.t))/1000):null;
+  $('#upd').textContent=last?`最後の記録 ${hm(last.t)}（${age<90?age+'秒前':Math.round(age/60)+'分前'}）・1分ごとに自動で更新`:'';
+  const mxOf=f=>ROWS.reduce((a,r)=>{const v=f(r);return v!=null&&(a==null||v>a.v)?{v,t:r.t}:a},null);
+  const po=mxOf(r=>r.online),pp=mxOf(r=>r.peers),pl=mxOf(r=>r.load1);
+  const by=last&&last.by?Object.entries(last.by).sort((a,b)=>b[1]-a[1]):[];
+  const stale=age!=null&&age>300;
+  $('#app').innerHTML=`${ERR?`<div class="msg">${ERR}</div>`:''}${stale?`<div class="msg">記録が${Math.round(age/60)}分止まっています。サーバーの記録の仕組みが止まっているかもしれません。</div>`:''}
+  ${last?`<div class="big">
+    <div class="card main"><div class="l">いま遊んでいる人</div><div class="v">${last.online??'—'}<small>人</small></div><div class="s">この期間の最大 ${po?po.v+'人（'+md(po.t)+'）':'—'}</div></div>
+    <div class="card"><div class="l">対戦のつなぎ役</div><div class="v">${last.peers??'—'}<small>接続</small></div><div class="s">最大 ${pp?pp.v+'（'+hm(pp.t)+'）':'—'}</div></div>
+    <div class="card"><div class="l">サーバーの負荷</div><div class="v">${last.load1??'—'}<small>／${last.cpus||'?'}</small></div><div class="s">最大 ${pl?pl.v+'（'+hm(pl.t)+'）':'—'}</div></div>
+    <div class="card"><div class="l">メモリの空き</div><div class="v">${last.memAvailMB??'—'}<small>MB</small></div><div class="s">全体 ${last.memTotalMB||'?'}MB・ディスク ${last.disk||'?'}</div></div>
+  </div>
+  <div class="by">${by.map(([k,v])=>`<span>${NAME[k]||k}<b>${v}</b></span>`).join('')||'<span>内訳はまだありません</span>'}</div>`:''}
+  <div class="rng">${[[3,'3時間'],[12,'12時間'],[24,'1日'],[72,'3日'],[168,'7日']].map(([h,l])=>`<button data-h="${h}" class="${h===HOURS?'on':''}">${l}</button>`).join('')}</div>
+  ${chart('遊んでいる人',[{label:'合計',color:'#f1e8d8',get:r=>r.online},{label:'対戦中（友達・ランク）',color:'#c8283a',get:r=>r.by?((r.by.friend||0)+(r.by.rank||0)):null},{label:'CPU・チュートリアル',color:'#e8c88c',get:r=>r.by?((r.by.cpu||0)+(r.by.tut||0)):null}])}
+  ${chart('対戦のつなぎ役につながっている数',[{label:'',color:'#7fb3d5',get:r=>r.peers}],v=>v,'友達対戦の部屋・ランクマッチ待ち・対戦中の合計')}
+  ${chart('サーバーの負荷',[{label:'',color:'#e8c88c',get:r=>r.load1}],v=>v,`CPU は${last&&last.cpus||'?'}個。この数を超え続けると重い`)}
+  ${chart('メモリの空き（MB）',[{label:'',color:'#a8d08d',get:r=>r.memAvailMB}],v=>v,'少なくなるほど危ない')}`;
+  document.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{HOURS=+b.dataset.h;LS.set('sj_mon_h',HOURS);load()});
+}
+load();setInterval(()=>{if(!document.hidden)load()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+</script></body></html>

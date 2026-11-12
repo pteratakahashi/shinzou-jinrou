@@ -671,3 +671,55 @@ returns json language sql security definer set search_path = public stable as $$
 $$;
 grant execute on function public.beat(text, text, text) to anon, authenticated;
 grant execute on function public.presence_now() to anon, authenticated;
+
+
+-- ================= 人数とサーバーの重さの記録（見るためのページ用。2026-11-12） =================
+-- VPS が1分ごとに stat_put で1行足す。見るページ（monitor.html）は stat_get で読む。
+-- どちらも合言葉が要る。合言葉そのものはここには書かない：最初に stat_put を呼んだ合言葉を、その後の合言葉として覚える（覚えるのはハッシュ）。
+create table if not exists public.stat_log (
+  t timestamptz primary key,
+  r jsonb not null
+);
+create table if not exists public.stat_key (
+  id boolean primary key default true check (id),
+  h text not null
+);
+alter table public.stat_log enable row level security;
+alter table public.stat_key enable row level security;
+revoke all on public.stat_log from anon, authenticated;
+revoke all on public.stat_key from anon, authenticated;
+
+create or replace function public._stat_ok(p_key text, p_claim boolean)
+returns boolean language plpgsql security definer set search_path = public as $$
+declare hh text; me text;
+begin
+  if p_key is null or length(p_key) < 24 then return false; end if;
+  me := encode(sha256(convert_to(p_key, 'UTF8')), 'hex');
+  select h into hh from stat_key where id;
+  if hh is null then
+    if not p_claim then return false; end if;
+    insert into stat_key(id, h) values (true, me) on conflict (id) do nothing;
+    select h into hh from stat_key where id;
+  end if;
+  return hh = me;
+end $$;
+revoke execute on function public._stat_ok(text, boolean) from public, anon, authenticated;
+
+create or replace function public.stat_put(p_key text, p_row jsonb)
+returns boolean language plpgsql security definer set search_path = public as $$
+begin
+  if not _stat_ok(p_key, true) then return false; end if;
+  if p_row is null or jsonb_typeof(p_row) <> 'object' or pg_column_size(p_row) > 4000 then return false; end if;
+  insert into stat_log(t, r) values (date_trunc('second', now()), p_row) on conflict (t) do update set r = excluded.r;
+  if random() < 0.01 then delete from stat_log where t < now() - interval '21 days'; end if;
+  return true;
+end $$;
+create or replace function public.stat_get(p_key text, p_hours integer default 24)
+returns json language plpgsql security definer set search_path = public stable as $$
+begin
+  if not _stat_ok(p_key, false) then return json_build_object('ok', false); end if;
+  return json_build_object('ok', true, 'now', now(), 'rows',
+    coalesce((select json_agg(r order by t) from stat_log where t > now() - make_interval(hours => least(greatest(p_hours, 1), 24 * 14))), '[]'::json));
+end $$;
+grant execute on function public.stat_put(text, jsonb) to anon, authenticated;
+grant execute on function public.stat_get(text, integer) to anon, authenticated;
