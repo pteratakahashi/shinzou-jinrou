@@ -2044,7 +2044,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261112090104';
+const APP_VER='20261112090339';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3337,12 +3337,12 @@ async function payCost(p,c,R){
       let x;
       if(p.isCpu)x=pool.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>b[1]-a[1])[0][0];
       else{render();x=await pickCard(pool,'妖狐：化けるカードを選ぶ','選んだカードは手札に残したまま、効果だけを使います。選んだカードは相手に公開されます。')}
-      p.f.foxPick=x;
+      p.f.foxPick=x?x.id:null;
       K(o).known.add(x.id);log(`コスト：手札の〈${N(x.type)}〉を相手に公開した。`,w);
       break;}
   }
 }
-async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.effDraw=(S.effDraw||0)+1;try{const r=await playCard0(p,c,copy);if(r!=='over')await candFx();return r}finally{g.effDraw=Math.max(0,(g.effDraw||1)-1);if(S)S.decider=pv;if(S&&!copy&&czOn(p,'chain')){p.f.req=0;p.f.opt=0}}}
+async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.effDraw=(S.effDraw||0)+1;try{const r=await playCard0(p,c,copy);if(r!=='over')await candFx();return r}finally{if(!copy&&p.f)p.f.foxPick=null;g.effDraw=Math.max(0,(g.effDraw||1)-1);if(S)S.decider=pv;if(S&&!copy&&czOn(p,'chain')){p.f.req=0;p.f.opt=0}}}
 async function playCard0(p,c,copy=false){
   const o=opp(p),w=whoOf(p);
   S.me.f.reflect=S.cpu.f.reflect=false;
@@ -3414,7 +3414,7 @@ async function playCard0(p,c,copy=false){
     case 'phantom':for(let i=0;i<2&&o.deck.length;i++){const x=o.deck.pop();o.discard.push(x);K(p).known.add(x.id);log(`${o.name}の山札の〈${N(x.type)}〉が捨て札になった。`);if(x.type==='nekomata')nekoCurse(o)}if(o.hand.length)forcedDiscard(o,rand(o.hand),p);await raid(p,o);break;
     case 'greatwolf':[...o.hand].forEach(x=>forcedDiscard(o,x,p));[...p.hand].forEach(x=>toDiscard(p,x));draw(o,2);draw(p,4);log('お互いに手札を捨て、相手は2枚、自分は4枚引き直した。');break;
     case 'fox':{
-      const x=p.f.foxPick;p.f.foxPick=null;
+      const x=p.f.foxPick!=null?S.byId[p.f.foxPick]:null;p.f.foxPick=null;
       if(!x||!p.hand.includes(x)){log('化けられるカードがない。',w);break}
       await playCard(p,x,true);break;}
     case 'mason':{draw(p,R?2:1);if(R)learnNot(p,1);const m=p.deck.find(x=>x.type==='mason');if(m){rm(p.deck,m);p.hand.push(m);log('もう1枚の共有者を手札に加えた。',w)}break;}
@@ -4754,6 +4754,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:82,d:'2026-11-12',t:'不具合の直し：相手が口封じなどを伏せているときに妖狐を使うと、対戦が固まって操作できなくなる不具合を直しました（友達との対戦・ランクマッチで起きていました）。'},
   {id:81,d:'2026-11-12',t:'デッキ編成の絞りこみに「シングル」を足しました。押すと、シングルカードだけが並びます。属性の絞りこみと「デッキに入れたカードだけ」も、シングルカードに効くようになりました（Discordでいただいた要望です）。'},
   {id:80,d:'2026-11-12',t:'ホームに公式Discordへのリンクを置きました。カードの調整：狼王は「捨て札が10枚以上なら、さらに1枚」に／妖狐で化けたあとも、直前に使ったカードは妖狐（月）のあつかいに／物見は、伏せ専用のカードを捨て札にしたら、さらに1枚引く／夜警は「発動したら1つ知る」のおまけをなくしました。'},
   {id:79,d:'2026-11-12',t:'ブラフが成功したときに、特別な「ブラフ成功！」の演出が出るようになりました。伏せたカードが発動しなかったときは、めくれて捨て札に落ちる演出が入ります。チュートリアルの最後は「相手の心臓はあと1つ。自分で当ててみよう」で終わるようにしました。'},
