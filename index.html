@@ -4754,6 +4754,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:84,d:'2026-11-12',t:'不具合の直し：ランクマッチの「使用するデッキ」に、自分で選んだデッキのアイコンではなくシングルカードの絵が出ていたのを直しました（Discordでいただいた報告です）。'},
   {id:83,d:'2026-11-12',t:'お知らせ（アップデート情報）の画面の上にも「閉じる」ボタンを置きました。下までスクロールしなくても閉じられます（Discordでいただいた要望です）。'},
   {id:82,d:'2026-11-12',t:'不具合の直し：相手が口封じなどを伏せているときに妖狐を使うと、対戦が固まって操作できなくなる不具合を直しました（友達との対戦・ランクマッチで起きていました）。'},
   {id:81,d:'2026-11-12',t:'デッキ編成の絞りこみに「シングル」を足しました。押すと、シングルカードだけが並びます。属性の絞りこみと「デッキに入れたカードだけ」も、シングルカードに効くようになりました（Discordでいただいた要望です）。'},
@@ -4916,7 +4917,7 @@ function rankPrepHTML(){
   const d=rankDeck(),std=MM.pick==='std';
   return`<div class="onCard"><p class="onBig">ランクマッチ</p><p class="note">使用するデッキを確かめて、「マッチング開始」を押してください。相手が見つかると、そのまま対戦が始まります。</p>
     <p class="label" style="margin-top:14px">使用するデッキ</p>
-    <button type="button" class="mi main rpDeck" id="rpDeck" aria-label="使用するデッキを変える"><b>${std?'':deckIcHTML(d)}${esc(d.name)}</b><span>${catSummary(d.types)}・シングル〈${N(d.single)}〉</span><em>押すと、ほかのデッキに変えられます</em></button>
+    <button type="button" class="mi main rpDeck" id="rpDeck" aria-label="使用するデッキを変える"><b>${std?'':deckIcHTML(SV.decks[MM.pick]||d)}${esc(d.name)}</b><span>${catSummary(d.types)}・シングル〈${N(d.single)}〉</span><em>押すと、ほかのデッキに変えられます</em></button>
     <div class="btns" style="margin-top:14px"><button type="button" class="b primary" id="rpStart">マッチング開始</button><button type="button" class="b" id="rpEdit">デッキを編成する</button><button type="button" class="b" id="rpNo">やめる</button></div></div>`;
 }
 // 使用するデッキを、自分のデッキの一覧から選ぶ
