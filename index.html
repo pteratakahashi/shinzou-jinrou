@@ -2344,7 +2344,13 @@ const CLOUD={t:0,ok:true,
     const a=SV.stat=SV.stat||{},b=d.stat||{};for(const k in b)if(typeof b[k]==='number')a[k]=Math.max(+a[k]||0,b[k]);else if(a[k]===undefined)a[k]=b[k];
     const eq=SV.equip||{};if(d.equip&&!eq.title&&!eq.frame&&!eq.octo&&(!eq.avatar||eq.avatar==='villager'))SV.equip=d.equip;
     if(d.tutDone)SV.tutDone=true;
-    ['login','daily','freeDeck','altOff','avatarPx','decks','deckIx'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
+    ['login','freeDeck','altOff','avatarPx','decks','deckIx'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
+    // デイリーミッション：同じ日なら「受取済み」と進み具合を両方から引きつぐ（別の端末でもう一度受け取れないように）。サーバーの方が新しい日ならそちらを使う
+    const ld=SV.daily,rd=d.daily;
+    if(rd&&rd.day&&Array.isArray(rd.list)){
+      if(!ld||!ld.day||!Array.isArray(ld.list)||rd.day>ld.day)SV.daily=rd;
+      else if(rd.day===ld.day)ld.list.forEach(m=>{const r=rd.list.find(x=>x.id===m.id);if(!r)return;m.prog=Math.max(+m.prog||0,+r.prog||0);if(r.claimed)m.claimed=true});
+    }
   },
   // サーバーの記録と突き合わせる。SV.cloudAt＝最後に突き合わせたときの時刻（サーバーの記録の at と同じ値）
   //  ・サーバーが前回のまま → 端末の方が進んでいるので、そのまま預ける
@@ -4754,6 +4760,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:85,d:'2026-11-12',t:'不具合の直し：デイリーミッションの銀貨を受け取ったあと、別の端末（PC・スマホ・タブレットなど）で開くと、同じ日にもう一度受け取れてしまうのを直しました（Discordでいただいた報告です）。'},
   {id:84,d:'2026-11-12',t:'不具合の直し：ランクマッチの「使用するデッキ」に、自分で選んだデッキのアイコンではなくシングルカードの絵が出ていたのを直しました（Discordでいただいた報告です）。'},
   {id:83,d:'2026-11-12',t:'お知らせ（アップデート情報）の画面の上にも「閉じる」ボタンを置きました。下までスクロールしなくても閉じられます（Discordでいただいた要望です）。'},
   {id:82,d:'2026-11-12',t:'不具合の直し：相手が口封じなどを伏せているときに妖狐を使うと、対戦が固まって操作できなくなる不具合を直しました（友達との対戦・ランクマッチで起きていました）。'},
