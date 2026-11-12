@@ -675,7 +675,7 @@ grant execute on function public.presence_now() to anon, authenticated;
 
 -- ================= 人数とサーバーの重さの記録（見るためのページ用。2026-11-12） =================
 -- VPS が1分ごとに stat_put で1行足す。見るページ（monitor.html）は stat_get で読む。
--- どちらも合言葉が要る。合言葉そのものはここには書かない：最初に stat_put を呼んだ合言葉を、その後の合言葉として覚える（覚えるのはハッシュ）。
+-- 書くほう（stat_put）は合言葉が要る。合言葉そのものはここには書かない：最初に stat_put を呼んだ合言葉を、その後の合言葉として覚える（覚えるのはハッシュ）。
 create table if not exists public.stat_log (
   t timestamptz primary key,
   r jsonb not null
@@ -714,12 +714,12 @@ begin
   if random() < 0.01 then delete from stat_log where t < now() - interval '21 days'; end if;
   return true;
 end $$;
-create or replace function public.stat_get(p_key text, p_hours integer default 24)
-returns json language plpgsql security definer set search_path = public stable as $$
-begin
-  if not _stat_ok(p_key, false) then return json_build_object('ok', false); end if;
-  return json_build_object('ok', true, 'now', now(), 'rows',
-    coalesce((select json_agg(r order by t) from stat_log where t > now() - make_interval(hours => least(greatest(p_hours, 1), 24 * 14))), '[]'::json));
-end $$;
+-- 読むほうは合言葉なし（2026-11-12 プテラ「合言葉は要らない」）。ページの場所を知っている人は見られる。書くほうは合言葉が要る
+drop function if exists public.stat_get(text, integer);
+create or replace function public.stat_get(p_hours integer default 24)
+returns json language sql security definer set search_path = public stable as $$
+  select json_build_object('ok', true, 'now', now(), 'rows',
+    coalesce((select json_agg(r order by t) from stat_log where t > now() - make_interval(hours => least(greatest(p_hours, 1), 24 * 14))), '[]'::json))
+$$;
 grant execute on function public.stat_put(text, jsonb) to anon, authenticated;
-grant execute on function public.stat_get(text, integer) to anon, authenticated;
+grant execute on function public.stat_get(integer) to anon, authenticated;

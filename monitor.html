@@ -35,26 +35,26 @@ input{width:100%;background:#120708;border:1px solid var(--hair);color:var(--ivo
 <script>
 const URL_='https://evxljdiiyzynvhcznpou.supabase.co',PK='sb_publishable_QlWNeJa-wZmJ3Cq8v5Pbpg_MFcu_Q-T';
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-// 合言葉は、リンクの # のうしろ（#k=…）で受け取って、この端末に覚える。ページのソースやサーバーには書かない
-let KEY=(location.hash.match(/k=([A-Za-z0-9]+)/)||[])[1]||LS.get('sj_mon_key')||'';
-if(KEY){LS.set('sj_mon_key',KEY);if(location.hash)history.replaceState(null,'',location.pathname)}
+// 合言葉は要らない。サーバーが前の版（合言葉つき）のままの間だけ、前のリンク（#k=…）の合言葉を使って読む
+const OLDKEY=(location.hash.match(/k=([A-Za-z0-9]+)/)||[])[1]||LS.get('sj_mon_key')||'';if(OLDKEY)LS.set('sj_mon_key',OLDKEY);if(location.hash)history.replaceState(null,'',location.pathname);
 let HOURS=+LS.get('sj_mon_h')||12,ROWS=[],ERR='';
 const NAME={menu:'ホーム',cpu:'CPU対戦',tut:'チュートリアル',friend:'友達と対戦',rank:'ランクマッチ',wait:'相手待ち',lobby:'対戦の入口',watch:'観戦',other:'そのほか'};
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hm=t=>new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
 const md=t=>new Date(t).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+' '+hm(t);
 async function load(){
-  if(!KEY)return draw();
   try{
-    const r=await fetch(URL_+'/rest/v1/rpc/stat_get',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+PK,'Content-Type':'application/json'},body:JSON.stringify({p_key:KEY,p_hours:HOURS})});
+    const call=b=>fetch(URL_+'/rest/v1/rpc/stat_get',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+PK,'Content-Type':'application/json'},body:JSON.stringify(b)});
+    let r=await call({p_hours:HOURS});if(r.status===404&&OLDKEY)r=await call({p_key:OLDKEY,p_hours:HOURS});
     if(r.status===404){ERR='サーバーの準備がまだです（SQL を流すと動き出します）。';ROWS=[]}
-    else{const j=await r.json();if(!j.ok){ERR='合言葉がちがうか、まだ記録が始まっていません。';ROWS=[]}else{ERR='';ROWS=(j.rows||[]).filter(x=>x&&x.t)}}
+    else{const j=await r.json();ERR='';ROWS=(j.rows||[]).filter(x=>x&&x.t);if(!ROWS.length)ERR='記録がまだありません。1〜2分待つと出始めます。'}
   }catch(e){ERR='読みこめませんでした（'+esc(e.message)+'）。'}
   draw();
 }
 // 折れ線グラフ。series：[{k,label,color}]。値がない所は線を切る
 function chart(title,series,fmt=v=>v,note=''){
-  const SM=innerWidth<640,W=SM?420:900,H=SM?240:200,L=34,R=8,T=10,B=22,rows=ROWS;  // スマホでは小さい図面で描いて、文字が読める大きさにするif(rows.length<2)return`<div class="ch"><h2>${title}</h2><p class="upd">記録がたまると、ここにグラフが出ます。</p></div>`;
+  const SM=innerWidth<640,W=SM?420:900,H=SM?240:200,L=34,R=8,T=10,B=22,rows=ROWS;  // スマホでは小さい図面で描いて、文字が読める大きさにする
+  if(rows.length<2)return`<div class="ch"><h2>${title}</h2><p class="upd">記録がたまると、ここにグラフが出ます。</p></div>`;
   const t0=Date.parse(rows[0].t),t1=Date.parse(rows[rows.length-1].t)||t0+1;
   let mx=0;for(const r of rows)for(const s of series){const v=s.get(r);if(v!=null&&v>mx)mx=v}
   mx=mx<=0?1:mx;const step=Math.pow(10,Math.floor(Math.log10(mx)));const nice=[1,2,5,10].map(m=>m*step).find(v=>v>=mx)||mx;const top=nice;
@@ -67,8 +67,6 @@ function chart(title,series,fmt=v=>v,note=''){
   return`<div class="ch"><h2>${title}<em>${lg}</em></h2><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">${g}${lines}</svg></div>`;
 }
 function draw(){
-  if(!KEY){$('#upd').textContent='';$('#app').innerHTML=`<div class="card"><p>このページを見るには合言葉が要ります。もらったリンク（最後に #k=… が付いたもの）から開くか、下に合言葉を入れてください。</p><input id="k" placeholder="合言葉" autocomplete="off"><button class="b" id="ok">決定</button></div>`;
-    $('#ok').onclick=()=>{KEY=$('#k').value.trim();if(KEY){LS.set('sj_mon_key',KEY);load()}};return}
   const last=ROWS[ROWS.length-1],age=last?Math.round((Date.now()-Date.parse(last.t))/1000):null;
   $('#upd').textContent=last?`最後の記録 ${hm(last.t)}（${age<90?age+'秒前':Math.round(age/60)+'分前'}）・1分ごとに自動で更新`:'';
   const mxOf=f=>ROWS.reduce((a,r)=>{const v=f(r);return v!=null&&(a==null||v>a.v)?{v,t:r.t}:a},null);
