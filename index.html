@@ -1163,8 +1163,8 @@ body.onHome{overflow:hidden}
 .hmAv{flex:none;width:46px;height:46px;border-radius:50%;padding:0;overflow:hidden;border:2px solid #fff0b8;background:radial-gradient(circle at 50% 35%,#5a2230,#1a0508);cursor:pointer;box-shadow:0 0 0 2px #8a5512}
 .hmAv img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;image-rendering:pixelated;transform:scale(1.25) translateY(8%)}
 .hmId{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.hmId b{font-family:var(--game);font-weight:400;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 0 #000}
-.hmId span{display:flex;gap:4px;flex-wrap:wrap}.hmId em{font-style:normal;font-size:10px;padding:0 7px;cursor:pointer}
+.hmId>b{font-family:var(--game);font-weight:400;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 0 #000}
+.hmId>span{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.hmId em{font-style:normal;font-size:10px;padding:0 7px;cursor:pointer}
 .hmGear{flex:none;width:38px;height:38px;border-radius:10px;border:2px solid #c9984a;background:linear-gradient(180deg,#5a2230,#2a0910);color:#ffe7b0;padding:7px;cursor:pointer;box-shadow:0 3px 0 #1a0508}
 .hmGear svg,.hmIc svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .hmEvt{position:absolute;left:10px;top:max(76px,var(--hmTopY,0px));width:min(58%,300px);text-align:left;display:flex;flex-direction:column;gap:1px;padding:7px 10px 8px;border-radius:4px 14px 14px 4px;cursor:pointer;color:#fff;
@@ -1621,7 +1621,7 @@ html.fit-wide .hmTop{grid-area:top;gap:12px;margin:0 calc(-1*clamp(18px,2vw,32px
   background:linear-gradient(180deg,rgba(30,9,16,.94),rgba(12,4,7,.82)) padding-box,linear-gradient(90deg,#8a5512,#fff0b8 30%,#d9a23c 70%,#8a5512) border-box;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 html.fit-wide .hmWho{display:flex;align-items:center;gap:10px;min-width:0}
 html.fit-wide .hmAv{width:52px;height:52px}
-html.fit-wide .hmId{flex:0 1 auto}html.fit-wide .hmId b{font-size:18px}html.fit-wide .hmId em{font-size:11px}
+html.fit-wide .hmId{flex:0 1 auto}html.fit-wide .hmId>b{font-size:18px}html.fit-wide .hmId em{font-size:11px}
 html.fit-wide .hmSide{position:static;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;max-height:none}
 html.fit-wide #hmMsn{display:none}
 html.fit-wide .hmIc{width:auto;flex-direction:row;gap:7px;padding:4px 14px 4px 4px;border-radius:99px;border:2px solid #7a4c1c;background:linear-gradient(180deg,rgba(74,26,38,.9),rgba(30,9,14,.9));transition:border-color .15s,transform .15s}
@@ -1809,7 +1809,7 @@ h1,h2,h3,.top h1{font-weight:700;letter-spacing:.14em;color:var(--ivory);text-sh
 @media (min-width:600px){.hm{border-left:1px solid var(--hair);border-right:1px solid var(--hair)}}
 .hmTop{gap:10px;padding:5px 10px 5px 6px;border:1px solid var(--hair);border-radius:3px;background:rgba(10,4,6,.72);box-shadow:none;backdrop-filter:blur(4px)}
 .hmAv{border:1px solid var(--hair2);box-shadow:none;width:42px;height:42px}
-.hmId b{font-family:var(--pcf);font-weight:700;letter-spacing:.06em;color:var(--ivory);text-shadow:none}
+.hmId>b{font-family:var(--pcf);font-weight:700;letter-spacing:.06em;color:var(--ivory);text-shadow:none}
 .hmGear{border:1px solid var(--hair);border-radius:50%;background:none;box-shadow:none;color:var(--dim);width:34px;height:34px;padding:7px}
 .hmGear svg,.hmIc svg{stroke-width:1.3}
 .hmHelp{font:500 15px var(--pcf);padding:0}
@@ -1896,7 +1896,7 @@ html.fit-wide .hm::after{background:linear-gradient(90deg,rgba(8,3,5,.88) 0,rgba
 html.fit-wide .hmTop{margin:0 calc(-1*clamp(22px,2.2vw,40px)) 0 calc(-1*clamp(28px,3vw,56px));padding:12px clamp(22px,2.2vw,40px) 12px clamp(28px,3vw,56px);gap:18px;border:0;border-bottom:1px solid var(--hair);background:linear-gradient(180deg,rgba(8,3,5,.7),rgba(8,3,5,.25));box-shadow:none;backdrop-filter:blur(3px)}
 html.fit-wide .hmAv{width:40px;height:40px;border:1px solid var(--hair2);box-shadow:0 0 0 3px rgba(0,0,0,.35)}
 html.fit-wide .hmId{flex-direction:row;align-items:center;gap:12px}
-html.fit-wide .hmId b{font-family:var(--pcf);font-weight:700;font-size:16px;letter-spacing:.08em;color:var(--ivory);text-shadow:none}
+html.fit-wide .hmId>b{font-family:var(--pcf);font-weight:700;font-size:16px;letter-spacing:.08em;color:var(--ivory);text-shadow:none}
 html.fit-wide .hmId em,html.fit-wide .ptitle,html.fit-wide html.fit-wide .hmId .ptitle{border-color:var(--hair);color:#d9c39a}
 html.fit-wide .hmSide{gap:20px}
 html.fit-wide .hmIc{gap:7px;padding:4px 0;border:0;border-radius:0;background:none;color:var(--dim);transition:color .2s}
@@ -2059,6 +2059,9 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .tier.t5{--tc:#f2c260!important}
 .tier.t5 b{background:linear-gradient(180deg,#7a1424 0,#3a0911 60%,#1c0408 100%) padding-box,linear-gradient(180deg,#ffe9a8,#f2c260 45%,#8a5e14) border-box}
 .hmId .tier,.profSub .tier{font-size:10px}
+/* ホームの名前の下：プレートは中身の幅にして、称号と1行に並べる（入りきらない称号は「…」にする） */
+.hmId .tier b{width:auto;min-width:0;padding-right:1em}
+.hmId>span{flex-wrap:nowrap!important;min-width:0}.hmId>span .ptitle{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* ホームの上の帯：ランクの札は中身の幅にする（幅の狭い画面で、となりの銀貨の数に重ならないように）。称号は1行のまま。
    幅が400px より狭い画面では、札の字とボタンを少しずつ小さくして、いちばん長い札（PLATINUM III）でも収める */
 .hmId .tier b{width:auto;min-width:0}.hmId .ptitle{white-space:nowrap}.hmId span{min-width:0}
@@ -2071,7 +2074,7 @@ html.fit-p .hmId .tier{font-size:clamp(7.5px,2.4vw,10px)}
 @media (max-width:379px){.vsOv{padding-left:12px;padding-right:12px}.vsP{gap:10px}.vsAv{width:84px;height:84px}.vsTx .tier{font-size:11px}.vsNm{font-size:19px}}
 @media (max-width:339px){.vsAv{width:72px;height:72px}.vsTx .tier{font-size:10px}.vsNm{font-size:17px}}
 .board .tier{font-size:9.5px}.board .tier b{width:10.9em;padding-right:.6em}.board .tier b .rkTx{font-size:1.08em;letter-spacing:.04em}
-ol.board li{grid-template-columns:1.3em minmax(0,1fr) auto 2.6em 2.9em;gap:5px;padding-left:5px;padding-right:6px}ol.board .bdName{font-size:13px}ol.board .bdWl{font-size:11px}
+ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-left:6px;padding-right:8px}
 .rgName .rkTx{font-size:1.15em;-webkit-text-stroke:.7px rgba(20,6,8,.5)}
 .rg.master{--tc:#f2c260!important}.rg.master .rgBar i{background:linear-gradient(90deg,#7a1424,#d9354e);box-shadow:0 0 10px #d9354e}.rg.master .rgBar{border-color:#d8a94a}
 /* カードの枠（2026-11-13）：レアリティは枠そのもので見せる。ドット絵の金属細工（art/frame/fB・fS・fG・fL.png）を、
@@ -2091,6 +2094,20 @@ ol.board li{grid-template-columns:1.3em minmax(0,1fr) auto 2.6em 2.9em;gap:5px;p
 .r-G>.cfr::after{animation-duration:3.6s}
 @supports not ((-webkit-mask-box-image:none) or (mask-border:none)){.cfr::after{display:none!important}}
 @media (prefers-reduced-motion:reduce){.cfr::after{animation:none!important;display:none}}
+/* 銀貨：ふちと厚みのある硬貨の絵（まん中に心臓の刻印） */
+.coin i,.coinFly{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='.45' stop-color='%23cfd6e6'/%3E%3Cstop offset='1' stop-color='%23737b96'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238d95b0'/%3E%3Cstop offset='1' stop-color='%23e9eef9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='20' cy='22.5' rx='17' ry='16' fill='%234d5470'/%3E%3Ccircle cx='20' cy='19.5' r='17' fill='url(%23a)' stroke='%234d5470' stroke-width='1.6'/%3E%3Ccircle cx='20' cy='19.5' r='12.6' fill='url(%23b)' stroke='%236a728e' stroke-width='1.1'/%3E%3Cpath d='M20 27.6c-5.4-3.9-8-6.7-8-10 0-2.4 1.8-4.1 4-4.1 1.6 0 3.1.9 4 2.3.9-1.4 2.4-2.3 4-2.3 2.2 0 4 1.7 4 4.1 0 3.3-2.6 6.1-8 10z' fill='%235b6380' stroke='%23f4f7ff' stroke-width='.9'/%3E%3Cpath d='M8.2 13.5a13.8 13.8 0 0 1 9-9.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' opacity='.85'/%3E%3C/svg%3E") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important}
+.coin i{width:21px;height:21px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}.coin.sm i{width:16px;height:16px}
+.coinFly{width:20px;height:20px;margin:-10px}
+/* チュートリアルの「やめる」の確かめ */
+.tutQuit.sure{color:#ffb3bf;font-weight:700}.tutKeep{background:none;border:1px solid var(--candle);color:var(--candle);font-size:12px;padding:1px 10px;margin-left:auto;margin-right:8px;cursor:pointer}
+/* 共鳴：使うと共鳴するカードは、金色の札と、下からわき上がる光で知らせる */
+.hc .twin.res{visibility:visible;min-height:0;top:auto!important;bottom:16%;left:5%!important;font-size:11px;font-weight:800;letter-spacing:.08em;padding:1px 10px;white-space:nowrap;background:linear-gradient(180deg,#fff0b0,#f0b23a);color:#2a1600;box-shadow:0 0 0 1px #7a4a00,0 0 12px 2px rgba(255,200,90,.9);animation:resTag .8s ease-in-out infinite alternate;z-index:4}
+.hc .twin.res.off{animation:none;box-shadow:0 0 0 1px #7a4a00;opacity:.85;font-size:9px}
+@keyframes resTag{to{transform:translateY(-3px) scale(1.08)}}
+.hc.glow::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(0deg,rgba(255,205,95,.5),rgba(255,205,95,.12) 45%,transparent 70%);animation:resRise 1.2s ease-in-out infinite}
+@keyframes resRise{0%,100%{opacity:.35}50%{opacity:1}}
+.hc.glow .tcg{box-shadow:0 0 0 2px #ffd36b,0 0 18px 5px rgba(255,200,90,.7)}
+@media (prefers-reduced-motion:reduce){.twin.res,.hc.glow::after{animation:none}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div><footer class="hmFoot" id="opFoot">運営:PTERA LIMITED LIABILITY COMPANY<span class="hmFootGap"> </span>お問い合わせ:<a href="mailto:info@shinzoujinro.com">info@shinzoujinro.com</a></footer>
@@ -2211,7 +2228,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113113131';
+const APP_VER='20261113175231';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3333,7 +3350,7 @@ function draw(p,n){
 }
 function toDiscard(p,c){rm(p.hand,c);p.discard.push(c);K(opp(p)).known.add(c.id)}
 function forcedDiscard(victim,c,attacker){
-  if(!victim.f.reflect&&hasSet(victim,'reflect')){triggerNow(victim);victim.f.reflect=true;log('反射！捨てる効果が跳ね返った。',whoOf(victim))}
+  if(!victim.f.reflect&&hasSet(victim,'reflect')){triggerNow(victim);victim.f.reflect=true;S.reflectFx=whoOf(victim);log('反射！捨てる効果が跳ね返った。',whoOf(victim))}
   if(victim.f.reflect){
     if(attacker.hand.length){const x=rand(attacker.hand);toDiscard(attacker,x);log(`${attacker.name}の手札から〈${N(x.type)}〉が捨てられた。`);if(x.type==='nekomata')nekoCurse(attacker)}
     return;
@@ -3516,7 +3533,11 @@ function judge(p,set){
   log(`判定：${set.map(x=>'〈'+N(x)+'〉').join('')} → ${yes?'この中に心臓がある':'この中に心臓はない'}`,whoOf(p));
 }
 function nekoCurse(owner){const cand=cands(owner,4);log(`猫又の祟り！${opp(owner).name}の心臓は ${cand.map(x=>'〈'+N(x)+'〉').join('')} のどれか。`,whoOf(owner))}
+// 反射が発動していたら、ここで成功の演出を出す（forcedDiscard は待てない処理なので、あとから出す）
+async function reflectFlush(){if(!S||!S.reflectFx)return;S.reflectFx=null;if(S.sim)return;render();await fxReflect()}
+async function fxReflect(){VOICE.say('Reflect!');setTimeout(()=>{screenFlash('silver');FXC.ring('#cfe3ff');FXC.ring('#ffffff');FXC.burst('#cfe3ff',90,9)},300);await fxStamp('反射成功','guard','reflect')}
 async function raid(p,o,had){
+  await reflectFlush();
   if(o.hand.length===0&&!S.over){
     o.life=Math.max(0,o.life-1);S.shake=whoOf(o);act({who:whoOf(p),kind:'raid'});log(`襲撃！${o.name}の手札が尽きた。ライフ-1（残り${o.life}）`,whoOf(p));render();
     await fxRaid();await fxHeartBreak(whoOf(o),o.life+1);S.round=(S.round||1)+1;if(o.life<=0)return gameOver(p);
@@ -3611,7 +3632,7 @@ async function payCost(p,c,R){
       break;}
   }
 }
-async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.effDraw=(S.effDraw||0)+1;try{const r=await playCard0(p,c,copy);if(r!=='over')await candFx();return r}finally{if(!copy&&p.f)p.f.foxPick=null;g.effDraw=Math.max(0,(g.effDraw||1)-1);if(S)S.decider=pv;if(S&&!copy&&czOn(p,'chain')){p.f.req=0;p.f.opt=0}}}
+async function playCard(p,c,copy=false){const pv=S.decider,g=S;S.decider=p;S.effDraw=(S.effDraw||0)+1;try{const r=await playCard0(p,c,copy);if(r!=='over'){await reflectFlush();await candFx()}return r}finally{if(!copy&&p.f)p.f.foxPick=null;g.effDraw=Math.max(0,(g.effDraw||1)-1);if(S)S.decider=pv;if(S&&!copy&&czOn(p,'chain')){p.f.req=0;p.f.opt=0}}}
 async function playCard0(p,c,copy=false){
   const o=opp(p),w=whoOf(p);
   S.me.f.reflect=S.cpu.f.reflect=false;
@@ -4203,7 +4224,13 @@ function tutShow(st){
   if(!b){b=document.createElement('div');b.id='tutBox';document.body.appendChild(b)}
   const txt=st.textFn?st.textFn():st.text;
   if(b.dataset.i!==String(TUT.i)){b.dataset.i=TUT.i;b.innerHTML=`<div class="tutHd"><span>チュートリアル ${TUT.i+1}/${TUT_STEPS.length}</span><button type="button" class="tutQuit">やめる</button></div><p>${txt}</p>${st.btn?`<div class="btns"><button type="button" class="b primary small tutNext">${st.btn}</button></div>`:''}`;
-    b.querySelector('.tutQuit').onclick=()=>{TUT.on=false;tutHide();SV.tutDone=true;save();if(VIEW==='battle'&&S)render()};
+    b.querySelector('.tutQuit').onclick=e=>{const q=e.currentTarget;
+      if(q.dataset.sure){TUT.on=false;tutHide();SV.tutDone=true;save();if(VIEW==='battle'&&S)render();return}
+      // 1回目は確かめるだけ（押しまちがいでチュートリアルが終わってしまうのを防ぐ）。「つづける」か、5秒そのままで元に戻る
+      q.dataset.sure='1';q.textContent='本当にやめる';q.classList.add('sure');
+      const k=document.createElement('button');k.type='button';k.className='tutKeep';k.textContent='つづける';
+      const back=()=>{delete q.dataset.sure;q.textContent='やめる';q.classList.remove('sure');k.remove()};
+      k.onclick=back;q.before(k);setTimeout(()=>{if(q.isConnected&&k.isConnected)back()},5000)};
     const nx=b.querySelector('.tutNext');if(nx)nx.onclick=()=>{TUT.i++;TUT.act=-1;if(TUT.i>=TUT_STEPS.length){TUT.on=false;SV.tutDone=true;save();tutHide();if(VIEW==='battle'&&S)render()}else tutTick()};}
   document.querySelectorAll('.tutHi').forEach(e=>e.classList.remove('tutHi'));
   if(st.sel)document.querySelectorAll(st.sel).forEach(e=>e.classList.add('tutHi'));
@@ -4381,7 +4408,7 @@ function lastActsHTML(){
     if(a.kind==='bluff')return a.who==='cpu'?'<b class="la-hit">ブラフ成功</b>':'';
     if(a.kind==='raid')return a.who==='cpu'?'<b class="la-hit">襲撃</b>':'';
     return'';}).filter(Boolean);
-  return`<div class="oppLast"><span class="olH">${now?'このターン':'前のターン'}（${T}T）</span>${parts.length?parts.join('<span class="olSep">›</span>'):'<span class="laSub">カードを使わなかった</span>'}</div>`;
+  return`<div class="oppLast"><span class="olH">${now?'このターン':'前のターン'}（${T}T）</span>${parts.length?parts.join('<span class="olSep">›</span>'):`<span class="laSub">${now?'考えています…':'カードを使わなかった'}</span>`}</div>`;
 }
 function showDiscard(who){
   const p=who==='me'?S.me:S.cpu;const cnt={};p.discard.forEach(c=>{if(c&&C[c.type])cnt[c.type]=(cnt[c.type]||0)+1});
@@ -4483,10 +4510,13 @@ function render0(){
   if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
   else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
+  if(S.asking&&S.asking!==me&&!S.over&&!S.picking)phase=`${OPN()}が選んでいます…`;
+  else if(S.asking&&SP&&!S.over&&!S.picking)phase=`${MYN()}が選んでいます…`;
   if(S.picking&&!S.over)phase=S.picking===me&&!SP?'新しい心臓を選んでください':`${S.picking===me?MYN():OPN()}が新しい心臓を選んでいます…`;
   if(!HID)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
   const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
-  const myHand=HID?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':(resOk(c)?'<span class="twin res">共鳴</span>':'')}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
+  if(ph==='play'&&!SP&&!HID&&!S.over&&!S.picking&&!S.asking&&me.hand.some(resOk))phase+='　金色に光るカードは「共鳴」します';
+  const myHand=HID?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':''}${resOk(c)&&ph==='play'?'<span class="twin res">共鳴！</span>':resOk(c)?'<span class="twin res off">共鳴</span>':''}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
@@ -5158,6 +5188,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:110,d:'2026-11-14',t:'いろいろ直しました：チュートリアルの「やめる」は、もう一度押すまで終わらなくなりました／共鳴するカードに金色の「共鳴！」の札と光が出ます／反射が成功したときの演出を足しました／相手がカードを選んでいる間は「選んでいます…」と出ます／相手のターン中に、まだ使っていないだけなのに「カードを使わなかった」と出るのを直しました／ランキングから勝ち負けの数を外しました／銀貨の絵を硬貨らしくしました／ホームのランクと称号の並びを整えました。'},
   {id:109,d:'2026-11-13',t:'対戦中に相手との接続が「つながってはすぐ切れる」をくり返すと、待ち時間が「あと2分0秒」に何度も戻って、いつまでも終わらないことがあったのを直しました。すぐにまた切れたときは、残り時間が前の続きから進みます。'},
   {id:108,d:'2026-11-13',t:'ランクマッチの結果画面で、相手の結果報告を待っている間も、そのまま少し待つとランクのゲージが動いて、もらったカードが同じ所に出るようになりました（前は、カードが別の窓であとから届いていました）。'},
   {id:107,d:'2026-11-13',t:'カードは絵だけの表示にそろえました（縦に長くならなくなりました）。効果は、カードを押すと出る説明で読めます。カード一覧のカードも押せるようになりました。シルバーとゴールドの光る演出は、枠だけが光る形に変えました。'},
@@ -5391,7 +5422,7 @@ async function showBoard(){
   const {data,error}=await LADDER.sb.rpc('leaderboard',{p_limit:50});
   const sh=document.querySelector('#modal .sheet');if(!sh)return p;
   const me=LADDER.prof;
-  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span><span class="bdWl">${r.wins}-${r.losses}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
+  const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
   const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt':''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
   sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
   sh.querySelector('#bdClose').onclick=()=>{const m=$('#modal');m.hidden=true;m.innerHTML=''};
@@ -5446,7 +5477,7 @@ function rpcMerge(base,d){for(const k in d){if(k==='logs')continue;if(k==='me'||
 // 盤面の「部屋を開いた側（me）」と「入った側（cpu）」を入れ替える
 function rpcMirror(sn){
   const sw=r=>r==='me'?'cpu':r==='cpu'?'me':r,tx=t=>String(t).replace(/@(me|cpu)/g,(m,r)=>'@'+sw(r));
-  return{...sn,me:sn.cpu,cpu:sn.me,know:{me:sn.know.cpu,cpu:sn.know.me},cards:sn.cards.map(([id,t,o])=>[id,t,sw(o)]),cur:sw(sn.cur),pick:sw(sn.pick),shake:sw(sn.shake),
+  return{...sn,me:sn.cpu,cpu:sn.me,know:{me:sn.know.cpu,cpu:sn.know.me},cards:sn.cards.map(([id,t,o])=>[id,t,sw(o)]),cur:sw(sn.cur),pick:sw(sn.pick),ask:sw(sn.ask),shake:sw(sn.shake),
     hist:(sn.hist||[]).map(h=>({...h,who:sw(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:sw(a.who)})),
     logs:(sn.logs||[]).map(e=>{const x={...e,who:sw(e.who),actor:sw(e.actor),t:tx(e.t)};if(x.to)x.to=sw(x.to);return x})};
 }
@@ -5869,7 +5900,7 @@ function netSnap(spec,full){
   // spec==='rec'：リプレイの記録用。何も伏せず、記録の文もぜんぶ入れる
   if(spec==='rec')hide.clear();
   const logs=spec==='rec'?S.log.filter(e=>e.q>REC.q):spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
-  return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,pick:S.picking?whoOf(S.picking):null,me:P(S.me),cpu:P(S.cpu),
+  return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,pick:S.picking?whoOf(S.picking):null,ask:S.asking?whoOf(S.asking):null,me:P(S.me),cpu:P(S.cpu),
     cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,acts:(S.acts||[]).slice(-40),logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
 }
 function hostCmd(m){
@@ -5889,6 +5920,18 @@ let MXin=0;
   const f=window[n];
   window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a});REC.fx(n,a)}MXin++;try{return await f(...a)}finally{MXin--}};
 });
+/* えらぶ画面（種類・カード・選択肢）を出している間は、だれが選んでいるかを S.asking に持つ（オンラインだけ）。
+   相手が選んでいる間、こちらの画面に「〜が選んでいます…」と出すため。ゲストには盤面（ask）で伝える */
+['pickTypes','pickOption','pickMulti','pickCards'].forEach(n=>{
+  const f=window[n];
+  window[n]=function(...a){
+    const g=S;if(!g||!g.online||g.guest||!g.decider)return f.apply(this,a);
+    const who=g.decider;g.asking=who;if(who.remote)render();
+    const r=f.apply(this,a);if(!who.remote)NET.sync(true);
+    const done=()=>{if(g.asking!==who)return;g.asking=null;if(S===g){if(who.remote)render();else NET.sync(true)}};
+    return Promise.resolve(r).then(v=>{done();return v},e=>{done();throw e});
+  };
+});
 const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle']);
 
 /* ゲスト側 */
@@ -5903,7 +5946,7 @@ function guestApply(sn){
   if(old)['_shownLife','_lfFrom','_lfT0'].forEach(k=>{pl.me[k]=old.me[k];pl.cpu[k]=old.cpu[k]})
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:swR(a.who)})),last:old?old.last:null,
-    turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,picking:sn.pick?pl[swR(sn.pick)]:null,
+    turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,picking:sn.pick?pl[swR(sn.pick)]:null,asking:sn.ask?pl[swR(sn.ask)]:null,
     seen:old?old.seen:new Set(),sel:null,online:true,guest:true,replay:RPC.on,rpAll:RPC.on&&RPC.pov==='all',gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:RPC.on?{...RPC.names}:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});

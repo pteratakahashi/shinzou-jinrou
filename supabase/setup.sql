@@ -108,12 +108,13 @@ begin
 end $$;
 
 -- ランキング上位
+-- 2026-11-14 ランキングには、ほかの人の勝ち負けの数を出さない（自分の戦績は my_profile で自分だけが見る）。返す列が変わるので作り直す
 drop function if exists public.leaderboard(integer);
 create or replace function public.leaderboard(p_limit integer default 50)
-returns table(pos bigint, name text, rating integer, rp integer, wins integer, losses integer)
+returns table(pos bigint, name text, rating integer, rp integer)
 language sql security definer set search_path = public stable as $$
   select rank() over (order by rp >= 500 desc, case when rp >= 500 then rating else rp end desc),
-         name, case when rp >= 500 then rating end, rp, wins, losses
+         name, case when rp >= 500 then rating end, rp
   from players where wins + losses > 0
   order by rp >= 500 desc, case when rp >= 500 then rating else rp end desc
   limit least(greatest(p_limit, 1), 100);
