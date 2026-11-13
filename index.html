@@ -2125,6 +2125,7 @@ ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-l
 @media (max-width:560px){#wvBar{left:6px;right:6px;transform:none;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 6px}#wvBar button{padding:4px 8px;font-size:11px}#wvBar .rcT{width:100%;text-align:center;font-size:11px}}
 #wvBar button.on{border-color:var(--gold);background:rgba(163,29,46,.5);color:#fff}
 @media (max-width:560px){#wvBar .rcT{width:auto}}
+.langSel{background:#120708;color:var(--ivory,#f1e8d8);border:1px solid var(--hair,rgba(232,200,140,.28));padding:6px 10px;font:14px var(--body,sans-serif)}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div><footer class="hmFoot" id="opFoot">運営:PTERA LIMITED LIABILITY COMPANY<span class="hmFootGap"> </span>お問い合わせ:<a href="mailto:info@shinzoujinro.com">info@shinzoujinro.com</a></footer>
@@ -2245,7 +2246,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113193536';
+const APP_VER='20261113201227';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2753,6 +2754,7 @@ function showSettings(){
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     ${LADDER.uid()?`<div class="btns"><span class="label">記録</span><button type="button" class="b small" id="clSync">ほかの端末と合わせる</button><span class="note" id="clSt">${CLOUD.last?(CLOUD.last.err?'合わせられませんでした：'+esc(CLOUD.last.err):new Date(CLOUD.last.t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+' '+CLOUD.last.how+'（銀貨 '+CLOUD.last.coins+'）'):'まだ合わせていません'}</span></div>`:''}
     ${LADDER.admin?`<div class="btns"><span class="label">運営</span><button type="button" class="b small" id="stRep">リプレイを見る</button></div>`:''}
+    <div class="btns"><span class="label">言語 / Language</span><select id="stLang" class="langSel" data-noi18n aria-label="Language">${Object.entries((window.I18N&&I18N.langs)||{ja:'日本語'}).map(([k,v])=>`<option value="${k}" ${((window.I18N&&I18N.lang)||'ja')===k?'selected':''}>${v}</option>`).join('')}</select></div>
     <div class="btns"><span class="label">規約</span>${POLICY_LINK}</div>
     <div class="btns"><span class="label">テスト用</span><button type="button" class="b small" id="tReset">戦績を初期化</button><span class="note" id="resetNote"></span></div>`;
   modal(html(),(m,done)=>{
@@ -4457,7 +4459,8 @@ function logKind(t){
   return'';
 }
 const KIND_L={hit:'的中',miss:'外れ',trap:'伏せ',cost:'コスト',info:'情報'};
-function fmtLog(t){return esc(nm(t)).replace(/〈([^〉]+)〉/g,(m,n)=>NAME2K[n]?`<button type="button" class="cardBtn lchip" data-card="${NAME2K[n]}">${n}</button>`:m)}
+// 多言語：ログの文は、カードの名前をボタンに変える前に、文ごと訳す（訳したあとの名前からもカードを引けるよう、名前の表を足す）
+function fmtLog(t){let x=nm(t);if(window.I18N&&I18N.on){if(!I18N.n2k){I18N.n2k=1;CARDS.forEach(c=>{const y=I18N.t(c.n);if(y&&!NAME2K[y])NAME2K[y]=c.k})}x=I18N.t(x)}return esc(x).replace(/〈([^〉]+)〉/g,(m,n)=>NAME2K[n]?`<button type="button" class="cardBtn lchip" data-card="${NAME2K[n]}">${n}</button>`:m)}
 function logHTML(){
   const items=S.log.filter(l=>!l.hdr&&(!l.to||l.to==='me'));
   const groups=[];
@@ -5205,6 +5208,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:116,d:'2026-11-14',t:'English・한국어・简体中文・繁體中文 に対応しました。端末の言語に合わせて自動で切りかわります。設定（歯車）の「言語 / Language」からも選べます。Now available in English, Korean and Chinese — change it in Settings > Language.'},
   {id:115,d:'2026-11-14',t:'友達対戦の観戦で、2人の手札と心臓が見えるようになりました。観戦している人は、下のボタンで視点（両方見える／どちらか1人の視点）をいつでも切りかえられます。'},
   {id:114,d:'2026-11-14',t:'友達対戦に、観戦者を1人呼べるようになりました。2人がそろっている部屋に、3人目が同じ部屋コード（またはリンク）で入ると、観戦になります。観戦では、どちらの手札と心臓も見えません。'},
   {id:113,d:'2026-11-14',t:'見た目の直し：PCの対戦画面で「最近使ったカード」が山札に重なっていたのを直しました／ランクのプレートは、名前が板のまん中に来るようにしました／共鳴の表示をひかえめにしました／ホームの名前の下の称号をなくしました（称号は、対戦のはじまりの画面に出ます）。'},
@@ -6238,6 +6242,8 @@ LADDER.init();
 // 起動画面：文字（フォント）が用意できたら消す。遅くても1.6秒で消す
 {const bt=document.getElementById('boot'),t0=Date.now(),off=()=>{if(!bt||bt.classList.contains('out'))return;setTimeout(()=>{bt.classList.add('out');setTimeout(()=>bt.remove(),600)},Math.max(0,650-(Date.now()-t0)))};
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(off);setTimeout(off,1600)}
+// 多言語対応（i18n.js）。日本語のときは何もしない
+{const sc=document.createElement('script');sc.src='i18n.js?'+APP_VER;document.head.appendChild(sc)}
 </script>
 
 </body></html>
