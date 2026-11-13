@@ -2211,7 +2211,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113105500';
+const APP_VER='20261113113131';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4024,7 +4024,7 @@ async function gameOver(w){
   S.over=true;S.phase='none';render();
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
-  const rated=on&&LADDER.rated()&&NET.mid,rp0=LADDER.prof?Math.max(0,LADDER.prof.rp||0):null,rp=rated?LADDER.report(NET.mid,win,'ko'):null;  // rp0＝対戦前のランクポイント（結果画面のゲージの出発点）
+  const rated=on&&LADDER.rated()&&NET.mid,rp0=LADDER.prof?Math.max(0,LADDER.prof.rp||0):null,rp=rated?LADDER.report(NET.mid,win,'ko'):null,rMid=NET.mid,rOpp=NET.oppUid;  // rp0＝対戦前のランクポイント（結果画面のゲージの出発点）
   if(rated&&!S.guest)REC.send(win);
   if(!on)lsDel(GAME_KEY);else ONL.clear();
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);if(win)quake();FXC.burst('#ffffff',120,12);
@@ -4045,13 +4045,21 @@ async function gameOver(w){
     :S.tut?`<button type="button" class="b primary" id="rMenu">メニューへ</button><button type="button" class="b" id="rSame">もう一度チュートリアル</button>`
     :`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを編成する</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
   await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<div class="resBox" id="rRate"><p class="rateLine">ランクポイントを集計しています…</p></div>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
-    if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
+    // 先に報告した側は、相手の報告が届くまで「集計待ち」になる。結果画面を開いている間は2秒おきに確かめ直し、
+    // 確定したらその場でゲージを動かしてカードを出す（前は、待ちのまま終わって、カードは別の窓で後から出ていた）
+    let rTry=0;
+    if(rp)rp.then(function showRate(d){const el=m.querySelector('#rRate');if(!el||!el.isConnected)return;const st=d&&d.status;
       // ランクポイントの増減をゲージで見せ、同じ枠の中に、もらったカードを並べる
       const ok=st==='done'&&rp0!=null&&Number.isFinite(d.delta),rp1=ok?Math.max(0,rp0+(d.won?d.delta:-d.delta)):rp0;
       el.innerHTML=(ok?`<p class="rateLine rrHead">ランクポイント <b class="${d.won?'up':'down'}">${d.won?'+':'-'}${d.delta}pt</b></p>${rankGaugeHTML(rp0)}`
         :`<p class="rateLine">${st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>`:'レートを記録できませんでした。'}</p>${rp0!=null&&st==='pending'?rankGaugeHTML(rp0):''}`)+gotHTML(d);
       if(ok)setTimeout(()=>rankGaugeRun(el.querySelector('.rg'),rp0,rp1),450);
-      gotRun(m)});
+      gotRun(m);
+      if(st==='done'&&rTry){SV.pendGot=null;save();LADDER.refresh()}
+      if(st==='pending'&&rTry<15&&rMid&&rOpp)setTimeout(async()=>{
+        if(!el.isConnected)return;rTry++;
+        try{const me=LADDER.uid(),{data,error}=await LADDER.sb.rpc('report_result',{p_match:rMid,p_opp:rOpp,p_winner:win?me:rOpp,p_reason:'ko'});if(!error&&data)showRate(data)}catch(e){console.error(e)}
+      },2000)});
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu'],['#rRank','rank']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     document.body.classList.remove('resultOn');
@@ -5150,6 +5158,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:108,d:'2026-11-13',t:'ランクマッチの結果画面で、相手の結果報告を待っている間も、そのまま少し待つとランクのゲージが動いて、もらったカードが同じ所に出るようになりました（前は、カードが別の窓であとから届いていました）。'},
   {id:107,d:'2026-11-13',t:'カードは絵だけの表示にそろえました（縦に長くならなくなりました）。効果は、カードを押すと出る説明で読めます。カード一覧のカードも押せるようになりました。シルバーとゴールドの光る演出は、枠だけが光る形に変えました。'},
   {id:106,d:'2026-11-13',t:'いろいろな画面サイズで見え方を点検して、崩れを直しました。幅の狭いスマホで、ホーム上のランクの札が銀貨の数に重なる／対戦のはじまりの画面でランクの札と名前が切れる／「対戦する」の窓で札が題に重なる。友達と対戦の画面で「Googleでログイン」のボタンが枠からはみ出す。スマホ横向きで「ランクマッチ」の字が切れる、などです。'},
   {id:105,d:'2026-11-13',t:'カードの枠が新しくなりました。レアリティは枠そのもので分かります（銅・銀・金・虹色のレジェンド）。右上の B・S・G・L の文字はなくなり、系統の色は名前の左の線になりました。'},
