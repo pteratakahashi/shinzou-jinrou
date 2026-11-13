@@ -2387,7 +2387,18 @@ const CLOUD={t:0,ok:true,
     const a=SV.stat=SV.stat||{},b=d.stat||{};for(const k in b)if(typeof b[k]==='number')a[k]=Math.max(+a[k]||0,b[k]);else if(a[k]===undefined)a[k]=b[k];
     const eq=SV.equip||{};if(d.equip&&!eq.title&&!eq.frame&&!eq.octo&&(!eq.avatar||eq.avatar==='villager'))SV.equip=d.equip;
     if(d.tutDone)SV.tutDone=true;
-    ['login','freeDeck','altOff','avatarPx','decks','deckIx'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
+    ['login','freeDeck','altOff','avatarPx'].forEach(k=>{if(SV[k]===undefined&&d[k]!==undefined)SV[k]=d[k]});
+    // デッキ：両方の端末のデッキを残す（2026-11-13）。前は端末のデッキだけを残して預けていたので、ほかの端末で作ったデッキが消えていた。
+    //  ・端末にあるのが手つかずの最初のデッキ1つだけ → サーバーのデッキをそのまま使う
+    //  ・それ以外 → 端末のデッキのあとに、中身がちがうサーバーのデッキを足す（6つまで。名前が同じなら空いている「デッキN」にする）
+    const rdk=Array.isArray(d.decks)?d.decks.filter(x=>x&&Array.isArray(x.types)):[];
+    if(rdk.length){
+      deckInit();
+      const sig=x=>[...x.types].sort().join()+'|'+(x.single||''),loc=SV.decks;
+      if(loc.length===1&&sig(loc[0])===sig(stdDeck())){SV.decks=rdk.map(x=>({...x}));SV.deckIx=d.deckIx}
+      else{const have=new Set(loc.map(sig));rdk.forEach(x=>{if(loc.length>=DECK_MAX||have.has(sig(x)))return;have.add(sig(x));const used=loc.map(y=>y.name);let n=x.name,i=1;if(!n||used.includes(n)){while(used.includes(`デッキ${i}`))i++;n=`デッキ${i}`}loc.push({...x,name:n})})}
+      deckInit();
+    }
     // デイリーミッション：同じ日なら「受取済み」と進み具合を両方から引きつぐ（別の端末でもう一度受け取れないように）。サーバーの方が新しい日ならそちらを使う
     const ld=SV.daily,rd=d.daily;
     if(rd&&rd.day&&Array.isArray(rd.list)){
@@ -4847,6 +4858,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:92,d:'2026-11-13',t:'同じアカウントで別の端末からログインしたとき、デッキがそろわないことがあったのを直しました。はじめてつながる端末では、両方の端末のデッキを残して合わせます（6つまで）。'},
   {id:91,d:'2026-11-13',t:'カードの調整：星読みは、対人戦での勝率が高かったため、通常カード（属性なし）になり、共鳴がなくなりました。効果は「相手の心臓の名前が偶数文字か奇数文字かを知る」だけです。しばらくこれで様子を見ます。'},
   {id:90,d:'2026-11-13',t:'利用規約・配信や動画についての決まり・プライバシーポリシーを載せました。設定と、Googleでログインのボタンの下から読めます。'},
   {id:89,d:'2026-11-13',t:'ログインすると、毎日1パックもらえるようになりました（その日はじめてゲームを開いたときに届きます。Googleでログインしている人が対象です）。'},
