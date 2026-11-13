@@ -1967,6 +1967,41 @@ html.fit-wide .hmMsnP .b{font:700 12px var(--pcf);letter-spacing:.06em;padding:3
 html.fit-wide .tabBar button{letter-spacing:.1em}
 html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;width:clamp(330px,25vw,440px);z-index:-1;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(8,3,5,.72) 30%)}
 
+/* 対戦のはじまりの紹介画面 */
+.vsOv{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto 1fr auto 1fr auto;place-items:center;gap:6px;padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(22px + env(safe-area-inset-bottom,0px));overflow:hidden;cursor:pointer;color:#f1e8d8;transition:opacity .36s ease}
+.vsOv.out{opacity:0;pointer-events:none}
+.vsOv:not(.rm){animation:vsGone .4s 3.1s ease forwards}
+@keyframes vsGone{to{opacity:0;visibility:hidden}}
+.vsBg{position:absolute;inset:0;z-index:-1;background:linear-gradient(168deg,#2a0b12 0%,#16080b 46%,#07070f 54%,#10142e 100%);animation:vsBg .3s ease-out both}
+.vsBg::after{content:"";position:absolute;left:-20%;right:-20%;top:50%;height:3px;background:linear-gradient(90deg,transparent,#e8c88c 30%,#fff 50%,#e8c88c 70%,transparent);transform:rotate(-8deg);box-shadow:0 0 24px rgba(232,200,140,.7);animation:vsLine .5s .15s cubic-bezier(.2,.9,.3,1) both}
+.vsHead{font:700 14px var(--pcf,serif);letter-spacing:.4em;color:#e8c88c;border:1px solid rgba(232,200,140,.4);padding:4px 16px 4px 22px;background:rgba(10,4,6,.6);animation:vsFade .4s .1s both}
+.vsFoot{font:800 22px var(--pcf,serif);letter-spacing:.5em;padding-left:.5em;color:#fff;text-shadow:0 0 18px rgba(200,40,58,.9);animation:vsFoot .5s 1.15s both}
+.vsP{display:flex;align-items:center;gap:16px;width:min(100%,520px);min-width:0}
+.vsP.vA{justify-content:flex-start;animation:vsL .55s .2s cubic-bezier(.2,.9,.3,1.15) both}
+.vsP.vB{justify-content:flex-start;flex-direction:row-reverse;text-align:right;animation:vsR .55s .32s cubic-bezier(.2,.9,.3,1.15) both}
+.vsAv{flex:none;width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #e8c88c;background:radial-gradient(circle at 50% 35%,#3a3f70,#141830);box-shadow:0 0 0 4px rgba(10,4,6,.7),0 0 34px rgba(232,200,140,.45)}
+.vsP.vA .vsAv{border-color:#f0a8ae;box-shadow:0 0 0 4px rgba(10,4,6,.7),0 0 34px rgba(200,40,58,.6)}
+.vsP.vB .vsAv{border-color:#9db4ff;box-shadow:0 0 0 4px rgba(10,4,6,.7),0 0 34px rgba(90,120,255,.55)}
+.vsAv img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;image-rendering:pixelated;transform:scale(1.25) translateY(8%)}
+.vsAv img.cus{transform:none;object-position:center}
+.vsTx{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:0}
+.vsP.vB .vsTx{align-items:flex-end}
+.vsNm{white-space:nowrap;font:800 min(32px,5.5vw)/1.2 var(--pcf,serif);letter-spacing:.04em;max-width:100%;overflow-wrap:anywhere;text-shadow:0 2px 0 #000,0 0 18px rgba(0,0,0,.8)}
+.vsMid{display:flex;align-items:center;gap:14px;width:min(100%,520px)}
+.vsMid i{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(232,200,140,.6))}
+.vsMid i:last-child{transform:scaleX(-1)}
+.vsMid b{font:800 84px/1 var(--pcf,serif);font-style:italic;color:#fff;letter-spacing:.02em;text-shadow:0 0 2px #fff,0 0 26px #c8283a,0 0 60px #c8283a,3px 4px 0 #5a0d18;animation:vsVs .5s .6s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes vsBg{from{opacity:0}to{opacity:1}}
+@keyframes vsFade{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes vsLine{from{transform:rotate(-8deg) scaleX(0)}to{transform:rotate(-8deg) scaleX(1)}}
+@keyframes vsL{from{opacity:0;transform:translateX(-70vw) skewX(-12deg)}to{opacity:1;transform:none}}
+@keyframes vsR{from{opacity:0;transform:translateX(70vw) skewX(-12deg)}to{opacity:1;transform:none}}
+@keyframes vsVs{from{opacity:0;transform:scale(3.4) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes vsFoot{from{opacity:0;letter-spacing:1.4em}to{opacity:1;letter-spacing:.5em}}
+.vsOv.rm *,.vsOv.rm *::after{animation:none!important}
+@media (min-width:900px) and (min-height:520px){.vsOv{grid-template-rows:auto 1fr auto;grid-template-columns:1fr auto 1fr;column-gap:28px}.vsHead,.vsFoot{grid-column:1/-1}.vsP{flex-direction:column;text-align:center;width:auto;max-width:36vw}.vsP.vB{flex-direction:column;text-align:center}.vsTx,.vsP.vB .vsTx{align-items:center}.vsAv{width:190px;height:190px}.vsNm{font-size:40px}.vsMid{width:auto;flex-direction:column}.vsMid i{display:none}.vsMid b{font-size:110px}.vsBg{background:linear-gradient(100deg,#2a0b12 0%,#16080b 46%,#07070f 54%,#10142e 100%)}.vsBg::after{left:50%;right:auto;top:-20%;bottom:-20%;width:3px;height:auto;background:linear-gradient(180deg,transparent,#e8c88c 30%,#fff 50%,#e8c88c 70%,transparent);transform:rotate(8deg);animation-name:vsLineV}}
+@keyframes vsLineV{from{transform:rotate(8deg) scaleY(0)}to{transform:rotate(8deg) scaleY(1)}}
+@media (max-height:560px) and (max-width:899px){.vsAv{width:72px;height:72px}.vsNm{font-size:22px}.vsMid b{font-size:44px}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -2087,7 +2122,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113013031';
+const APP_VER='20261113020434';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4486,7 +4521,7 @@ function profileHTML(){
   </section>`;
 }
 /* 自分で描くアイコン（2026-11-12）。16×16 のドット絵。SV.avatarPx に1マス1文字（色の番号 0-f、'.' はぬっていない）で持ち、
-   SV.equip.avatar==='custom' のときに使う。見えるのは自分の画面だけ（相手には送らない） */
+   SV.equip.avatar==='custom' のときに使う。オンライン対戦のはじまりの紹介画面で、相手にも見える（あいさつ netHello で送る） */
 const PX_N=16,PX_COL=['#12080b','#f1e8d8','#c8283a','#e8c88c','#7c1422','#f0a8ae','#8b5a2b','#f6d7b0','#2e6f95','#7fb3d5','#3f8f5a','#a8d08d','#6b4c9a','#c9a0dc','#6a6a6a','#000000'];
 const pxOk=s=>typeof s==='string'&&s.length===PX_N*PX_N&&/^[0-9a-f.]+$/.test(s);
 let pxCache={k:'',u:''};
@@ -4502,7 +4537,7 @@ const avatarCustom=()=>SV.equip.avatar==='custom'&&pxOk(SV.avatarPx);
 const avatarImg=()=>avatarCustom()?`<img class="cus" src="${pxURL(SV.avatarPx)}" alt="">`:`<img src="art/${C[SV.equip.avatar]?SV.equip.avatar:'villager'}.png" alt="">`;
 function drawAvatar(){
   let px=(pxOk(SV.avatarPx)?SV.avatarPx:'.'.repeat(PX_N*PX_N)).split(''),col=2,tool='pen',hist=[];
-  return modal(`<h2>アイコンを描く</h2><p class="note" style="margin-top:0">マスをなぞって色をぬります。描いたアイコンが見えるのは自分の画面だけです。</p>
+  return modal(`<h2>アイコンを描く</h2><p class="note" style="margin-top:0">マスをなぞって色をぬります。描いたアイコンは、オンライン対戦のはじまりに相手にも見えます。</p>
     <div class="pxWrap"><canvas id="pxCv" width="320" height="320" aria-label="お絵かき"></canvas>
       <div class="pxSide"><div class="pxPal">${PX_COL.map((c,i)=>`<button type="button" class="pxC" data-c="${i}" style="background:${c}" aria-label="色${i+1}"></button>`).join('')}</div>
         <div class="pxTools"><button type="button" class="b small" data-t="pen">ペン</button><button type="button" class="b small" data-t="fill">ぬりつぶし</button><button type="button" class="b small" data-t="erase">消しゴム</button><button type="button" class="b small" id="pxUndo">1つ戻す</button><button type="button" class="b small" id="pxClear">ぜんぶ消す</button></div></div></div>
@@ -4674,6 +4709,8 @@ const NET={peer:null,conn:null,host:false,state:'idle',code:'',err:'',opp:null,r
     NET.cast({t:'snap',s:ss});
   }
 };
+// つないだ直後のあいさつ。アイコン（av：カードの名前か 'custom'、px：自分で描いた絵）と称号（tt）は、対戦のはじまりの紹介画面に使う
+const netHello=()=>({t:'hello',name:netName(),v:1,ver:APP_VER,octo:SV.equip.octo||'',uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null,av:avatarCustom()?'custom':(C[SV.equip.avatar]?SV.equip.avatar:'villager'),px:avatarCustom()?SV.avatarPx:undefined,tt:SV.equip.title||''});
 const netName=()=>String(SV.nick||'').replace(/[<>&"]/g,'').trim().slice(0,10)||'プレイヤー';
 
 /* ---- 対人レート（Supabase + Googleログイン） ----
@@ -4752,6 +4789,28 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     return{status:'error'};
   }
 };
+/* 対戦のはじまりの紹介画面（2026-11-13）。おたがいの名前・アイコン・称号・ランクを大きく見せてから対戦に入る。
+   見た目だけの重ね絵で、対戦の進行は止めない（下で対戦の準備が進む）。約3秒で消える。押しても消える */
+function vsShow(){
+  try{
+    document.querySelectorAll('.vsOv').forEach(e=>e.remove());
+    const side=(cls,nm,img,tt,rp)=>`<div class="vsP ${cls}"><div class="vsAv">${img}</div><div class="vsTx">${tt?`<span class="ptitle">${esc(tt)}</span>`:''}<b class="vsNm">${esc(nm)}</b>${rp!=null?tierHTML(rp):''}</div></div>`;
+    const oImg=NET.oppPx?`<img class="cus" src="${pxURL(NET.oppPx,128)}" alt="">`:`<img src="art/${C[NET.oppAv]?NET.oppAv:'villager'}.png" alt="">`;
+    const rk=!!NET.ranked;
+    const el=document.createElement('div');el.className='vsOv'+(RM?' rm':'');el.setAttribute('role','status');
+    el.innerHTML=`<div class="vsBg"></div><div class="vsHead">${rk?'ランクマッチ':'友達対戦'}</div>
+      ${side('vA',netName(),avatarImg(),SV.equip.title?titleName(SV.equip.title):'',rk&&LADDER.prof?LADDER.prof.rp:null)}
+      <div class="vsMid"><i></i><b>VS</b><i></i></div>
+      ${side('vB',NET.opp||'相手',oImg,NET.oppTitle?titleName(NET.oppTitle):'',rk?NET.oppRp:null)}
+      <div class="vsFoot">対戦開始</div>`;
+    document.body.appendChild(el);
+    let gone=false;const bye=()=>{if(gone)return;gone=true;el.classList.add('out');setTimeout(()=>el.remove(),380)};
+    el.onclick=bye;setTimeout(bye,RM?1800:3000);el.addEventListener('animationend',e=>{if(e.animationName==='vsGone'){gone=true;el.remove()}});
+    // 裏のタブでは時計が遅くなる。画面に戻ってきたときに残っていたら消す
+    const vis=()=>{if(!document.hidden){document.removeEventListener('visibilitychange',vis);setTimeout(bye,600)}};if(document.hidden)document.addEventListener('visibilitychange',vis);
+    if(!RM)setTimeout(()=>{if(!gone){try{SFX.hit()}catch(e){}}},620);
+  }catch(e){console.error(e)}
+}
 function tierHTML(rp){const r=rankOf(rp);return`<span class="tier" style="--tc:${r.col}">${r.name}${r.div?' '+r.div:''}</span>`}
 function rankCardHTML(){
   if(!LADDER.on())return'';
@@ -4865,6 +4924,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:94,d:'2026-11-13',t:'オンライン対戦のはじまりに、おたがいの名前・アイコン・称号・ランクが大きく出る紹介画面が入りました。自分で描いたアイコンも、ここで相手に見えるようになりました。'},
   {id:93,d:'2026-11-13',t:'カード一覧とデッキ編成で、カードを「手に入れた順」に並べられるようになりました（絞りこみの「並び」から切りかえます。最近手に入れたカードが先に並びます。Googleでログインしている人が対象です）。'},
   {id:92,d:'2026-11-13',t:'同じアカウントで別の端末からログインしたとき、デッキがそろわないことがあったのを直しました。はじめてつながる端末では、両方の端末のデッキを残して合わせます（6つまで）。'},
   {id:91,d:'2026-11-13',t:'カードの調整：星読みは、対人戦での勝率が高かったため、通常カード（属性なし）になり、共鳴がなくなりました。効果は「相手の心臓の名前が偶数文字か奇数文字かを知る」だけです。しばらくこれで様子を見ます。'},
@@ -5340,11 +5400,11 @@ async function netJoin(code){
 function netBind(c,rejoin){
   NET.conn=c;
   c.on('open',()=>{if(c.__dead||NET.conn!==c)return;clearTimeout(NET.joinTimer);NET.state='connected';
-    if(rejoin){NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,octo:SV.equip.octo||'',uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});
+    if(rejoin){NET.send(netHello());
       if(NET.host&&S&&S.online){NET.send({t:'resume',mid:NET.mid,gid:S.gid});netResumed();NET.lastSnap='';NET.sentQ=0;NET.sync(true);for(const q of Object.values(NET.askQ))NET.send(q);
         if(NET.resumeNext){const nx=NET.resumeNext;NET.resumeNext=null;runTurn(nx==='me'?S.me:S.cpu)}else render()}
       else netResumed();
-      return}if(MM.on){NET.ranked=true;MM.fails=0;mmStop();mmFound()}NET.send({t:'hello',name:netName(),v:1,ver:APP_VER,octo:SV.equip.octo||'',uid:LADDER.uid(),rp:LADDER.prof?LADDER.prof.rp:null});SFX.res();if(VIEW==='online')renderOnline();
+      return}if(MM.on){NET.ranked=true;MM.fails=0;mmStop();mmFound()}NET.send(netHello());SFX.res();if(VIEW==='online')renderOnline();
     if(NET.ranked&&MM.deck){const dk=MM.deck;setTimeout(()=>{if(NET.conn===c&&NET.ranked&&!NET.ready.me&&!(S&&S.online&&!S.over))netDeck({types:[...dk.types],single:dk.single})},700)}});
   c.on('data',m=>{try{netRecv(m)}catch(e){console.error(e)}});
   c.on('close',()=>{if(c.__dead||NET.conn!==c)return;netDrop()});
@@ -5369,13 +5429,15 @@ function netRecv(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){
     case'hello':NET.oppOcto=OCTO_SKINS[m.octo]?m.octo:'';NET.oppVer=typeof m.ver==='string'?m.ver:'';NET.verBad=NET.oppVer!==APP_VER;if(NET.verBad){NET.err=!NET.oppVer||NET.oppVer<APP_VER?'相手のゲームが古い版です。相手に、ページを再読み込み（アプリなら開き直し）してもらってから、もう一度つないでください。':'あなたのゲームが古い版です。下の「更新」を押して最新にしてから、もう一度つないでください。';if(!(NET.oppVer>APP_VER)){}else UPD.show(true)}
-      NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';NET.oppUid=typeof m.uid==='string'&&UUID_RE.test(m.uid)?m.uid:null;NET.oppRp=Number.isFinite(m.rp)?m.rp:null;if(VIEW==='online')renderOnline();break;
+      NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';NET.oppUid=typeof m.uid==='string'&&UUID_RE.test(m.uid)?m.uid:null;NET.oppRp=Number.isFinite(m.rp)?m.rp:null;
+      NET.oppPx=m.av==='custom'&&pxOk(m.px)?m.px:null;NET.oppAv=NET.oppPx?'custom':(typeof m.av==='string'&&C[m.av]?m.av:'villager');NET.oppTitle=typeof m.tt==='string'&&titleName(m.tt)?m.tt:'';
+      if(VIEW==='online')renderOnline();break;
     case'full':netFail('その部屋はもう対戦が始まっています。');break;
     case'bye':netLost(`${NET.opp||'相手'}さんが対戦をやめました。`);break;
     case'deck':if(!deckOk(m.deck)||NET.verBad)return;NET.ready.cpu=m.deck;if(NET.host)netMaybeStart();if(VIEW==='online')renderOnline();break;
     // ここから下はゲストが受け取るもの
     case'start':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):null;ONL.save({role:'guest',code:NET.code,gid:m.gid||null,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});LADDER.startMatch(NET.mid);NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();
-      $('#app').innerHTML='<div class="onl"><p class="note">対戦を準備しています…</p></div>';break;
+      $('#app').innerHTML='<div class="onl"><p class="note">対戦を準備しています…</p></div>';vsShow();break;
     case'snap':if(!NET.host)guestApply(m.s);break;
     case'fx':if(!NET.host)guestFx(m.n,m.a);break;
     case'ask':if(!NET.host)NET.fxq=NET.fxq.then(()=>guestAsk(m)).catch(e=>console.error(e));break;
@@ -5524,7 +5586,7 @@ async function startOnline(a,b){
   VIEW='battle';window.scrollTo(0,0);
   NET.mid=(a.draft||b.draft)?null:(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,'');
   if(NET.ranked&&NET.mid)REC.start();else REC.on=false;
-  const gid0=Date.now();NET.send({t:'start',mid:NET.mid,gid:gid0});NET.cast({t:'start'});LADDER.startMatch(NET.mid);liveStart();
+  const gid0=Date.now();NET.send({t:'start',mid:NET.mid,gid:gid0});NET.cast({t:'start'});vsShow();LADDER.startMatch(NET.mid);liveStart();
   S={me:{...newPlayer('@me',false,[...a.types],a.single),octo:SV.equip.octo||''},cpu:{...newPlayer('@cpu',false,[...b.types],b.single),octo:NET.oppOcto||''},know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:gid0,names:{me:netName(),cpu:NET.opp||'相手'}};
   S.cpu.remote=true;const g=S;
   ONL.save({role:'host',code:NET.code,gid:gid0,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});S.deadline=Date.now()+TURN_MS;
