@@ -2824,6 +2824,8 @@ function setFreeDeck(x){deckInit();const d=SV.decks[SV.deckIx];d.types=[...x.typ
 const deckIcon=d=>d&&d.icon&&C[d.icon]&&(d.types.includes(d.icon)||d.single===d.icon)?d.icon:(d&&d.single&&C[d.single]?d.single:(d&&d.types.find(k=>C[k]))||'villager');
 const deckIcHTML=d=>`<img class="dkIc" src="art/${deckIcon(d)}.png" alt="">`;
 function deckAdd(){deckInit();if(SV.decks.length>=DECK_MAX)return false;const used=SV.decks.map(d=>d.name);let i=1;while(used.includes(`デッキ${i}`))i++;SV.decks.push({name:`デッキ${i}`,...stdDeck()});SV.deckIx=SV.decks.length-1;return true}
+// いまのデッキの写しを、新しいデッキとして足す（名前は「〜のコピー」。12文字に収まらない・同じ名前があるときは「デッキN」）
+function deckCopy(){deckInit();if(SV.decks.length>=DECK_MAX)return false;const s=SV.decks[SV.deckIx],used=SV.decks.map(d=>d.name);let n=s.name+'のコピー';if(n.length>12||used.includes(n)){let i=1;while(used.includes(`デッキ${i}`))i++;n=`デッキ${i}`}const c={name:n,types:[...s.types],single:s.single||null};if(s.icon)c.icon=s.icon;SV.decks.push(c);SV.deckIx=SV.decks.length-1;return true}
 function deckDel(){deckInit();if(SV.decks.length<=1)return;SV.decks.splice(SV.deckIx,1);SV.deckIx=Math.max(0,SV.deckIx-1)}
 // 持っているカードだけで組めているか
 const deckLegal=d=>freeOk(d)&&d.types.every(owns)&&owns(d.single);
@@ -2841,7 +2843,7 @@ function renderFree(){
   $('#app').innerHTML=`<div class="top"><h1>デッキ編成</h1><button type="button" class="b small" id="back">戻る</button></div>
   <p class="note" style="margin-top:0">持っているカードからデッキを組めます（カード13種×3枚＋シングル1枚＝40枚）。所持 <b>${ownedCount()}/${CARDS.length}</b>種。<br>カードは<b>ランクマッチ</b>で、勝つと2種、負けても1種もらえます${LADDER.uid()?'':'（Googleでログインが必要）'}。</p>
   <div class="dkSlots"><span class="label">デッキ</span>${SV.decks.map((x,i)=>`<button type="button" class="chip ${i===SV.deckIx?'on':''} ${deckLegal(x)?'':'ng'}" data-slot="${i}">${deckIcHTML(x)}<span>${esc(x.name)}</span></button>`).join('')}${SV.decks.length<DECK_MAX?'<button type="button" class="chip add" id="dkAdd">＋ 新しいデッキ</button>':''}<span class="muted dkSlotN">${SV.decks.length}/${DECK_MAX}</span></div>
-  <div class="dkSlotAct"><button type="button" class="dkIcBig" id="dkIcB" aria-label="デッキのアイコンを変える">${deckIcHTML(d)}</button><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button><button type="button" class="b small" id="dkIcon">アイコンを変える</button>${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
+  <div class="dkSlotAct"><button type="button" class="dkIcBig" id="dkIcB" aria-label="デッキのアイコンを変える">${deckIcHTML(d)}</button><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button><button type="button" class="b small" id="dkIcon">アイコンを変える</button>${SV.decks.length<DECK_MAX?'<button type="button" class="b small" id="dkCopy">このデッキをコピー</button>':''}${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
   <div class="dkTop"><div class="dkTopH"><span><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></span><span class="muted dmHint">いまのデッキ（押すと外れます）</span></div>${deckMiniHTML(d)}</div>
   <div class="dkHead dkStatic">${deckSum(d.types)}
    ${filterBar(FFS,{inDeck:true,single:true,sort:true})}
@@ -2859,6 +2861,7 @@ function renderFree(){
   $('#back').onclick=()=>{markCollSeen();if(MM.prep){MM.pick=deckLegal(freeDeck())?SV.deckIx:MM.pick;go('online')}else go('menu')};
   document.querySelectorAll('[data-slot]').forEach(b=>b.onclick=keep(()=>{SV.deckIx=+b.dataset.slot}));
   {const a=$('#dkAdd');if(a)a.onclick=keep(()=>{deckAdd()})}
+  {const a=$('#dkCopy');if(a)a.onclick=keep(()=>{deckCopy()})}
   $('#dkRen').onclick=async()=>{
     const v=await modal(`<h2>デッキの名前</h2><p class="note" style="margin-top:0">12文字まで。</p><input id="dkNm" class="codeIn" style="width:100%;text-align:left;letter-spacing:0" maxlength="12" value="${esc(d.name)}"><div class="btns" style="margin-top:12px"><button type="button" class="b primary" id="dkNmOk">決定</button><button type="button" class="b" id="dkNmNo">やめる</button></div>`,(m,done)=>{const i=m.querySelector('#dkNm');setTimeout(()=>{i.focus();i.select()},50);const ok=()=>done(i.value);m.querySelector('#dkNmOk').onclick=ok;i.onkeydown=e=>{if(e.key==='Enter')ok()};m.querySelector('#dkNmNo').onclick=()=>done(null)},()=>null);
     if(typeof v==='string'&&deckName(v)){d.name=deckName(v);save()}
@@ -5013,6 +5016,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:98,d:'2026-11-13',t:'デッキ編成に「このデッキをコピー」ボタンが付きました。いま選んでいるデッキと同じ中身の新しいデッキが作れます（デッキは6つまで）。'},
   {id:97,d:'2026-11-13',t:'対戦画面をすっきりさせました：推理の表の「確率」の表示と、ログの「推理だけ」の切りかえをなくしました。'},
   {id:96,d:'2026-11-13',t:'対戦画面に「ログ」ボタンが付きました（まん中の、最後の出来事が出ている帯の右）。押すと、これまでに起きたことが画面いっぱいに文字で読めます。「推理だけ」にしぼることもできます。'},
   {id:95,d:'2026-11-13',t:'「欠片」が入りました。同じカードの2枚目からのダブりを分解すると欠片になり、欠片で持っていないカードを作れます（同じレアリティなら3枚分解で1枚。分解しても1枚は残ります）。下のタブの「カード」から使えます。Googleでログインしている人が対象です。'},
