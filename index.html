@@ -452,13 +452,13 @@ ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
 .tt .tn small{font-family:var(--body);font-size:9px;color:var(--candle);margin-left:3px}
 .dots{font-size:11px;letter-spacing:2px;color:var(--candle)}
 .dots i{font-style:normal;color:var(--line)}
-.pp{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
 .tt.out{opacity:.3}
 .tt.out .tn{text-decoration:line-through}
-.tt.hot{border-color:var(--candle);border-left-color:var(--cc)}
+
 .pick{cursor:pointer}
 .pick.on{box-shadow:0 0 0 2px var(--candle) inset}
-.toggle{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+
 .note{font-size:12px;color:var(--muted)}
 .note b{color:var(--blood);font-variant-numeric:tabular-nums}
 .lastLog{font-size:13px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.25);border-left:3px solid var(--line);min-height:2.6em}
@@ -553,7 +553,7 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .colh b{font-family:var(--display);font-weight:400;font-size:16px}
 .colh span{font-size:11px;color:var(--muted)}
 .colh em{font-style:normal;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
-.colh em.risk{color:var(--blood)}
+
 .duo .grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:4px}
 .duo .tt{padding:4px 5px}
 .duo .tt .tn{font-size:12px}
@@ -940,7 +940,7 @@ body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
   .bt .btMid .tt .tn{font-size:clamp(10px,3.3vw,13px);line-height:1.15}
   .bt .btMid .tt .tn small{font-size:9px;margin-left:2px}
   .bt .btMid .tt .dots{font-size:9px;letter-spacing:1px;line-height:1}
-  .bt .btMid .tt .pp{font-size:9px;line-height:1}
+
   .btMid>.sh .label{font-size:10px}
 }
 @media (max-width:700px) and (max-height:760px){
@@ -1255,10 +1255,8 @@ html.fit-p .bt,html.fit-land .bt{height:var(--vh,100vh);min-height:0}
 .mrow.danger{justify-content:center;color:#ffb3bf;border-color:rgba(255,120,140,.5);margin-top:4px}
 
 /* --- 推理表：スマホ縦と横向きは、タブで片方ずつ。列数と行の高さは JS が機種ごとに決める --- */
-.trkTabs .pct{flex:none;width:38px;padding:5px 0;text-align:center;font-family:var(--game)}
 html.fit-p .trkTabs,html.fit-land .trkTabs{display:flex;gap:5px}
 html.fit-p .trkTabs .chip,html.fit-land .trkTabs .chip{flex:1;min-width:0;padding:5px 4px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html.fit-p .trkTabs .chip.pct,html.fit-land .trkTabs .chip.pct{flex:none}
 html.fit-p .bt .btMid,html.fit-land .bt .btMid{position:relative;display:flex;flex-direction:column;overflow:hidden;gap:5px;padding:6px 7px}
 html.fit-p .bt .btMid>.sh,html.fit-land .bt .btMid>.sh{display:none}
 html.fit-p .bt .btMid .trkTabs,html.fit-land .bt .btMid .trkTabs{flex:none}
@@ -1271,15 +1269,15 @@ html.fit-p .bt .btMid .tt,html.fit-land .bt .btMid .tt{padding:1px 6px;gap:1px;b
 html.fit-p .bt .btMid .tt .tn,html.fit-land .bt .btMid .tt .tn{font-size:var(--tfs,11px);line-height:1.15}
 html.fit-p .bt .btMid .tt .tn small,html.fit-land .bt .btMid .tt .tn small{font-size:.72em;margin-left:2px}
 html.fit-p .bt .btMid .tt .dots,html.fit-land .bt .btMid .tt .dots{font-size:calc(var(--tfs,11px) * .72);letter-spacing:1px;line-height:1}
-html.fit-p .bt .btMid .tt .pp,html.fit-land .bt .btMid .tt .pp{font-size:calc(var(--tfs,11px) * .8);line-height:1}
-html.fit-p .pp i,html.fit-land .pp i{display:none}
+
+
 /* 行が低いとき：●と確率を1行に並べる（m）。幅に余裕があれば名前の右に置く（s） */
 html[data-trow] .bt .btMid .tt{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;align-items:center;column-gap:3px;row-gap:0;padding:0 5px}
 html[data-trow] .bt .btMid .tt .tn{grid-column:1/-1}
 html[data-trow] .bt .btMid .tt .tn small{display:none}
 html.fit-xs .btAct .detail:not(.ph){font-size:11.5px;line-height:1.4;padding:6px 9px}
 html[data-trow] .bt .btMid .tt .dots{font-size:6.5px;letter-spacing:0}
-html[data-trow] .bt .btMid .tt .pp{font-size:8.5px}
+
 html[data-trow="s"] .bt .btMid .tt{grid-template-columns:minmax(0,1fr) auto auto}
 html[data-trow="s"] .bt .btMid .tt .tn{grid-column:auto}
 
@@ -1548,16 +1546,16 @@ html.fit-wide .bt .btMid .tt::after{content:"";position:absolute;left:0;right:0;
 html.fit-wide .bt .btMid .tt>*{position:relative;z-index:1}
 html.fit-wide .bt .btMid .tt .tn{grid-column:1/-1;grid-row:3;text-align:center;font-size:clamp(12px,calc(var(--trow,60px) * .24),17px);line-height:1.15;padding:0 4px 7px;color:#fff4dc;text-shadow:0 2px 0 #000,0 0 6px #000}
 html.fit-wide .bt .btMid .tt .dots{grid-column:1;grid-row:1;font-size:10px;letter-spacing:1px;line-height:1;padding:5px 0 0 6px;text-shadow:0 1px 2px #000}
-html.fit-wide .bt .btMid .tt .pp{grid-column:3;grid-row:1;font:800 12px var(--body);line-height:1;margin:4px 4px 0 0;padding:3px 6px;border-radius:99px;background:rgba(10,3,6,.8);color:#ffe7b0;font-variant-numeric:tabular-nums}
-html.fit-wide .bt .btMid .tt .pp i{display:none}
+
+
 html.fit-wide .bt .btMid .tt.out{opacity:1;border-color:#3a2a2e;box-shadow:none}
 html.fit-wide .bt .btMid .tt.out::before{filter:grayscale(1) brightness(.35)}
 html.fit-wide .bt .btMid .tt.out::after{background:#3a2a2e}
 html.fit-wide .bt .btMid .tt.out .tn{color:#8a7a7e;text-decoration:line-through}
-html.fit-wide .bt .btMid .tt.out .pp{display:none}
+
 html.fit-wide .bt .btMid .tt.mine{border-color:#ff5a72;box-shadow:0 0 0 2px #ff5a72,0 0 16px rgba(255,70,100,.6)}
 html.fit-wide .bt .btMid .duo .colh{align-self:stretch}
-html.fit-wide .bt .btMid .tt.hot{border-color:#f6cf6a;box-shadow:0 0 0 2px #f6cf6a,0 0 16px rgba(246,207,106,.6)}
+
 
 /* PC で縦が短い画面（ノートPC・720p配信など）：枠を低くし、カードの説明は手札の上に浮かべ、推理ボードは横長のマスにする */
 html.fit-ws .bt{gap:8px 12px;padding:8px 12px 10px}
@@ -1589,7 +1587,7 @@ html[data-tw="row"].fit-wide .bt .btMid .tt::before{inset:0 auto 0 0;width:calc(
 html[data-tw="row"].fit-wide .bt .btMid .tt::after{left:0;right:auto;top:0;bottom:0;width:3px;height:auto}
 html[data-tw="row"].fit-wide .bt .btMid .tt .tn{grid-column:1/-1;grid-row:1;text-align:left;padding:0;font-size:clamp(11.5px,calc(var(--trow,44px) * .3),15px)}
 html[data-tw="row"].fit-wide .bt .btMid .tt .dots{grid-column:1;grid-row:2;padding:0;font-size:8.5px;letter-spacing:1px}
-html[data-tw="row"].fit-wide .bt .btMid .tt .pp{grid-column:2;grid-row:2;margin:0;padding:0;background:none;font-size:11px}
+
 
 html[data-fld="s"].fit-wide .fldL,html[data-fld="s"].fit-wide .fldT{display:none}
 html[data-fld="s"].fit-wide .btField::before{display:none}
@@ -1602,7 +1600,7 @@ html[data-fld="s"].fit-wide .btField::after{font-size:20px}
 html[data-trow="t"] .bt .btMid .tt{display:block;position:relative;padding:0 4px}
 html[data-trow="t"] .bt .btMid .tt .tn{display:block;line-height:calc(var(--trow,20px) - 2px);font-size:10px}
 html[data-trow="t"] .bt .btMid .tt .dots{position:absolute;right:3px;top:1px;font-size:5.5px;letter-spacing:0;line-height:1}
-html[data-trow="t"] .bt .btMid .tt .pp{position:absolute;right:3px;bottom:1px;font-size:7.5px;line-height:1}
+
 /* ================= PC のホーム（2026-11-11）=================
    幅1000px以上（html.fit-wide）。スマホの縦長の枠をやめ、横長の絵を画面いっぱいに。
    左に縦のメニュー（下タブを立てたもの。カード・ショップなどの画面でも同じ）、上の帯に名前とアイコン類、左にロゴとボタン、右にお知らせとミッション */
@@ -2025,7 +2023,6 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 @keyframes lfIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 .lfHead{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--hair,rgba(232,200,140,.28));padding-bottom:8px}
 .lfHead b{font:800 20px var(--pcf,serif);letter-spacing:.14em;margin-right:auto}
-.lfHead .filters{display:flex;gap:6px}
 .lfNote{margin:6px 0;font-size:12px}
 .lfBody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;max-height:none;width:min(100%,720px);margin:0 auto;font-size:15px;line-height:1.75;display:flex;flex-direction:column;gap:14px}
 .lfBody .lgh{background:#12080b;font-size:13px;padding:5px 0;z-index:1}
@@ -2151,7 +2148,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113034438';
+const APP_VER='20261113035137';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2426,7 +2423,7 @@ const backHTML=(size='s',label='')=>`<div class="tcg back ${size}"><span class="
 const SAVE_KEY='hw2_save';
 function defaultSave(){
   const coll={};CARDS.forEach(c=>coll[c.k]=maxOwn(c.k));
-  return{coll,deck:{types:[...STARTER],single:'greatdet'},wins:0,losses:0,showP:false};
+  return{coll,deck:{types:[...STARTER],single:'greatdet'},wins:0,losses:0};
 }
 let SV;
 try{SV=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){}
@@ -2968,7 +2965,7 @@ function rulesListHTML(){
     <ul class="hwList">
       <li>使われたカードは公開されます。同じ種類が<b>3枚</b>見えたら、その種類は心臓ではありません。</li>
       <li>${chip('info','情報')}系のカードは「心臓はこの中にある／ない」などを調べられます。</li>
-      <li>画面の<b>推理表</b>では、●が公開済みの枚数、薄く消えたマスが「もう心臓ではない」種類です。「確率」をオンにすると、心臓らしさの目安が出ます。</li>
+      <li>画面の<b>推理表</b>では、●が公開済みの枚数、薄く消えたマスが「もう心臓ではない」種類です。</li>
       <li>相手も同じように、あなたの心臓を推理しています。</li>
     </ul>
   </div></section>
@@ -3372,9 +3369,9 @@ function modal(html,setup,def){return new Promise(res=>{const m=$('#modal');if(M
 function modalAuto(){const c=MODAL_CUR;if(c&&c.def){let v;try{v=c.def()}catch(e){v=null}c.fin(v);return true}return false}
 function modalKill(){const c=MODAL_CUR;if(c)c.fin(KILL)}
 function tileHTML(target,ty,view,tag='div',cls=''){
-  const c=C[ty],n=copies(target,ty);let dots='',out=false,extra='';
-  if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty];if(SV.showP)extra=`<span class="pp"><i>推定 </i>${Math.round(view.w[ty]*100)}%</span>`}
-  return `<${tag} ${tag==='button'?'type="button"':''} class="tt cat-${c.cat} ${out?'out':''} ${cls}" data-ty="${ty}" style="--art:url(art/${ty}.png)"><span class="tn">${c.n}${c.single?'<small>単</small>':''}</span>${view?`<span class="dots">${dots}</span>`:''}${extra}</${tag}>`;
+  const c=C[ty],n=copies(target,ty);let dots='',out=false;
+  if(view){const k=view.cnt[ty]||0;for(let i=0;i<n;i++)dots+=i<k?'●':'<i>○</i>';out=!view.w[ty]}
+  return `<${tag} ${tag==='button'?'type="button"':''} class="tt cat-${c.cat} ${out?'out':''} ${cls}" data-ty="${ty}" style="--art:url(art/${ty}.png)"><span class="tn">${c.n}${c.single?'<small>単</small>':''}</span>${view?`<span class="dots">${dots}</span>`:''}</${tag}>`;
 }
 function pickTypes(target,count,title,sub,cancelable,viewer,min=count){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'types',target:whoOf(target),count,min,title,sub,cancelable:!!cancelable,viewer:viewer?whoOf(viewer):null});
@@ -4261,8 +4258,8 @@ function piles(p){
   return`<div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><button type="button" class="slot disBtn" data-dis="${whoOf(p)}" aria-label="捨て札の一覧を見る（${p.discard.length}枚）">${top?cardHTML(top.type,'s'):'<div class="emptySlot"></div>'}<span>捨て札<b>${p.discard.length}</b></span></button>`;
 }
 function trackGrid(target,obs,mark){
-  const v=probs(obs);let best=0;for(const t in v.w)best=Math.max(best,v.w[t]);
-  return`<div class="grid">${typesOf(target).map(ty=>tileHTML(target,ty,v,'button','tip '+(SV.showP&&v.w[ty]===best&&best>0?'hot ':'')+(ty===mark?'mine':''))).join('')}</div>`;
+  const v=probs(obs);
+  return`<div class="grid">${typesOf(target).map(ty=>tileHTML(target,ty,v,'button','tip '+(ty===mark?'mine':''))).join('')}</div>`;
 }
 function lastActsHTML(){
   const A=(S&&S.acts)||[];let T=null;
@@ -4296,7 +4293,6 @@ function showDiscard(who){
 function knowNotes(k){const n=[];if(k.allowed)n.push(`候補：${[...k.allowed].map(N).join('・')}`);if(k.excluded.size)n.push(`除外：${[...k.excluded].map(N).join('・')}`);return n.length?`<div class="note">${n.join(' ／ ')}</div>`:''}
 const liveCount=obs=>Object.values(probs(obs).w).filter(x=>x>0).length;
 /* ---- log view ---- */
-let LF='all';
 // 対戦画面：スマホで推理表のどちらを出すか、記録の引き出しが開いているか
 let TRK='opp',LOGOPEN=false;
 // ログを画面いっぱいに開く（2026-11-13）。対戦画面のまん中の「最後の出来事」の帯にある「ログ」ボタンで開く。LOGNEW は開いた直後だけ（出てくる動きを1回だけ付ける）
@@ -4313,7 +4309,7 @@ function logKind(t){
 const KIND_L={hit:'的中',miss:'外れ',trap:'伏せ',cost:'コスト',info:'情報'};
 function fmtLog(t){return esc(nm(t)).replace(/〈([^〉]+)〉/g,(m,n)=>NAME2K[n]?`<button type="button" class="cardBtn lchip" data-card="${NAME2K[n]}">${n}</button>`:m)}
 function logHTML(){
-  const items=S.log.filter(l=>!l.hdr&&(!l.to||l.to==='me')&&(LF==='all'||['hit','miss','trap','cost','info'].includes(logKind(l.t))));
+  const items=S.log.filter(l=>!l.hdr&&(!l.to||l.to==='me'));
   const groups=[];
   for(const l of items){let g=groups[groups.length-1];if(!g||g.turn!==l.turn){g={turn:l.turn,actor:l.actor,rows:[]};groups.push(g)}g.rows.push(l)}
   if(!groups.length)return'<div class="note">まだ記録がありません。</div>';
@@ -4412,11 +4408,11 @@ function render0(){
     ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
-    <div class="sh"><span class="label">推理の状況</span><label class="toggle"><input type="checkbox" id="pToggle" ${SV.showP?'checked':''}> 確率</label></div>
-    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button><button type="button" class="chip pct ${SV.showP?'on':''}" id="pTog2" aria-pressed="${!!SV.showP}" aria-label="確率を表示">%</button></div>
+    <div class="sh"><span class="label">推理の状況</span></div>
+    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button></div>
     <div class="duo t-${TRK}">
       <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me,RP&&cpu.heart?cpu.heart.type:null)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
-      <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種${SP?'':`・〈${N(me.heart.type)}〉が読まれている確率 <em class="risk">${Math.round((probs(cpu).w[me.heart.type]||0)*100)}%</em>`}</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
+      <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
   </section>
   ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
@@ -4437,7 +4433,7 @@ function render0(){
       <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
     </div>`}</div>
   <div class="logFull ${LOGNEW?'in':''}" id="logFull" role="dialog" aria-label="ログ" ${LOGFULL?'':'hidden'}>
-    <div class="lfHead"><b>ログ</b><div class="filters"><button type="button" class="chip ${LF==='all'?'on':''}" data-lf="all">すべて</button><button type="button" class="chip ${LF==='key'?'on':''}" data-lf="key">推理だけ</button></div><button type="button" class="b small" id="bLogFullClose">閉じる</button></div>
+    <div class="lfHead"><b>ログ</b><button type="button" class="b small" id="bLogFullClose">閉じる</button></div>
     <p class="note lfNote">新しいターンが上です。カードの名前を押すと効果が見られます。</p>
     <div class="log lfBody" id="logF">${LOGFULL?logHTML():''}</div>
   </div>
@@ -4448,7 +4444,7 @@ function render0(){
       ${histRow('cpu',OPN())}${histRow('me',MYN())}
     </section>
     <section class="zone">
-      <div class="sh"><span class="label">ログ（新しいターンが上）</span><div class="filters"><button type="button" class="chip ${LF==='all'?'on':''}" data-lf="all">すべて</button><button type="button" class="chip ${LF==='key'?'on':''}" data-lf="key">推理だけ</button></div></div>
+      <div class="sh"><span class="label">ログ（新しいターンが上）</span></div>
       <div class="log" id="log">${logHTML()}</div>
     </section>
   </aside>
@@ -4459,9 +4455,6 @@ function render0(){
   $('#bLog').onclick=()=>{LOGOPEN=true;BTMENU=false;render()};$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
   document.querySelectorAll('[data-trk]').forEach(b=>b.onclick=()=>{TRK=b.dataset.trk;render()});
   const lg=$('#log');if(lg)lg.scrollTop=logScroll;
-  document.querySelectorAll('[data-lf]').forEach(b=>b.onclick=()=>{LF=b.dataset.lf;render()});
-  $('#pToggle').onchange=e=>{SV.showP=e.target.checked;save();render()};
-  {const pt=$('#pTog2');if(pt)pt.onclick=()=>{SV.showP=!SV.showP;save();render()}}
   $('#bMenu').onclick=()=>{BTMENU=!BTMENU;render()};$('#bMenuBack').onclick=()=>{BTMENU=false;render()};
   $('#bRules').onclick=()=>{BTMENU=false;render();showRulesOverlay()};
   $('#snd').onclick=()=>{SV.sound=!sndOn();save();if(sndOn())SFX.turn();render()};
@@ -5020,6 +5013,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:97,d:'2026-11-13',t:'対戦画面をすっきりさせました：推理の表の「確率」の表示と、ログの「推理だけ」の切りかえをなくしました。'},
   {id:96,d:'2026-11-13',t:'対戦画面に「ログ」ボタンが付きました（まん中の、最後の出来事が出ている帯の右）。押すと、これまでに起きたことが画面いっぱいに文字で読めます。「推理だけ」にしぼることもできます。'},
   {id:95,d:'2026-11-13',t:'「欠片」が入りました。同じカードの2枚目からのダブりを分解すると欠片になり、欠片で持っていないカードを作れます（同じレアリティなら3枚分解で1枚。分解しても1枚は残ります）。下のタブの「カード」から使えます。Googleでログインしている人が対象です。'},
   {id:94,d:'2026-11-13',t:'オンライン対戦のはじまりに、おたがいの名前・アイコン・称号・ランクが大きく出る紹介画面が入りました。自分で描いたアイコンも、ここで相手に見えるようになりました。'},
