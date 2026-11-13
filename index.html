@@ -2108,6 +2108,16 @@ ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-l
 @keyframes resRise{0%,100%{opacity:.35}50%{opacity:1}}
 .hc.glow .tcg{box-shadow:0 0 0 2px #ffd36b,0 0 18px 5px rgba(255,200,90,.7)}
 @media (prefers-reduced-motion:reduce){.twin.res,.hc.glow::after{animation:none}}
+/* 2026-11-14 の直し */
+/* 最近使ったカード：枠からはみ出して、となりの山札に重なっていた（PC）。入りきらない分は右を切る */
+.bt .myRecent{overflow:hidden}.bt .myRecent .mrRow{max-width:100%}
+/* ランクのプレート：名前を板のまん中に置く（紋章が重なる左のぶんは、中身を右へ寄せて合わせる） */
+.tier b{justify-content:center;padding-left:1.9em;padding-right:.9em}.tier b i{margin-left:0}
+.hmId .tier b,.board .tier b{padding-left:1.9em;padding-right:.9em}
+/* 共鳴：ひかえめに（札を小さく、光を弱く） */
+.hc .twin.res{font-size:8.5px;font-weight:700;padding:0 6px;letter-spacing:.04em;bottom:15%;box-shadow:0 0 0 1px #7a4a00,0 0 5px 1px rgba(255,200,90,.6);animation:none}
+.hc.glow::after{background:linear-gradient(0deg,rgba(255,205,95,.28),rgba(255,205,95,.06) 40%,transparent 60%);animation-duration:1.8s}
+.hc.glow .tcg{box-shadow:0 0 0 1.5px #ffd36b,0 0 10px 2px rgba(255,200,90,.45)}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div><footer class="hmFoot" id="opFoot">運営:PTERA LIMITED LIABILITY COMPANY<span class="hmFootGap"> </span>お問い合わせ:<a href="mailto:info@shinzoujinro.com">info@shinzoujinro.com</a></footer>
@@ -2228,7 +2238,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113175622';
+const APP_VER='20261113190915';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2672,7 +2682,7 @@ function renderMenu(){
     <div class="hmBg"><img src="scenes/${FIT.get().wide?'home_w':'home_a'}.png" alt=""></div>
     <header class="hmTop">
       <div class="hmWho"><button type="button" class="hmAv" id="pAvatar" aria-label="アイコンを変える">${avatarImg()}</button>
-      <div class="hmId"><b>${esc(netName())}</b><span>${rk?tierHTML(LADDER.prof.rp):''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div></div>
+      <div class="hmId"><b>${esc(netName())}</b><span>${rk?tierHTML(LADDER.prof.rp):''}</span></div></div>
       <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
@@ -2712,7 +2722,7 @@ function renderMenu(){
   on('mPacks',()=>{P=null;go('packs')});on('mGift',()=>{P=null;go('packs')});
   on('mRank',()=>{NET.err='';rankPrep()});
   on('updAll',showUpdates);on('updAll2',showUpdates);on('pAvatar',pickAvatar);on('mFriend',()=>go('online'));bindMissions();
-  on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});on('hmTitle',()=>{OCTO_PV=null;go('octo')});
+  on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});
   on('hmMsn',showMissions);on('hmSet',showSettings);on('hmDc',()=>{window.open(DISCORD_URL,'_blank','noopener')});
   bindTabBar();
   setTimeout(showGifts,300);setTimeout(showUnlocks,700);
@@ -4515,7 +4525,7 @@ function render0(){
   if(S.picking&&!S.over)phase=S.picking===me&&!SP?'新しい心臓を選んでください':`${S.picking===me?MYN():OPN()}が新しい心臓を選んでいます…`;
   if(!HID)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
   const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
-  if(ph==='play'&&!SP&&!HID&&!S.over&&!S.picking&&!S.asking&&me.hand.some(resOk))phase+='　金色に光るカードは「共鳴」します';
+  if(ph==='play'&&!SP&&!HID&&!S.over&&!S.picking&&!S.asking&&me.hand.some(resOk))phase+='';
   const myHand=HID?'':me.hand.map((c,i)=>{const fresh=!S.seen.has(c.id);return`<button type="button" class="hc ${resOk(c)&&ph==='play'?'glow':''} ${S.sel===c?'sel':''} ${fresh?'drawn':''}" data-i="${i}" style="${fresh?`animation-delay:${i%5*60}ms`:''}" aria-label="${N(c.type)}">${me.heart&&c.type===me.heart.type?'<span class="twin">心臓と同種</span>':''}${resOk(c)&&ph==='play'?'<span class="twin res">共鳴！</span>':resOk(c)?'<span class="twin res off">共鳴</span>':''}${cardHTML(c.type,'m')}<span class="hinfo" role="button" aria-label="${N(c.type)}の効果を見る">?</span></button>`}).join('');
   {const nf=me.hand.filter(c=>!S.seen.has(c.id)).length;if(nf&&S.turnNo&&!S.sim&&!SP)SFX.draw(nf)}
   me.hand.forEach(c=>S.seen.add(c.id));
@@ -5188,6 +5198,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:113,d:'2026-11-14',t:'見た目の直し：PCの対戦画面で「最近使ったカード」が山札に重なっていたのを直しました／ランクのプレートは、名前が板のまん中に来るようにしました／共鳴の表示をひかえめにしました／ホームの名前の下の称号をなくしました（称号は、対戦のはじまりの画面に出ます）。'},
   {id:112,d:'2026-11-14',t:'カードの調整：猛り狼を強くしました。コストで相手に知られる種類は2つから1つに／共鳴したときはコストなし。さらに1枚捨てさせ、自分は1枚引く、に変わりました（Discordでいただいた要望です）。'},
   {id:111,d:'2026-11-14',t:'「猛り狼」を強くしました：コストで相手に知られる種類が2つから1つに減りました。共鳴したときはコストがなくなり、さらに1枚捨てさせたうえで、自分も1枚引けるようになりました。'},
   {id:110,d:'2026-11-14',t:'いろいろ直しました：チュートリアルの「やめる」は、もう一度押すまで終わらなくなりました／共鳴するカードに金色の「共鳴！」の札と光が出ます／反射が成功したときの演出を足しました／相手がカードを選んでいる間は「選んでいます…」と出ます／相手のターン中に、まだ使っていないだけなのに「カードを使わなかった」と出るのを直しました／ランキングから勝ち負けの数を外しました／銀貨の絵を硬貨らしくしました／ホームのランクと称号の並びを整えました。'},
