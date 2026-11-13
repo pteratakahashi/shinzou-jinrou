@@ -444,6 +444,14 @@ returns json language sql security definer set search_path = public stable as $$
   select coalesce(json_object_agg(k, n), '{}'::json) from collection where uid = auth.uid();
 $$;
 
+-- 自分のカードを最後に手に入れた時刻 {"カードのキー": 秒, …}（カード一覧の「手に入れた順」に使う。2026-11-13）
+create or replace function public.my_collection_at()
+returns json language sql security definer set search_path = public stable as $$
+  select coalesce(json_object_agg(k, floor(extract(epoch from got_at))::bigint), '{}'::json) from collection where uid = auth.uid();
+$$;
+revoke all on function public.my_collection_at() from public, anon;
+grant execute on function public.my_collection_at() to authenticated;
+
 revoke all on function public._grant(uuid, integer) from public, anon, authenticated;
 revoke all on function public._decide(public.matches, uuid) from public, anon, authenticated;
 grant execute on function public.my_collection() to authenticated;
@@ -801,3 +809,15 @@ grant execute on function public.replay_put(text, jsonb, text) to authenticated;
 grant execute on function public.replay_list(integer, timestamptz) to authenticated;
 grant execute on function public.replay_get(text) to authenticated;
 grant execute on function public.replay_keep(text, boolean) to authenticated;
+
+-- 集計用（2026-11-13）：カードの強さを数えるために、記録をまとめて読む。VPS にある合言葉（stat_put と同じもの）が要る
+create or replace function public.replay_dump(p_key text, p_limit integer default 40, p_before timestamptz default null)
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  if not _stat_ok(p_key, false) then return json_build_object('ok', false); end if;
+  return json_build_object('ok', true, 'total', (select count(*) from replays), 'rows', coalesce((
+    select json_agg(x) from (select id, at, meta, data from replays
+      where p_before is null or at < p_before order by at desc limit least(greatest(p_limit, 1), 100)) x), '[]'::json));
+end $$;
+revoke execute on function public.replay_dump(text, integer, timestamptz) from public;
+grant execute on function public.replay_dump(text, integer, timestamptz) to anon, authenticated;
