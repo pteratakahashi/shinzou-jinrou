@@ -625,6 +625,66 @@ grant execute on function public.pack_state() to authenticated;
 grant execute on function public.open_pack() to authenticated;
 
 
+-- ===== 欠片（2026-11-13）=====
+-- 同じカードの2枚目からは「ダブり」。ダブりを分解すると欠片になり、欠片で持っていないカードを作れる。
+-- 欠片の数：ブロンズ1・シルバー2・ゴールド4・レジェンド12。作る値段はその3倍（同じレアリティなら3枚分解で1枚作れる）。
+-- 分解しても、どのカードも1枚は必ず残す（collection.n を 1 にする）。数字を変えるときは _shard_v だけ直す（画面は shard_state から読む）
+alter table public.packs add column if not exists shards integer not null default 0;
+create or replace function public._shard_v(t text)
+returns integer language sql immutable as $$
+  select case t when 'L' then 12 when 'G' then 4 when 'S' then 2 else 1 end;
+$$;
+-- 自分の欠片の数と、値段の表 {"shards":数, "rate":3, "v":{"B":1,…}, "tiers":{"カード":"B",…}}
+create or replace function public.shard_state()
+returns json language sql security definer set search_path = public stable as $$
+  select json_build_object(
+    'shards', coalesce((select shards from packs where uid = auth.uid()), 0),
+    'rate', 3,
+    'v', json_build_object('B', _shard_v('B'), 'S', _shard_v('S'), 'G', _shard_v('G'), 'L', _shard_v('L')),
+    'tiers', (select coalesce(json_object_agg(k, tier), '{}'::json) from cards));
+$$;
+-- ダブりを分解する。p_k を渡すとそのカードだけ、渡さなければ全部。{"shards":いまの数, "got":ふえた数, "n":分解した枚数}
+create or replace function public.dust_cards(p_k text default null)
+returns json language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); got integer; cnt integer; total integer;
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  insert into players(id) values (me) on conflict (id) do nothing;
+  insert into packs(uid) values (me) on conflict (uid) do nothing;
+  with old as (
+    select co.k, co.n, c.tier from collection co join cards c on c.k = co.k
+     where co.uid = me and co.n > 1 and (p_k is null or co.k = p_k) for update of co
+  ), upd as (
+    update collection co set n = 1 from old where co.uid = me and co.k = old.k
+  )
+  select coalesce(sum((old.n - 1) * _shard_v(old.tier)), 0), coalesce(sum(old.n - 1), 0) into got, cnt from old;
+  update packs set shards = shards + got where uid = me returning shards into total;
+  return json_build_object('shards', total, 'got', got, 'n', cnt);
+end $$;
+-- 欠片で、持っていないカードを1枚作る。{"shards":いまの数, "k":カード, "cost":使った数}
+create or replace function public.craft_card(p_k text)
+returns json language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); c public.cards; cost integer; total integer;
+begin
+  if me is null then raise exception 'not signed in'; end if;
+  select * into c from cards where k = p_k;
+  if not found then raise exception 'no card'; end if;
+  if c.starter or exists (select 1 from collection co where co.uid = me and co.k = p_k) then raise exception 'owned'; end if;
+  cost := 3 * _shard_v(c.tier);
+  update packs set shards = shards - cost where uid = me and shards >= cost returning shards into total;
+  if not found then raise exception 'no shards'; end if;
+  insert into collection(uid, k) values (me, p_k);
+  return json_build_object('shards', total, 'k', p_k, 'cost', cost);
+end $$;
+revoke all on function public._shard_v(text) from public, anon, authenticated;
+revoke all on function public.shard_state() from public, anon;
+revoke all on function public.dust_cards(text) from public, anon;
+revoke all on function public.craft_card(text) from public, anon;
+grant execute on function public.shard_state() to authenticated;
+grant execute on function public.dust_cards(text) to authenticated;
+grant execute on function public.craft_card(text) to authenticated;
+
+
 -- ================= 端末の記録の預かり（2026-11-12） =================
 -- 銀貨・称号・実績・買ったものなどは端末（ブラウザ）に保存している。別のブラウザやアプリからログインし直すと
 -- 空になってしまうので、ログインしている人の分はここにも預かり、ログインしたときに戻す。
