@@ -2118,6 +2118,13 @@ ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-l
 .hc .twin.res{font-size:8.5px;font-weight:700;padding:0 6px;letter-spacing:.04em;bottom:15%;box-shadow:0 0 0 1px #7a4a00,0 0 5px 1px rgba(255,200,90,.6);animation:none}
 .hc.glow::after{background:linear-gradient(0deg,rgba(255,205,95,.28),rgba(255,205,95,.06) 40%,transparent 60%);animation-duration:1.8s}
 .hc.glow .tcg{box-shadow:0 0 0 1.5px #ffd36b,0 0 10px 2px rgba(255,200,90,.45)}
+/* 観戦の視点を切りかえる帯（リプレイの帯と同じ見た目） */
+#wvBar{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(18,8,11,.94);border:1px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.6);white-space:nowrap}
+#wvBar .rcT{font:700 12px var(--pcf);color:var(--gold);padding:0 6px}
+#wvBar button{font:700 12px var(--pcf);background:none;color:var(--ivory);border:1px solid var(--hair);padding:5px 10px;cursor:pointer}
+@media (max-width:560px){#wvBar{left:6px;right:6px;transform:none;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 6px}#wvBar button{padding:4px 8px;font-size:11px}#wvBar .rcT{width:100%;text-align:center;font-size:11px}}
+#wvBar button.on{border-color:var(--gold);background:rgba(163,29,46,.5);color:#fff}
+@media (max-width:560px){#wvBar .rcT{width:auto}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div><footer class="hmFoot" id="opFoot">運営:PTERA LIMITED LIABILITY COMPANY<span class="hmFootGap"> </span>お問い合わせ:<a href="mailto:info@shinzoujinro.com">info@shinzoujinro.com</a></footer>
@@ -2238,7 +2245,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113192223';
+const APP_VER='20261113192658';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4545,7 +4552,7 @@ function render0(){
       <input type="range" class="mvol" id="sndV" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}>
       <button type="button" class="mrow" id="bgmB" aria-label="BGM">${BIC.bgm}<span>音楽</span><em class="${bgmOn()?'on':''}">${bgmOn()?'ON':'OFF'}</em></button>
       <input type="range" class="mvol" id="bgmV" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}>
-      <button type="button" class="mrow danger" id="quit">${S.replay?'リプレイをやめる':SP?'観戦をやめる':'降参する'}</button>
+      <button type="button" class="mrow danger" id="quit">${S.watch?'観戦をやめる':S.replay?'リプレイをやめる':SP?'観戦をやめる':'降参する'}</button>
     </div>
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
@@ -4619,7 +4626,7 @@ function render0(){
   if(!SP){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
-  $('#quit').onclick=e=>{if(S.replay){rpcStop();RPV.cur=null;VIEW='replay';draw_();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+  $('#quit').onclick=e=>{if(S.watch)return watchLeave();if(S.replay){rpcStop();RPV.cur=null;VIEW='replay';draw_();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
 }
 
 
@@ -5198,6 +5205,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:115,d:'2026-11-14',t:'友達対戦の観戦で、2人の手札と心臓が見えるようになりました。観戦している人は、下のボタンで視点（両方見える／どちらか1人の視点）をいつでも切りかえられます。'},
   {id:114,d:'2026-11-14',t:'友達対戦に、観戦者を1人呼べるようになりました。2人がそろっている部屋に、3人目が同じ部屋コード（またはリンク）で入ると、観戦になります。観戦では、どちらの手札と心臓も見えません。'},
   {id:113,d:'2026-11-14',t:'見た目の直し：PCの対戦画面で「最近使ったカード」が山札に重なっていたのを直しました／ランクのプレートは、名前が板のまん中に来るようにしました／共鳴の表示をひかえめにしました／ホームの名前の下の称号をなくしました（称号は、対戦のはじまりの画面に出ます）。'},
   {id:112,d:'2026-11-14',t:'カードの調整：猛り狼を強くしました。コストで相手に知られる種類は2つから1つに／共鳴したときはコストなし。さらに1枚捨てさせ、自分は1枚引く、に変わりました（Discordでいただいた要望です）。'},
@@ -5912,10 +5920,9 @@ function netSnap(spec,full){
   // ゲストがまだ知らないホストのカード（心臓・手札・山札・伏せ）は種類を送らない
   const gk=S.know.cpu.known,hide=new Set(),secret=p=>[...p.hand,...p.deck,p.heart,p.setCard];
   secret(S.me).forEach(c=>{if(c&&!gk.has(c.id))hide.add(c.id)});
-  if(spec)secret(S.cpu).forEach(c=>{if(c&&!S.know.me.known.has(c.id))hide.add(c.id)});
-  // spec==='rec'：リプレイの記録用。何も伏せず、記録の文もぜんぶ入れる
-  if(spec==='rec')hide.clear();
-  const logs=spec==='rec'?S.log.filter(e=>e.q>REC.q):spec?S.log.filter(e=>!e.to&&(full||e.q>NET.specQ)).slice(full?-80:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
+  // 観戦者（友達対戦の3人目）とリプレイの記録には、何も伏せずに送る。観戦者は自分の画面で視点（どちらか／両方）を選ぶ（2026-11-14）
+  if(spec)hide.clear();
+  const logs=spec==='rec'?S.log.filter(e=>e.q>REC.q):spec?S.log.filter(e=>full||e.q>NET.specQ).slice(full?-120:0):S.log.filter(e=>e.q>NET.sentQ&&(!e.to||e.to==='cpu'));
   return{gid:S.gid,round:S.round||1,turnNo:S.turnNo,phase:S.phase,busy:!!S.busy,over:!!S.over,shake:S.shake||null,cur:S.cur?whoOf(S.cur):null,pick:S.picking?whoOf(S.picking):null,ask:S.asking?whoOf(S.asking):null,me:P(S.me),cpu:P(S.cpu),
     cards:Object.values(S.byId).map(c=>[c.id,hide.has(c.id)?null:c.type,c.owner===S.me?'me':'cpu']),know:{me:Ks(S.know.me),cpu:Ks(S.know.cpu)},hist:S.hist,acts:(S.acts||[]).slice(-40),logs,watchers:NET.specs.length,left:S.deadline&&!S.paused?Math.max(0,S.deadline-Date.now()):null};
 }
@@ -5952,6 +5959,7 @@ const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRo
 
 /* ゲスト側 */
 function guestApply(sn){
+  const WV=!!NET.spec&&!RPC.on;   // 友達対戦の観戦者
   const swt=t=>String(t).replace(/@(me|cpu)/g,(m,r)=>'@'+swR(r));
   const old=S&&S.guest&&S.gid===sn.gid?S:null;
   const mk=(d,name)=>({name,octo:d.octo||'',isCpu:false,types:d.types,single:d.single,life:d.life,f:d.f||{},lastCat:d.lastCat,lastAttr:d.lastAttr,chain:d.chain,pool:[],deck:[],hand:[],discard:[],heart:null,setCard:null});
@@ -5963,7 +5971,7 @@ function guestApply(sn){
   const Kd=k=>({known:new Set(k.known),excluded:new Set(k.excluded),allowed:k.allowed?new Set(k.allowed):null,stale:k.stale});
   const n={me:pl.me,cpu:pl.cpu,know:{me:Kd(sn.know.cpu),cpu:Kd(sn.know.me)},byId,log:old?old.log:[],hist:sn.hist.map(h=>({...h,who:swR(h.who)})),acts:(sn.acts||[]).map(a=>({...a,who:swR(a.who)})),last:old?old.last:null,
     turnNo:sn.turnNo,round:sn.round,phase:sn.phase,busy:sn.busy,over:sn.over||!!(old&&old.over),shake:swR(sn.shake),cur:sn.cur?pl[swR(sn.cur)]:null,picking:sn.pick?pl[swR(sn.pick)]:null,asking:sn.ask?pl[swR(sn.ask)]:null,
-    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,replay:RPC.on,rpAll:RPC.on&&RPC.pov==='all',gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:RPC.on?{...RPC.names}:NET.spec&&NET.watchNames?{...NET.watchNames}:{me:netName(),cpu:NET.opp||'相手'},spec:NET.spec,watchers:sn.watchers||0};
+    seen:old?old.seen:new Set(),sel:null,online:true,guest:true,replay:RPC.on||(WV&&WATCH.pov!=='all'),rpAll:(RPC.on&&RPC.pov==='all')||(WV&&WATCH.pov==='all'),watch:WV,gid:sn.gid,deadline:sn.left!=null?Date.now()+sn.left:null,names:RPC.on?{...RPC.names}:WV&&NET.watchNames?(WATCH.pov==='me'?{me:NET.watchNames.cpu,cpu:NET.watchNames.me}:{...NET.watchNames}):{me:netName(),cpu:NET.opp||'相手'},spec:WV?WATCH.pov==='all':NET.spec,watchers:sn.watchers||0};
   if(old&&old.sel)n.sel=n.me.hand.find(c=>c.id===old.sel.id)||null;
   sn.logs.forEach(e=>{const x={...e,who:swR(e.who),actor:swR(e.actor),t:swt(e.t)};if(x.to)x.to=swR(x.to);n.log.push(x);if(n.log.length>400)n.log.shift();n.last=x});
   S=n;
@@ -6025,7 +6033,33 @@ function specBind(c){
   c.on('close',drop);c.on('error',drop);
 }
 // 観戦者側
-const WATCH={state:'idle',err:'',last:'',tries:0};
+const WATCH={state:'idle',err:'',last:'',tries:0,pov:'all',snap:null,logs:[]};
+/* 観戦の視点（2026-11-14）。部屋を開いた人から届くのは、何も伏せていない盤面。観戦者の画面で、
+   'all'＝両方の手札と心臓が見える／'me'＝部屋を開いた人の視点／'cpu'＝入った人の視点 に作り直して出す（リプレイと同じ rpcView）。
+   下の帯（#wvBar）のボタンで、いつでも切りかえられる */
+function watchApply(logs){
+  if(!WATCH.snap)return;
+  const v=rpcView(WATCH.snap,logs,WATCH.pov);v.left=WATCH.snap.left;
+  guestApply(v);
+}
+function watchPov(pv){
+  if(pv===WATCH.pov||!WATCH.snap)return;
+  WATCH.pov=pv;closeModal();S=null;watchApply(WATCH.logs.slice(-120));if(S&&VIEW==='battle')render();wvBar();
+}
+function watchFx(name,a){
+  if(!FX_OK.has(name)||!Array.isArray(a))return;
+  const args=WATCH.pov==='me'?a:a.map(swR);
+  if(fxKick){const k=fxKick;setTimeout(k,700)}
+  NET.fxq=NET.fxq.then(()=>S&&S.watch?window[name](...args):0).catch(e=>console.error(e));
+}
+function wvBar(){
+  let b=document.getElementById('wvBar');
+  if(!(NET.spec&&!RPC.on&&VIEW==='battle'&&S&&S.watch)){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.id='wvBar';document.body.appendChild(b);b.onclick=e=>{const k=e.target.closest('[data-wv]');if(k)watchPov(k.dataset.wv)}}
+  const nm=NET.watchNames||{me:'入った人',cpu:'開いた人'},bt=(k,l)=>`<button type="button" data-wv="${k}" class="${WATCH.pov===k?'on':''}">${l}</button>`;
+  b.innerHTML=`<span class="rcT">視点</span>${bt('all','両方見える')}${bt('me',esc(nm.cpu))}${bt('cpu',esc(nm.me))}`;
+}
+setInterval(()=>{if(document.getElementById('wvBar'))wvBar()},1500);
 const closeModal=()=>{const md=$('#modal');if(md&&!md.hidden){md.hidden=true;md.innerHTML=''}};
 const cleanName=v=>String(v||'').replace(/[<>&"]/g,'').slice(0,10)||'プレイヤー';
 async function watchStart(again){
@@ -6060,35 +6094,37 @@ function watchRecv(m){
   switch(m.t){
     case'hello':NET.watchNames={me:cleanName(m.guest),cpu:cleanName(m.host)};WATCH.state='wait';WATCH.tries=0;if(VIEW==='watch')renderWatch();break;
     case'nowatch':watchFail('この部屋には入れませんでした（対戦する2人と観戦1人で、もういっぱいです）。');break;
-    case'start':S=null;NET.fxq=Promise.resolve();WATCH.state='wait';if(VIEW==='battle'){closeModal();VIEW='watch'}renderWatch();break;
-    case'snap':guestApply(m.s);if(VIEW==='watch'&&S){VIEW='battle';window.scrollTo(0,0);render()}break;
-    case'fx':if(VIEW==='battle')guestFx(m.n,m.a);break;
+    case'start':S=null;WATCH.snap=null;WATCH.logs=[];NET.fxq=Promise.resolve();WATCH.state='wait';if(VIEW==='battle'){closeModal();VIEW='watch'}renderWatch();break;
+    case'snap':{const lg=Array.isArray(m.s.logs)?m.s.logs:[];if(!WATCH.snap||WATCH.snap.gid!==m.s.gid)WATCH.logs=[];WATCH.logs.push(...lg);if(WATCH.logs.length>400)WATCH.logs.splice(0,WATCH.logs.length-400);WATCH.snap=m.s;watchApply(lg);if(VIEW==='watch'&&S){VIEW='battle';window.scrollTo(0,0);render()}wvBar();break}
+    case'fx':if(VIEW==='battle')watchFx(m.n,m.a);break;
     case'over':NET.fxq=NET.fxq.then(()=>watchOver(m)).catch(e=>console.error(e));break;
   }
 }
 async function watchOver(m){
-  if(!S||!S.spec||VIEW!=='battle')return;
+  if(!S||!S.watch||VIEW!=='battle')return;
   S.over=true;S.phase='none';render();
-  const hostWon=m.w==='me',win=hostWon?S.names.cpu:S.names.me;
+  const WN=NET.watchNames||{me:'入った人',cpu:'開いた人'};
+  const hostWon=m.w==='me',win=hostWon?WN.cpu:WN.me;
   VOICE.say('K.O.!',{rate:.8,pitch:.4});screenFlash('white');quake();
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();SFX.win();
   const hh=typeof m.hh==='string'&&C[m.hh]?m.hh:null,gh=typeof m.gh==='string'&&C[m.gh]?m.gh:null;
-  const hearts=[hh&&`${esc(S.names.cpu)}さんは〈${N(hh)}〉`,gh&&`${esc(S.names.me)}さんは〈${N(gh)}〉`].filter(Boolean).join('、');
+  const hearts=[hh&&`${esc(WN.cpu)}さんは〈${N(hh)}〉`,gh&&`${esc(WN.me)}さんは〈${N(gh)}〉`].filter(Boolean).join('、');
   const v=await modal(`<div class="result"><img class="resArt" src="scenes/win.png" alt=""><span class="big win">${esc(win)}さんの勝ち</span>${hearts?`<p>最後の心臓：${hearts}でした。</p>`:''}<div class="btns"><button type="button" class="b primary" id="wStay">この2人の次の試合を待つ</button><button type="button" class="b" id="wMenu">メニューへ</button></div></div>`,(md,done)=>{
     md.querySelector('#wStay').onclick=()=>done('stay');md.querySelector('#wMenu').onclick=()=>done('menu');
   });
   if(v==='menu')return watchLeave();
   if(!NET.spec){WATCH.state='ended';return go('watch')}
   if(S&&S.over){S=null;WATCH.state='wait';go('watch')}
+  wvBar();
 }
 function watchLost(){
   if(!NET.spec)return;
   netReset();
   const md=$('#modal');if(VIEW==='battle'&&S&&S.over&&md&&!md.hidden)return;   // 結果を見ている間はそのまま
-  S=null;WATCH.state='ended';VIEW='watch';window.scrollTo(0,0);renderWatch();
+  S=null;WATCH.state='ended';VIEW='watch';window.scrollTo(0,0);renderWatch();wvBar();
 }
 function watchFail(msg){netReset();S=null;closeModal();WATCH.state='err';WATCH.err=msg;VIEW='watch';window.scrollTo(0,0);renderWatch()}
-function watchLeave(){netReset();S=null;closeModal();WATCH.state='idle';go('menu')}
+function watchLeave(){netReset();S=null;closeModal();WATCH.state='idle';WATCH.snap=null;WATCH.logs=[];go('menu');wvBar()}
 function renderWatch(){
   if(VIEW!=='watch')return;
   setBg(null);
@@ -6100,7 +6136,7 @@ function renderWatch(){
     :st==='err'?`<div class="onErr">${esc(WATCH.err)}</div>`:'';
   $('#app').innerHTML=`<div class="sceneBanner"><img src="scenes/home_b.png" alt=""><div class="sbText"><b>友達の対戦を観戦</b><span>部屋がいっぱいだったので、観戦で入りました</span></div></div><div class="top"><span></span><button type="button" class="b small" id="wBack">メニューへ</button></div>
     ${body}
-    <p class="note">観戦中は、どちらの手札と心臓も見えません。見えるのは、使われたカードと、相手に知られたカードだけです。</p>`;
+    <p class="note">観戦では、2人の手札と心臓が見えます。対戦が始まると、下のボタンで視点（両方見える／どちらか1人の視点）を切りかえられます。</p>`;
   $('#wBack').onclick=watchLeave;
 }
 
@@ -6138,7 +6174,7 @@ function renderOnline(){
     body=`<div class="onCard"><span class="label">あなたの名前（相手に表示されます）</span><div class="nameRow">${nameEdHTML('oName')}</div></div>
       <div class="menu">
         ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns" ${LADDER.uid()?'':'data-gsi'}>${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div>${LADDER.uid()?'':'<p class="note polNote">'+POLICY_LINK+'</p>'}</div>`:''}
-        <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。3人目が同じコードで入ると、観戦できます。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
+        <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。3人目が同じコードで入ると、観戦できます（観戦の人には、2人の手札と心臓が見えます）。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
         <div class="mi"><b>部屋に参加する</b><span>友達から届いた5文字のコードを入れます。</span><div class="btns"><input id="oCode" class="codeIn" maxlength="5" autocapitalize="characters" autocomplete="off" value="${esc(NET.code||'')}" placeholder="ABCDE"><button type="button" class="b primary" id="oJoin">参加する</button></div></div>
       </div>`;
   }
