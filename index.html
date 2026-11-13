@@ -2245,7 +2245,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113192658';
+const APP_VER='20261113193144';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4578,7 +4578,7 @@ function render0(){
   ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています… <b id="pauseSec">${pauseLeftText()}</b>${NET.ranked&&NET.mid?'（相手が戻ってこなければ、あなたの勝ちになります）':'（戻ってこなければ、対戦を終了します）'}</div>`:''}
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}${mmInlineHTML()}</div>
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」＝伏せ札のふりをして伏せる。次の相手ターンに相手がカードを使わなければ成功：手札に戻り、1枚多く使え、相手の心臓ではない種類を1つ知る。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
-    ${RP?'<p class="note">リプレイです。両方の手札と心臓が見えています。</p>':SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
+    ${S.watch?`<p class="note">観戦中です（${RP?'両方の手札と心臓が見えています':esc(S.names.me)+'さんの視点'}）。下の「視点」で切りかえられます。</p>`:RP?'<p class="note">リプレイです。両方の手札と心臓が見えています。</p>':SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set&&!useBlock(me,S.sel.type)?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':S.sel&&czBlock(me,S.sel.type)?'呪いで使えない':S.sel&&useBlock(me,S.sel.type)?'今は使えない':'使う'}</button>
       <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
       ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
