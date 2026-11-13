@@ -339,12 +339,7 @@ body{word-break:auto-phrase;text-wrap:pretty}
 .rankCard{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);margin:4px 0 12px}
 .rankCard .btns{margin:0}
 .rkTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.rkMain{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.rkRate{font-family:var(--display);font-weight:400;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
 .rkSub{color:var(--muted);font-size:13px}
-.rkTier{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.1;color:var(--tc);text-shadow:0 0 14px color-mix(in srgb,var(--tc) 45%,transparent)}
-.rkTier small{font-size:.6em}
-.rkBar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.rkBar i{display:block;height:100%;background:var(--tc);border-radius:inherit}
 .rkLadder{display:flex;gap:4px}.rkLadder i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.1)}.rkLadder i.done{background:color-mix(in srgb,var(--tc) 55%,transparent)}.rkLadder i.cur{background:var(--tc);box-shadow:0 0 6px var(--tc)}
 .tier{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#141625;background:var(--tc);white-space:nowrap}
 .board{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:46vh;overflow:auto}
@@ -2029,6 +2024,26 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .lfBody .lr{padding:5px 0 5px 10px}
 .lfBody .lk{flex:none}
 .gotDust{display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0 2px}.gotDust .note{margin:0}.gotDust .note b{color:#bfe9ff}
+/* ランクの紋章とゲージ */
+.rkEmb{image-rendering:pixelated;display:block;width:100%;height:100%;object-fit:contain}
+.rkEmb.sm{display:inline-block;width:1.5em;height:1.5em;vertical-align:-.38em;margin-right:.25em}
+.rg{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px 12px;margin:8px 0;text-align:left}
+.rgEmb{width:72px;height:72px;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tc) 45%,transparent))}
+.rgNext{width:34px;height:34px;opacity:.55;filter:grayscale(.5)}.rg.master .rgNext{display:none}
+.rgTop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.rgName{font:800 22px/1.2 var(--pcf,serif);letter-spacing:.06em;color:var(--tc);text-shadow:0 0 12px color-mix(in srgb,var(--tc) 40%,transparent)}.rgName small{font-size:.62em}
+.rgPt{font-size:12px;color:var(--dim,#a89c8c);white-space:nowrap}.rgPt b{font:700 18px var(--pcf,serif);color:var(--ivory,#f1e8d8);font-variant-numeric:tabular-nums;margin-right:2px}
+.rgBar{position:relative;height:12px;margin:6px 0 5px;background:rgba(0,0,0,.5);border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);overflow:hidden}
+.rgBar i{display:block;height:100%;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 55%,#000),var(--tc));box-shadow:0 0 10px var(--tc)}
+.rgBar u{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.65)}.rg.master .rgBar u{display:none}
+.rgSub{font-size:12px;color:var(--dim,#a89c8c)}.rgSub b{color:var(--ivory,#f1e8d8)}
+.rg.rgUp .rgEmb{animation:rgUp .9s cubic-bezier(.2,1.4,.4,1)}.rg.rgDown .rgEmb{animation:rgDown .6s ease}
+@keyframes rgUp{0%{transform:scale(.4) rotate(-20deg);filter:brightness(3)}60%{transform:scale(1.35)}100%{transform:none}}
+@keyframes rgDown{0%{transform:translateY(-10px);opacity:.3}100%{transform:none;opacity:1}}
+.resBox{box-sizing:border-box;width:100%;border:1px solid var(--hair,rgba(232,200,140,.28));background:rgba(10,4,6,.5);padding:8px 12px;margin:8px 0}
+.resBox .rateLine{margin:2px 0}.rrHead b{font:800 22px var(--pcf,serif);margin-left:6px}.rrHead b.up{color:#ffd98a}.rrHead b.down{color:#f0a8ae}
+.vsRk{display:inline-flex;align-items:center;gap:6px}.vsRk .rkEmb{width:34px;height:34px}
+@media (max-width:420px){.rgEmb{width:58px;height:58px}.rgName{font-size:19px}.rgNext{width:28px;height:28px}}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -2149,7 +2164,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113081730';
+const APP_VER='20261113081929';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2591,7 +2606,7 @@ function renderMenu(){
     <div class="hmBg"><img src="scenes/${FIT.get().wide?'home_w':'home_a'}.png" alt=""></div>
     <header class="hmTop">
       <div class="hmWho"><button type="button" class="hmAv" id="pAvatar" aria-label="アイコンを変える">${avatarImg()}</button>
-      <div class="hmId"><b>${esc(netName())}</b><span>${rk?`<em class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</em>`:''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div></div>
+      <div class="hmId"><b>${esc(netName())}</b><span>${rk?`<em class="prank" style="--tc:${rk.col}">${rankEmb(rk.i,'sm')}${rk.name}${rk.div?' '+rk.div:''}</em>`:''}${t?`<em class="ptitle" id="hmTitle">${esc(t)}</em>`:''}</span></div></div>
       <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
@@ -3958,7 +3973,7 @@ async function gameOver(w){
   S.over=true;S.phase='none';render();
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
-  const rated=on&&LADDER.rated()&&NET.mid,rp=rated?LADDER.report(NET.mid,win,'ko'):null;
+  const rated=on&&LADDER.rated()&&NET.mid,rp0=LADDER.prof?Math.max(0,LADDER.prof.rp||0):null,rp=rated?LADDER.report(NET.mid,win,'ko'):null;  // rp0＝対戦前のランクポイント（結果画面のゲージの出発点）
   if(rated&&!S.guest)REC.send(win);
   if(!on)lsDel(GAME_KEY);else ONL.clear();
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);if(win)quake();FXC.burst('#ffffff',120,12);
@@ -3978,9 +3993,14 @@ async function gameOver(w){
     :on?`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを選び直す</button><button type="button" class="b" id="rMenu">対戦をやめる（接続を切る）</button>`
     :S.tut?`<button type="button" class="b primary" id="rMenu">メニューへ</button><button type="button" class="b" id="rSame">もう一度チュートリアル</button>`
     :`<button type="button" class="b primary" id="rSame">同じデッキでもう一戦</button><button type="button" class="b" id="rNew">デッキを編成する</button><button type="button" class="b" id="rMenu">メニューへ</button>`;
-  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<p class="rateLine" id="rRate">ランクポイントを集計しています…</p>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
+  await modal(`<div class="result"><img class="resArt" src="scenes/${win?'win':'lose'}.png" alt=""><span class="big ${win?'win':'lose'}">${win?'勝利':'敗北'}</span>${rated?'<div class="resBox" id="rRate"><p class="rateLine">ランクポイントを集計しています…</p></div>':''}${msn}<p>${S.deckOut?(win?`${OPN()}の山札がなくなりました。`:'あなたの山札がなくなりました。'):win?`${OPN()}のライフを0にしました。`:'あなたのライフが0になりました。'}${oh?` ${OPN()}の最後の心臓は〈${N(oh)}〉でした。`:''}</p><div class="btns">${btns}</div></div>`,(m,done)=>{
     if(rp)rp.then(d=>{const el=m.querySelector('#rRate');if(!el)return;const st=d&&d.status;
-      el.innerHTML=(st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>（メニューで確認できます）`:st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':'レートを記録できませんでした。')+gotHTML(d);gotRun(m)});
+      // ランクポイントの増減をゲージで見せ、同じ枠の中に、もらったカードを並べる
+      const ok=st==='done'&&rp0!=null&&Number.isFinite(d.delta),rp1=ok?Math.max(0,rp0+(d.won?d.delta:-d.delta)):rp0;
+      el.innerHTML=(ok?`<p class="rateLine rrHead">ランクポイント <b class="${d.won?'up':'down'}">${d.won?'+':'-'}${d.delta}pt</b></p>${rankGaugeHTML(rp0)}`
+        :`<p class="rateLine">${st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>`:'レートを記録できませんでした。'}</p>${rp0!=null&&st==='pending'?rankGaugeHTML(rp0):''}`)+gotHTML(d);
+      if(ok)setTimeout(()=>rankGaugeRun(el.querySelector('.rg'),rp0,rp1),450);
+      gotRun(m)});
     [['#rNew','new'],['#rSame','same'],['#rMenu','menu'],['#rRank','rank']].forEach(([id,v])=>{const b=m.querySelector(id);if(b)b.onclick=()=>done(v)});
   }).then(v=>{
     document.body.classList.remove('resultOn');
@@ -4626,7 +4646,7 @@ function profileHTML(){
     <button type="button" class="avatar" id="pAvatar" aria-label="アイコンを変える">${avatarImg()}</button>
     <button type="button" class="pOcto" id="pOcto" aria-label="タコをえらぶ">${octoSVG(3,3,'',0,SV.equip.octo||'')}</button>
     <div class="profMain"><div class="menuName">${nameEdHTML('mName')}</div>
-      <div class="profSub">${t?`<span class="ptitle">${esc(t.n)}</span>`:'<span class="ptitle none">称号なし</span>'}${rk?`<span class="prank" style="--tc:${rk.col}">${rk.name}${rk.div?' '+rk.div:''}</span>`:''}</div>
+      <div class="profSub">${t?`<span class="ptitle">${esc(t.n)}</span>`:'<span class="ptitle none">称号なし</span>'}${rk?`<span class="prank" style="--tc:${rk.col}">${rankEmb(rk.i,'sm')}${rk.name}${rk.div?' '+rk.div:''}</span>`:''}</div>
       <div class="statline"><span>戦績 <b>${SV.wins}勝${SV.losses}敗</b></span>${SV.ow||SV.ol?`<span>友達戦 <b>${SV.ow||0}勝${SV.ol||0}敗</b></span>`:''}</div></div>
     ${coinsHTML()}
   </section>`;
@@ -4906,7 +4926,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
 function vsShow(){
   try{
     document.querySelectorAll('.vsOv').forEach(e=>e.remove());
-    const side=(cls,nm,img,tt,rp)=>`<div class="vsP ${cls}"><div class="vsAv">${img}</div><div class="vsTx">${tt?`<span class="ptitle">${esc(tt)}</span>`:''}<b class="vsNm">${esc(nm)}</b>${rp!=null?tierHTML(rp):''}</div></div>`;
+    const side=(cls,nm,img,tt,rp)=>`<div class="vsP ${cls}"><div class="vsAv">${img}</div><div class="vsTx">${tt?`<span class="ptitle">${esc(tt)}</span>`:''}<b class="vsNm">${esc(nm)}</b>${rp!=null?`<span class="vsRk">${rankEmb(rankOf(rp).i)}${tierHTML(rp)}</span>`:''}</div></div>`;
     const oImg=NET.oppPx?`<img class="cus" src="${pxURL(NET.oppPx,128)}" alt="">`:`<img src="art/${C[NET.oppAv]?NET.oppAv:'villager'}.png" alt="">`;
     const rk=!!NET.ranked;
     const el=document.createElement('div');el.className='vsOv'+(RM?' rm':'');el.setAttribute('role','status');
@@ -4923,6 +4943,40 @@ function vsShow(){
     if(!RM)setTimeout(()=>{if(!gone){try{SFX.hit()}catch(e){}}},620);
   }catch(e){console.error(e)}
 }
+/* ランクの紋章（月と狼。art/rank/r0〜r5.png＝ブロンズ〜マスター）と、ランクポイントのゲージ（2026-11-13）。
+   rankGaugeHTML(rp)＝紋章＋ランク名＋ゲージ（3等分の目盛り＝III・II・I）＋次のランクまでの残り。
+   rankGaugeRun(el,from,to)＝ゲージを from から to へ動かす（結果画面用。ランクが変わる所で紋章と色が切りかわる） */
+const rankEmb=(i,cls='')=>`<img class="rkEmb ${cls}" src="art/rank/r${Math.max(0,Math.min(5,i))}.png" alt="">`;
+function rankGaugeHTML(rp,rating){
+  rp=Math.max(0,rp||0);const r=rankOf(rp);
+  return`<div class="rg ${r.master?'master':''}" style="--tc:${r.col}"><div class="rgEmb">${rankEmb(r.i)}</div>
+    <div class="rgBody"><div class="rgTop"><b class="rgName">${r.name}${r.div?`<small> ${r.div}</small>`:''}</b><span class="rgPt"><b class="rgNum">${rp}</b>pt</span></div>
+      <div class="rgBar"><i style="width:${r.master?100:r.w}%"></i><u style="left:34%"></u><u style="left:67%"></u></div>
+      <div class="rgSub">${r.master?(rating!=null?`マスターレート <b>${rating}</b>`:'最高ランク'):`あと <b>${100-r.w}</b>pt で ${r.next}`}</div></div>
+    <div class="rgNext">${r.master?'':rankEmb(r.i+1)}</div></div>`;
+}
+function rankGaugeSet(el,rp){
+  const r=rankOf(rp),q=x=>el.querySelector(x);
+  el.style.setProperty('--tc',r.col);el.classList.toggle('master',!!r.master);
+  const e=q('.rgEmb img'),src=`art/rank/r${r.i}.png`;if(e&&!e.src.endsWith(src))e.src=src;
+  q('.rgName').innerHTML=r.name+(r.div?`<small> ${r.div}</small>`:'');q('.rgNum').textContent=Math.round(rp);
+  q('.rgBar i').style.width=(r.master?100:rp%100)+'%';
+  q('.rgSub').innerHTML=r.master?'最高ランク':`あと <b>${100-Math.floor(rp%100)}</b>pt で ${r.next}`;
+  q('.rgNext').innerHTML=r.master?'':rankEmb(r.i+1);
+  return r.i;
+}
+function rankGaugeRun(el,from,to){
+  if(!el)return;from=Math.max(0,from||0);to=Math.max(0,to||0);
+  if(RM||from===to){rankGaugeSet(el,to);return}
+  const t0=performance.now(),dur=Math.min(2200,700+Math.abs(to-from)*45);let last=rankOf(from).i;
+  const step=now=>{
+    if(!el.isConnected)return;
+    const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3),v=from+(to-from)*e,i=rankGaugeSet(el,k===1?to:v);
+    if(i!==last){const up=i>last;last=i;el.classList.remove('rgUp','rgDown');void el.offsetWidth;el.classList.add(up?'rgUp':'rgDown');try{up?SFX.legend():SFX.miss()}catch(e){}if(up)screenFlash('gold')}
+    if(k<1)requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 function tierHTML(rp){const r=rankOf(rp);return`<span class="tier" style="--tc:${r.col}">${r.name}${r.div?' '+r.div:''}</span>`}
 function rankCardHTML(){
   if(!LADDER.on())return'';
@@ -4933,8 +4987,7 @@ function rankCardHTML(){
   const p=LADDER.prof,g=p.wins+p.losses,wr=g?Math.round(p.wins/g*100):0,rk=rankOf(p.rp);
   const ladder=TIERS.map((t,i)=>`<i class="${i<rk.i?'done':i===rk.i?'cur':''}" style="--tc:${t[1]}" title="${t[0]}"></i>`).join('');
   return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
-    <div class="rkMain"><b class="rkTier" style="--tc:${rk.col}">${rk.name}${rk.div?`<small> ${rk.div}</small>`:''}</b>${rk.master?`<span class="rkSub">マスターレート <b class="rkRate">${p.rating}</b></span>`:''}</div>
-    ${rk.master?'':`<div class="rkBar" style="--tc:${rk.col}"><i style="width:${rk.w}%"></i></div><span class="rkSub">ランクポイント <b>${Math.max(0,p.rp||0)}pt</b>・あと${100-rk.w}ptで${rk.next}${rk.i===4?'（マスターになるとレートが公開されます）':''}</span>`}
+    ${rankGaugeHTML(p.rp,p.rating)}${rk.i===4?'<span class="rkSub">マスターになるとレートが公開されます</span>':''}
     <div class="rkLadder">${ladder}</div>
     <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span></div>
     <div class="btns"><button type="button" class="b primary small" id="rkMatch">ランクマッチ</button><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
@@ -5036,6 +5089,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:101,d:'2026-11-13',t:'ランクに紋章（月と狼）が付きました。ランクポイントはゲージで見られます。ランクマッチの結果画面では、ゲージが増えたり減ったりする様子と、もらったカードが同じ所に出ます。'},
   {id:100,d:'2026-11-13',t:'ランクマッチのあとにもらったカードがダブりだったとき、その場で「ダブりを分解して欠片にする」ボタンが出るようになりました。不具合の直し：デイリーミッションの窓で報酬を受け取ったあと、受け取りボタンが残って見えていたのを直しました。'},
   {id:99,d:'2026-11-13',t:'いまのランクポイント（何ptか）が見えるようになりました。ランクマッチの「マッチング開始」の画面と、右上の歯車の「対人ランク」に出ます（Discordでいただいた要望です）。'},
   {id:98,d:'2026-11-13',t:'デッキ編成に「このデッキをコピー」ボタンが付きました。いま選んでいるデッキと同じ中身の新しいデッキが作れます（デッキは6つまで）。'},
@@ -5213,7 +5267,7 @@ function rankPrep(){
 const rankDeck=()=>{deckInit();const x=MM.pick==='std'?null:SV.decks[MM.pick];return x&&deckLegal(x)?{name:x.name,types:[...x.types],single:x.single}:{name:'スタンダードデッキ',...stdDeck()}};
 function rankPrepHTML(){
   const d=rankDeck(),std=MM.pick==='std',p=LADDER.prof,rk=p?rankOf(p.rp):null;
-  return`<div class="onCard"><p class="onBig">ランクマッチ</p>${rk?`<p class="rateLine">いまのランク：${tierHTML(p.rp)} ${rk.master?`マスターレート <b>${p.rating}</b>`:`ランクポイント <b>${Math.max(0,p.rp||0)}pt</b>（あと${100-rk.w}ptで${rk.next}）`}</p>`:''}<p class="note">使用するデッキを確かめて、「マッチング開始」を押してください。相手が見つかると、そのまま対戦が始まります。</p>
+  return`<div class="onCard"><p class="onBig">ランクマッチ</p>${rk?rankGaugeHTML(p.rp,p.rating):''}<p class="note">使用するデッキを確かめて、「マッチング開始」を押してください。相手が見つかると、そのまま対戦が始まります。</p>
     <p class="label" style="margin-top:14px">使用するデッキ</p>
     <button type="button" class="mi main rpDeck" id="rpDeck" aria-label="使用するデッキを変える"><b>${std?'':deckIcHTML(SV.decks[MM.pick]||d)}${esc(d.name)}</b><span>${catSummary(d.types)}・シングル〈${N(d.single)}〉</span><em>押すと、ほかのデッキに変えられます</em></button>
     <div class="btns" style="margin-top:14px"><button type="button" class="b primary" id="rpStart">マッチング開始</button><button type="button" class="b" id="rpEdit">デッキを編成する</button><button type="button" class="b" id="rpNo">やめる</button></div></div>`;
