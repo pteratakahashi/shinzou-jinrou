@@ -5158,6 +5158,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:109,d:'2026-11-13',t:'対戦中に相手との接続が「つながってはすぐ切れる」をくり返すと、待ち時間が「あと2分0秒」に何度も戻って、いつまでも終わらないことがあったのを直しました。すぐにまた切れたときは、残り時間が前の続きから進みます。'},
   {id:108,d:'2026-11-13',t:'ランクマッチの結果画面で、相手の結果報告を待っている間も、そのまま少し待つとランクのゲージが動いて、もらったカードが同じ所に出るようになりました（前は、カードが別の窓であとから届いていました）。'},
   {id:107,d:'2026-11-13',t:'カードは絵だけの表示にそろえました（縦に長くならなくなりました）。効果は、カードを押すと出る説明で読めます。カード一覧のカードも押せるようになりました。シルバーとゴールドの光る演出は、枠だけが光る形に変えました。'},
   {id:106,d:'2026-11-13',t:'いろいろな画面サイズで見え方を点検して、崩れを直しました。幅の狭いスマホで、ホーム上のランクの札が銀貨の数に重なる／対戦のはじまりの画面でランクの札と名前が切れる／「対戦する」の窓で札が題に重なる。友達と対戦の画面で「Googleでログイン」のボタンが枠からはみ出す。スマホ横向きで「ランクマッチ」の字が切れる、などです。'},
@@ -5661,7 +5662,7 @@ function netBind(c,rejoin){
 }
 function netDrop(){if(S&&S.online&&!S.over&&!NET.leaving&&!S.spec)return netPause();netLost()}
 function netLost(msg){
-  NET.paused=false;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);ONL.clear();
+  NET.paused=false;NET.resumedAt=0;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);ONL.clear();
   if(!NET.conn&&!NET.peer)return;
   const live=!!(S&&S.online&&!S.over&&NET.mid),mid=NET.mid,opp=NET.oppUid;
   const leaving=NET.leaving;netReset();
@@ -5758,14 +5759,17 @@ setInterval(()=>{
 function pauseLeftText(){const ms=Math.max(0,REJOIN_MS-(Date.now()-(NET.pauseAt||Date.now()))),t=Math.ceil(ms/1000);return`あと${t>=60?Math.floor(t/60)+'分':''}${t%60}秒`}
 function netPause(){
   if(NET.paused)return;
-  NET.paused=true;NET.pauseAt=Date.now();
+  // つながってすぐ（15秒以内）にまた切れたときは、待ち時間を2分に戻さず、前の続きから数える（つながっては切れるのくり返しで、いつまでも終わらないのを防ぐ）
+  const flap=NET.pauseAt&&NET.resumedAt&&Date.now()-NET.resumedAt<15000;
+  NET.paused=true;if(!flap)NET.pauseAt=Date.now();NET.resumedAt=0;
   try{if(NET.conn)NET.conn.close()}catch(e){}NET.conn=null;
   if(S){S.paused=true;S.pauseLeft=S.deadline?Math.max(5000,S.deadline-Date.now()):null}
-  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},REJOIN_MS);
+  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},Math.max(0,REJOIN_MS-(Date.now()-NET.pauseAt)));
   if(!NET.host)guestRetry();
   if(VIEW==='battle')render();
 }
 function netResumed(){
+  if(NET.paused)NET.resumedAt=Date.now();
   NET.paused=false;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);
   if(S){S.paused=false;if(S.pauseLeft)S.deadline=Date.now()+S.pauseLeft;S.pauseLeft=null}
 }
