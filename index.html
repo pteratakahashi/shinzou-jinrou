@@ -2015,6 +2015,22 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .shBtn b{color:#fff}.cardPick .shBtn.mk{border-color:var(--gold,#e8c88c);background:rgba(120,30,44,.55);color:#f1e8d8}
 .shBtn.short{opacity:.5}
 .shGot{width:min(60vw,200px);margin:10px auto;display:flex}.shGot .tcg{flex:1}
+/* ログを画面いっぱいに開く */
+.lastLog.llRow{display:flex;align-items:center;gap:8px}
+.llRow .llTx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.llBtn{flex:none;display:inline-flex;align-items:center;gap:5px;font:700 13px var(--pcf,serif);letter-spacing:.1em;color:var(--gold,#e8c88c);background:rgba(120,30,44,.45);border:1px solid var(--gold,#e8c88c);padding:5px 12px;cursor:pointer;white-space:nowrap}
+.llBtn svg{width:16px;height:16px}
+.logFull{position:fixed;inset:0;z-index:35;display:flex;flex-direction:column;background:rgba(12,6,8,.98);padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.logFull.in{animation:lfIn .2s ease-out both}
+@keyframes lfIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.lfHead{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--hair,rgba(232,200,140,.28));padding-bottom:8px}
+.lfHead b{font:800 20px var(--pcf,serif);letter-spacing:.14em;margin-right:auto}
+.lfHead .filters{display:flex;gap:6px}
+.lfNote{margin:6px 0;font-size:12px}
+.lfBody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;max-height:none;width:min(100%,720px);margin:0 auto;font-size:15px;line-height:1.75;display:flex;flex-direction:column;gap:14px}
+.lfBody .lgh{background:#12080b;font-size:13px;padding:5px 0;z-index:1}
+.lfBody .lr{padding:5px 0 5px 10px}
+.lfBody .lk{flex:none}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -2135,7 +2151,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113022732';
+const APP_VER='20261113034438';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4283,6 +4299,8 @@ const liveCount=obs=>Object.values(probs(obs).w).filter(x=>x>0).length;
 let LF='all';
 // 対戦画面：スマホで推理表のどちらを出すか、記録の引き出しが開いているか
 let TRK='opp',LOGOPEN=false;
+// ログを画面いっぱいに開く（2026-11-13）。対戦画面のまん中の「最後の出来事」の帯にある「ログ」ボタンで開く。LOGNEW は開いた直後だけ（出てくる動きを1回だけ付ける）
+let LOGFULL=false,LOGNEW=false;
 const NAME2K={};CARDS.forEach(c=>NAME2K[c.n]=c.k);
 function logKind(t){
   if(/的中/.test(t))return'hit';
@@ -4351,7 +4369,8 @@ function render0(){
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
   const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.rpAll,HID=SP&&!RP;  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
-  const logScroll=$('#log')?.scrollTop||0;
+  const logScroll=$('#log')?.scrollTop||0,logFScroll=$('#logF')?.scrollTop||0;
+  if(!S.log.length)LOGFULL=false;  // 新しい対戦に、前の対戦で開いたままのログを持ちこまない
   const kn=S.know.me;
   const notes=[];if(kn.stale)notes.push('※妖狐より前の判定を含む');if(kn.allowed)notes.push(`候補：${[...kn.allowed].map(N).join('・')}`);if(kn.excluded.size)notes.push(`除外：${[...kn.excluded].map(N).join('・')}`);
   let phase='';
@@ -4401,7 +4420,7 @@ function render0(){
     </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
   </section>
   ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
-  <div class="lastLog btLast ${S.last?S.last.who:''}" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</div>
+  <div class="lastLog btLast llRow ${S.last?S.last.who:''}"><span class="llTx" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</span><button type="button" class="llBtn" id="bLogFull" aria-label="ログを大きく開く"><span>ログ</span></button></div>
   <section class="zone side btMe ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
     <div class="sh"><span class="who">${MYN()}</span>${lives(me)}${mini(me)}</div>${badges(me)}
     <div class="tableRow"><div class="slot">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
@@ -4417,6 +4436,11 @@ function render0(){
       <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
       <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
     </div>`}</div>
+  <div class="logFull ${LOGNEW?'in':''}" id="logFull" role="dialog" aria-label="ログ" ${LOGFULL?'':'hidden'}>
+    <div class="lfHead"><b>ログ</b><div class="filters"><button type="button" class="chip ${LF==='all'?'on':''}" data-lf="all">すべて</button><button type="button" class="chip ${LF==='key'?'on':''}" data-lf="key">推理だけ</button></div><button type="button" class="b small" id="bLogFullClose">閉じる</button></div>
+    <p class="note lfNote">新しいターンが上です。カードの名前を押すと効果が見られます。</p>
+    <div class="log lfBody" id="logF">${LOGFULL?logHTML():''}</div>
+  </div>
   <aside class="drawer ${LOGOPEN?'open':''}" id="drawer" aria-label="記録" ${LOGOPEN||FIT.get().w3?'':'inert'}>
     <div class="sh"><b>記録</b><button type="button" class="b small" id="bLogClose">閉じる</button></div>
     <section class="zone">
@@ -4430,6 +4454,8 @@ function render0(){
   </aside>
   </div>`;
   {const d=$('#drawer');if(d)d.scrollTop=drScroll}
+  $('#bLogFull').onclick=()=>{LOGFULL=true;LOGNEW=true;BTMENU=false;render();LOGNEW=false};$('#bLogFullClose').onclick=()=>{LOGFULL=false;render()};
+  {const lf=$('#logF');if(lf&&LOGFULL&&!LOGNEW)lf.scrollTop=logFScroll}
   $('#bLog').onclick=()=>{LOGOPEN=true;BTMENU=false;render()};$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
   document.querySelectorAll('[data-trk]').forEach(b=>b.onclick=()=>{TRK=b.dataset.trk;render()});
   const lg=$('#log');if(lg)lg.scrollTop=logScroll;
@@ -4994,6 +5020,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:96,d:'2026-11-13',t:'対戦画面に「ログ」ボタンが付きました（まん中の、最後の出来事が出ている帯の右）。押すと、これまでに起きたことが画面いっぱいに文字で読めます。「推理だけ」にしぼることもできます。'},
   {id:95,d:'2026-11-13',t:'「欠片」が入りました。同じカードの2枚目からのダブりを分解すると欠片になり、欠片で持っていないカードを作れます（同じレアリティなら3枚分解で1枚。分解しても1枚は残ります）。下のタブの「カード」から使えます。Googleでログインしている人が対象です。'},
   {id:94,d:'2026-11-13',t:'オンライン対戦のはじまりに、おたがいの名前・アイコン・称号・ランクが大きく出る紹介画面が入りました。自分で描いたアイコンも、ここで相手に見えるようになりました。'},
   {id:93,d:'2026-11-13',t:'カード一覧とデッキ編成で、カードを「手に入れた順」に並べられるようになりました（絞りこみの「並び」から切りかえます。最近手に入れたカードが先に並びます。Googleでログインしている人が対象です）。'},
