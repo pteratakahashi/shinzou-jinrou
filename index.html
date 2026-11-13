@@ -180,7 +180,7 @@ html.fit-wide .oppHand.open .tcg{width:58px}
 <meta name="apple-mobile-web-app-title" content="心臓人狼">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;800&family=Cinzel:wght@800;900&display=swap">
 <style>
 /* Layout: a night-time card table. Opponent across the top, the deduction board in the middle, your hand fanned at the bottom. Single dark look by choice. */
 :root{
@@ -2027,7 +2027,7 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .rgEmb{width:72px;height:72px;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tc) 45%,transparent))}
 .rgNext{width:34px;height:34px;opacity:.55;filter:grayscale(.5)}.rg.master .rgNext{display:none}
 .rgTop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.rgName{font:800 22px/1.2 var(--pcf,serif);letter-spacing:.06em;color:var(--tc);text-shadow:0 0 12px color-mix(in srgb,var(--tc) 40%,transparent)}.rgName small{font-size:.62em}
+.rgName{font:800 22px/1.2 var(--pcf,serif);letter-spacing:.06em;color:var(--tc)}.rgName small{font-size:.62em}
 .rgPt{font-size:12px;color:var(--dim,#a89c8c);white-space:nowrap}.rgPt b{font:700 18px var(--pcf,serif);color:var(--ivory,#f1e8d8);font-variant-numeric:tabular-nums;margin-right:2px}
 .rgBar{position:relative;height:12px;margin:6px 0 5px;background:rgba(0,0,0,.5);border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);overflow:hidden}
 .rgBar i{display:block;height:100%;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 55%,#000),var(--tc));box-shadow:0 0 10px var(--tc)}
@@ -2039,19 +2039,26 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .resBox{box-sizing:border-box;width:100%;border:1px solid var(--hair,rgba(232,200,140,.28));background:rgba(10,4,6,.5);padding:8px 12px;margin:8px 0}
 .resBox .rateLine{margin:2px 0}.rrHead b{font:800 22px var(--pcf,serif);margin-left:6px}.rrHead b.up{color:#ffd98a}.rrHead b.down{color:#f0a8ae}
 @media (max-width:420px){.rgEmb{width:58px;height:58px}.rgName{font-size:19px}.rgNext{width:28px;height:28px}}
-/* ランクの札（プレート）：左に小さな紋章、右に金属の板。板には英語の名前を彫る */
-.tier{display:inline-flex;align-items:center;flex:none;vertical-align:middle;white-space:nowrap;font-size:11px;filter:drop-shadow(0 1px 0 rgba(0,0,0,.8)) drop-shadow(0 0 3px rgba(0,0,0,.5))}
-.tier .rkEmb{width:2.5em;height:2.5em;flex:none;position:relative;z-index:1;margin-right:-1em}
-.tier b{display:inline-flex;align-items:baseline;gap:.45em;font:800 1em/1 var(--pcf,serif);letter-spacing:.16em;color:#1c0d10;text-shadow:0 1px 0 rgba(255,255,255,.45);padding:.5em 1.15em .5em 1.55em;min-width:8.6em;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 45%,#fff) 0,var(--tc) 46%,color-mix(in srgb,var(--tc) 58%,#000) 100%);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 2px color-mix(in srgb,var(--tc) 40%,#fff),inset 0 -.5em .6em -.4em rgba(0,0,0,.45);
-  clip-path:polygon(0 0,calc(100% - .7em) 0,100% 50%,calc(100% - .7em) 100%,0 100%)}
-.tier b i{font:700 .82em/1 var(--pcf,serif);font-style:normal;letter-spacing:.06em;margin-left:auto;opacity:.8}
-.tier.t5 b{color:#ffe6a6;text-shadow:0 1px 0 #000,0 0 .5em rgba(255,200,110,.5);background:linear-gradient(180deg,#a51c33 0,#7c1424 46%,#3d0812 100%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 2px #d8a94a,inset 0 -.5em .6em -.4em rgba(0,0,0,.5)}
+/* ランクの札（プレート）：左に小さな紋章、右に黒い漆の板と金属のふち。名前は金属の飾り文字（.rkTx）で入れる。
+   板の幅はどのランクでも同じ（並べたときに左右がそろう） */
+.rkTx{font-family:"Cinzel",var(--pcf,serif);font-weight:900;letter-spacing:.08em;color:transparent;
+  background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--tc) 22%,#fff) 34%,var(--tc) 56%,color-mix(in srgb,var(--tc) 62%,#000) 72%,color-mix(in srgb,var(--tc) 75%,#fff) 100%);
+  -webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 .25em color-mix(in srgb,var(--tc) 50%,transparent))}
+.tier{display:inline-flex;align-items:center;flex:none;vertical-align:middle;white-space:nowrap;font-size:11px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.7))}
+.tier .rkEmb{width:2.8em;height:2.8em;flex:none;position:relative;z-index:1;margin-right:-1.15em}
+.tier b{display:inline-flex;align-items:center;gap:.4em;box-sizing:border-box;width:12.2em;font-size:1em;line-height:1;padding:.42em .8em .42em 1.6em;border:1.5px solid transparent;border-radius:2px;
+  background:linear-gradient(180deg,#30151b 0,#170809 60%,#0c0405 100%) padding-box,
+    linear-gradient(180deg,color-mix(in srgb,var(--tc) 45%,#fff),var(--tc) 45%,color-mix(in srgb,var(--tc) 50%,#000)) border-box}
+.tier b .rkTx{font-size:1.22em}
+.tier b i{font:900 1em/1 "Cinzel",var(--pcf,serif);font-style:normal;letter-spacing:.02em;margin-left:auto;color:color-mix(in srgb,var(--tc) 55%,#fff);text-shadow:0 1px 0 #000}
+.tier.t5{--tc:#f2c260!important}
+.tier.t5 b{background:linear-gradient(180deg,#7a1424 0,#3a0911 60%,#1c0408 100%) padding-box,linear-gradient(180deg,#ffe9a8,#f2c260 45%,#8a5e14) border-box}
 .hmId .tier,.profSub .tier{font-size:10px}
 .vsTx .tier{font-size:13px}
-.board .tier{font-size:9.5px}.board .tier b{min-width:0;padding-right:1.3em}
-ol.board li{grid-template-columns:1.8em minmax(0,1fr) auto 3em 3.2em;gap:6px}
+.board .tier{font-size:9.5px}.board .tier b{width:10.9em;padding-right:.6em}.board .tier b .rkTx{font-size:1.08em;letter-spacing:.04em}
+ol.board li{grid-template-columns:1.3em minmax(0,1fr) auto 2.6em 2.9em;gap:5px;padding-left:5px;padding-right:6px}ol.board .bdName{font-size:13px}ol.board .bdWl{font-size:11px}
+.rgName .rkTx{font-size:1.15em;-webkit-text-stroke:.7px rgba(20,6,8,.5)}
+.rg.master{--tc:#f2c260!important}.rg.master .rgBar i{background:linear-gradient(90deg,#7a1424,#d9354e);box-shadow:0 0 10px #d9354e}.rg.master .rgBar{border-color:#d8a94a}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -2172,7 +2179,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113172932';
+const APP_VER='20261113083308';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4961,7 +4968,7 @@ const rankEmb=(i,cls='')=>`<img class="rkEmb ${cls}" src="art/rank/r${Math.max(0
 function rankGaugeHTML(rp,rating){
   rp=Math.max(0,rp||0);const r=rankOf(rp);
   return`<div class="rg ${r.master?'master':''}" style="--tc:${r.col}"><div class="rgEmb">${rankEmb(r.i)}</div>
-    <div class="rgBody"><div class="rgTop"><b class="rgName">${r.en}${r.div?`<small> ${r.div}</small>`:''}</b><span class="rgPt"><b class="rgNum">${rp}</b>pt</span></div>
+    <div class="rgBody"><div class="rgTop"><b class="rgName"><span class="rkTx">${r.en}</span>${r.div?`<small> ${r.div}</small>`:''}</b><span class="rgPt"><b class="rgNum">${rp}</b>pt</span></div>
       <div class="rgBar"><i style="width:${r.master?100:r.w}%"></i><u style="left:34%"></u><u style="left:67%"></u></div>
       <div class="rgSub">${r.master?(rating!=null?`マスターレート <b>${rating}</b>`:'最高ランク'):`あと <b>${100-r.w}</b>pt で ${r.nextEn}`}</div></div>
     <div class="rgNext">${r.master?'':rankEmb(r.i+1)}</div></div>`;
@@ -4970,7 +4977,7 @@ function rankGaugeSet(el,rp){
   const r=rankOf(rp),q=x=>el.querySelector(x);
   el.style.setProperty('--tc',r.col);el.classList.toggle('master',!!r.master);
   const e=q('.rgEmb img'),src=`art/rank/r${r.i}.png`;if(e&&!e.src.endsWith(src))e.src=src;
-  q('.rgName').innerHTML=r.en+(r.div?`<small> ${r.div}</small>`:'');q('.rgNum').textContent=Math.round(rp);
+  q('.rgName').innerHTML=`<span class="rkTx">${r.en}</span>`+(r.div?`<small> ${r.div}</small>`:'');q('.rgNum').textContent=Math.round(rp);
   q('.rgBar i').style.width=(r.master?100:rp%100)+'%';
   q('.rgSub').innerHTML=r.master?'最高ランク':`あと <b>${100-Math.floor(rp%100)}</b>pt で ${r.nextEn}`;
   q('.rgNext').innerHTML=r.master?'':rankEmb(r.i+1);
@@ -4989,7 +4996,7 @@ function rankGaugeRun(el,from,to){
   requestAnimationFrame(step);
 }
 // ランクの札：小さな紋章と、金属のプレートに彫った英語の名前（ランキング・ホーム・対戦のはじまりなど、ランクを出す所はすべてこれ）
-function tierHTML(rp){const r=rankOf(rp);return`<span class="tier t${r.i}" style="--tc:${r.col}" title="${r.name}${r.div?' '+r.div:''}">${rankEmb(r.i)}<b>${r.en}${r.div?`<i>${r.div}</i>`:''}</b></span>`}
+function tierHTML(rp){const r=rankOf(rp);return`<span class="tier t${r.i}" style="--tc:${r.col}" title="${r.name}${r.div?' '+r.div:''}">${rankEmb(r.i)}<b><span class="rkTx">${r.en}</span>${r.div?`<i>${r.div}</i>`:''}</b></span>`}
 function rankCardHTML(){
   if(!LADDER.on())return'';
   const st=LADDER.state;
@@ -5101,6 +5108,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:103,d:'2026-11-13',t:'ランクのプレートの見た目を整えました：黒い板に金属のふち、名前は金属調の飾り文字になり、ランキングで左右がそろうようになりました。'},
   {id:102,d:'2026-11-13',t:'ランクの表示が、紋章つきの金属のプレートになりました（BRONZE・SILVER・GOLD・PLATINUM・DIAMOND・MASTER）。ランキング、ホーム、対戦のはじまりの画面で見られます。'},
   {id:101,d:'2026-11-13',t:'ランクに紋章（月と狼）が付きました。ランクポイントはゲージで見られます。ランクマッチの結果画面では、ゲージが増えたり減ったりする様子と、もらったカードが同じ所に出ます。'},
   {id:100,d:'2026-11-13',t:'ランクマッチのあとにもらったカードがダブりだったとき、その場で「ダブりを分解して欠片にする」ボタンが出るようになりました。不具合の直し：デイリーミッションの窓で報酬を受け取ったあと、受け取りボタンが残って見えていたのを直しました。'},
