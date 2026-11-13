@@ -2455,8 +2455,8 @@ setInterval(()=>{if(!document.hidden)CLOUD.push(true)},60000);
 // カードの所持：スタンダードデッキの14種は全員が持っている。それ以外はランクマッチの報酬（サーバーの collection）
 const STD_SINGLE='greatdet';
 const stdDeck=()=>({types:[...STARTER],single:STD_SINGLE});
-const COLL={map:{}};
-if(SV.collCache&&SV.collCache.map)COLL.map={...SV.collCache.map};
+const COLL={map:{},at:{}};
+if(SV.collCache&&SV.collCache.map){COLL.map={...SV.collCache.map};COLL.at={...(SV.collCache.at||{})}}
 // 罠師は、前はスタンダードデッキに入っていた（2026-11-12 口封じと入れ替え）。前から使っていた人が困らないよう、全員が持っている扱いのまま
 const FREE_OWN=['trapper','baker'];  // パン屋も、沈黙僧と入れ替えた（2026-11-12）
 const owns=k=>STARTER.includes(k)||FREE_OWN.includes(k)||k===STD_SINGLE||(COLL.map[k]||0)>0;
@@ -2672,13 +2672,16 @@ function showGifts(){
 
 /* ---- deck ---- */
 /* ---- 絞り込み：「系統」と「属性」は別の段。両方選ぶと両方に当てはまるカードだけ ---- */
-const fState=()=>({cat:'all',attr:'all',inDeck:false});
+const fState=()=>({cat:'all',attr:'all',inDeck:false,sort:'def'});
+// 並び「手に入れた順」：最近手に入れたカードが先（COLL.at＝サーバーの got_at。かぶりで手に入れたときも新しくなる）。時刻のないカード（はじめから持っているもの）はその後ろ、持っていないカードは最後
+const sortGot=(st,a)=>st.sort!=='got'?a:[...a].sort((x,y)=>(owns(y.k)?1:0)-(owns(x.k)?1:0)||(COLL.at[y.k]||0)-(COLL.at[x.k]||0));
 function filterBar(st,o={}){
   const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['cur','呪い']].concat(o.single?[['one','シングル']]:[]);
   const ats=[['all','すべて'],['月','月'],['血','血'],['聖','聖'],['影','影'],['plain','通常']];
   return`<div class="fRows">
     <div class="fRow"><span class="fLab">系統</span>${cats.map(([k,l])=>`<button type="button" class="chip fc ${st.cat===k?'on':''}" data-fc="${k}" ${k!=='all'?`style="--cc:var(--c-${k})"`:''}>${l}</button>`).join('')}</div>
     <div class="fRow"><span class="fLab">属性</span>${ats.map(([k,l])=>`<button type="button" class="chip fa ${st.attr===k?'on':''}" data-fa="${k}" ${ATTR_COL[k]?`style="--ac:${ATTR_COL[k]}"`:''}>${ATTR_COL[k]?'<i class="adot"></i>':''}${l}</button>`).join('')}</div>
+    ${o.sort&&LADDER.uid()?`<div class="fRow"><span class="fLab">並び</span>${[['def','いつもの順'],['got','手に入れた順']].map(([k,l])=>`<button type="button" class="chip fs ${st.sort===k?'on':''}" data-fs="${k}">${l}</button>`).join('')}</div>`:''}
     ${o.inDeck?`<label class="fIn"><input type="checkbox" data-fin ${st.inDeck?'checked':''}> デッキに入れたカードだけ</label>`:''}
   </div>`;
 }
@@ -2686,6 +2689,7 @@ const fMatch=(st,c,inn)=>(st.cat==='all'||c.cat===st.cat)&&(st.attr==='all'||(st
 function bindFilter(st,redraw){
   document.querySelectorAll('[data-fc]').forEach(b=>b.onclick=()=>{st.cat=b.dataset.fc;redraw()});
   document.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{st.attr=b.dataset.fa;redraw()});
+  document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{st.sort=b.dataset.fs;redraw()});
   const fi=document.querySelector('[data-fin]');if(fi)fi.onchange=()=>{st.inDeck=fi.checked;redraw()};
 }
 // デッキの内訳（系統の段・属性の段）
@@ -2764,7 +2768,7 @@ function renderFree(){
   const d=freeDeck(),n=d.types.length,ok=deckLegal(d),bad=d.types.filter(k=>!owns(k)).concat(d.single&&!owns(d.single)?[d.single]:[]);
   const sortOwn=a=>[...a].sort((x,y)=>(owns(y.k)?1:0)-(owns(x.k)?1:0));
   // 系統で「シングル」を選ぶと、シングルカードだけが出る。属性と「デッキに入れたカードだけ」は、シングルにも効く
-  const list=sortOwn(NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k)))),sgl=sortOwn(SINGLE.filter(c=>fMatch({...FFS,cat:FFS.cat==='one'?'one':'all'},c,d.single===c.k)));
+  const list=sortGot(FFS,sortOwn(NORMAL.filter(c=>fMatch(FFS,c,d.types.includes(c.k))))),sgl=sortGot(FFS,sortOwn(SINGLE.filter(c=>fMatch({...FFS,cat:FFS.cat==='one'?'one':'all'},c,d.single===c.k))));
   const tag=k=>isNewCard(k)?'<span class="newTag">NEW</span>':'';
   const row=(c,sg)=>{const inn=sg?d.single===c.k:d.types.includes(c.k),has=owns(c.k);return`<button type="button" class="dk ${sg?'sg':''} ${inn?'in':''} ${has?'':'lock'}" data-k="${c.k}" ${has?'':'aria-disabled="true"'}>${cardHTML(c.k,'s')}<div class="info"><span class="nm">${c.n}${atTag(c)}${tag(c.k)}</span><span class="ef">${effHTML(c.e)}</span><span class="own">${has?'':'<span class="muted">未所持</span>'}${inn?'<span class="inTag">デッキ内</span>':''}${(COLL.map[c.k]||0)>1?`<span class="muted">×${COLL.map[c.k]}</span>`:''}</span></div></button>`};
   const msg=bad.length?`持っていないカードが入っています（${bad.map(k=>'〈'+N(k)+'〉').join('')}）。外すか、スタンダードデッキに戻してください。`:ok?'このデッキで対戦できます。':n!==13?`カードをあと${13-n>0?13-n+'種選んでください':(n-13)+'種外してください'}`:'シングルカードを1枚選んでください';
@@ -2774,7 +2778,7 @@ function renderFree(){
   <div class="dkSlotAct"><button type="button" class="dkIcBig" id="dkIcB" aria-label="デッキのアイコンを変える">${deckIcHTML(d)}</button><b class="dkNameNow">${esc(d.name)}</b><button type="button" class="b small" id="dkRen">名前を変える</button><button type="button" class="b small" id="dkIcon">アイコンを変える</button>${SV.decks.length>1?'<button type="button" class="b small" id="dkDel">このデッキを消す</button>':''}</div>
   <div class="dkTop"><div class="dkTopH"><span><span class="count ${n===13?'ok':''}">${n}/13</span><span class="muted"> 種 ＋ シングル${d.single?1:0}/1</span></span><span class="muted dmHint">いまのデッキ（押すと外れます）</span></div>${deckMiniHTML(d)}</div>
   <div class="dkHead dkStatic">${deckSum(d.types)}
-   ${filterBar(FFS,{inDeck:true,single:true})}
+   ${filterBar(FFS,{inDeck:true,single:true,sort:true})}
    <div class="btns"><button type="button" class="b small ${DKV?'primary':''}" id="fView">${DKV?'一覧を閉じる':'デッキを一覧で見る'}</button><button type="button" class="b small" id="fStd">スタンダードデッキに戻す</button><button type="button" class="b small" id="fAuto">おまかせで組む</button><button type="button" class="b small" id="fClear">全部外す</button></div></div>
   <div class="note" id="fNote" ${bad.length?'style="color:var(--blood)"':''}>${msg}</div>
   ${DKV?`<h3 style="font-size:16px">いまのデッキ（カードを押すと効果）</h3>${deckViewHTML(d)}`:''}
@@ -2927,10 +2931,10 @@ function renderHowto(){
 let CF='all';
 function renderCards(){
   const cats=[['all','すべて'],['info','情報'],['atk','攻撃'],['grd','防御'],['sup','補助'],['cur','呪い'],['one','シングル']];
-  const list=CARDS.filter(c=>fMatch(CFS,c,false));
+  const list=sortGot(CFS,CARDS.filter(c=>fMatch(CFS,c,false)));
   $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">所持 ${ownedCount()}/${CARDS.length}種</span></div>
   <p class="note tierLeg">レアリティ：<b class="tierTx t-B">ブロンズ</b> → <b class="tierTx t-S">シルバー</b> → <b class="tierTx t-G">ゴールド</b> → <b class="tierTx t-L">レジェンド</b></p>
-  ${filterBar(CFS,{single:true})}
+  ${filterBar(CFS,{single:true,sort:true})}
   <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div class="${owns(c.k)?'':'unown'}">${cardHTML(c.k,'p')}</div>`).join('')}</div>
   ${tabBarHTML('cards')}`;
   bindFilter(CFS,()=>{const y=window.scrollY;renderCards();window.scrollTo(0,y)});bindTabBar();
@@ -4691,7 +4695,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     try{
       await LADDER.lib();
       LADDER.sb=window.supabase.createClient(RANK_CFG.url,RANK_CFG.key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
-      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};LADDER.packs=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
+      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};COLL.at={};LADDER.packs=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
       const {data}=await LADDER.sb.auth.getSession();
       LADDER.user=data&&data.session&&data.session.user||null;
       try{const u=new URL(location.href);if(u.searchParams.has('code')){u.searchParams.delete('code');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
@@ -4725,12 +4729,15 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     const {data,error}=await LADDER.sb.rpc('my_collection');
     if(error){console.error(error);return}
     if(LADDER.uid()!==me)return;
-    COLL.map=data&&typeof data==='object'?data:{};SV.collCache={uid:me,map:COLL.map};save();
+    COLL.map=data&&typeof data==='object'?data:{};
+    // 手に入れた時刻（並びかえ用）。サーバーのSQLが古くて読めないときは、前回の控えのまま
+    try{const r=await LADDER.sb.rpc('my_collection_at');if(LADDER.uid()!==me)return;if(!r.error&&r.data&&typeof r.data==='object')COLL.at=r.data}catch(e){}
+    SV.collCache={uid:me,map:COLL.map,at:COLL.at};save();
     gotCheck();
   },
   redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='packs'&&!P)renderPacks();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
   login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
-  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};LADDER.packs=null;SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
+  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};COLL.at={};LADDER.packs=null;SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
   async startMatch(mid){if(!LADDER.rated()||!mid)return;const {error}=await LADDER.sb.rpc('start_match',{p_match:mid,p_opp:NET.oppUid});if(error)console.error(error)},
   async report(mid,won,reason,opp=NET.oppUid){
     const me=LADDER.uid();
