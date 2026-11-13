@@ -150,14 +150,19 @@ html.fit-wide .rvSlot{width:80px}html.fit-wide .rvSlot .tcg,html.fit-wide .rvSlo
 @media (max-width:560px){#rpcBar{left:6px;right:6px;transform:none;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 6px}#rpcBar button{padding:4px 8px;font-size:11px}#rpcBar .rcT{width:100%;text-align:center;font-size:11px}}
 .oppHand.open .tcg{width:var(--ohw,34px)}
 html.fit-wide .oppHand.open .tcg{width:58px}
-.hmFoot{margin:4px 2px 0 0;text-align:right;white-space:nowrap;font-size:min(8px,2.2vw);line-height:1.4;letter-spacing:.02em;color:rgba(241,228,216,.38);user-select:text}.hmFoot a{color:inherit;text-decoration:none}.hmFootGap{display:inline-block;width:1em}
-html.fit-wide .hmDock .hmFoot{position:absolute;right:clamp(18px,2vw,32px);bottom:3px;margin:0;font-size:9px}
+.hmFoot{margin:0;text-align:right;white-space:nowrap;font-size:min(8px,2.2vw);line-height:1.25;letter-spacing:.02em;color:rgba(241,228,216,.38);user-select:text}.hmFoot a{color:inherit;text-decoration:none}.hmFootGap{display:block}
+/* ホームの中の運営表記：ボタンの列の外（下のすき間）に2行で置く。ボタンの位置は動かさない */
+.hmDock .hmFoot{position:absolute;right:2px;top:100%;margin-top:2px}
+html.fit-p .hmDock{bottom:24px}
+html.fit-land .hmFootGap,html.fit-wide .hmFootGap{display:inline-block;width:1em}
+html.fit-land .hmDock .hmFoot{margin-top:1px}
+html.fit-wide .hmDock .hmFoot{top:auto;right:clamp(18px,2vw,32px);bottom:3px;margin:0;font-size:9px}
+@media (min-width:701px),(orientation:landscape){#opFoot .hmFootGap{display:inline-block;width:1em}}
 /* 運営の表記（ページにはじめから書いてある分）。読みこみ中・JavaScript を動かさない閲覧・ホームで窓が開いている間に、画面のいちばん下へ出す。
    ふだんのホームでは、ホームの中の同じ表記（.hmDock の .hmFoot）が見えるので、こちらは消す */
-#opFoot{position:fixed;left:0;right:max(10px,env(safe-area-inset-right,0px));bottom:max(4px,env(safe-area-inset-bottom,0px));z-index:201;margin:0;pointer-events:none}#opFoot a{pointer-events:auto}
+#opFoot{position:fixed;left:0;right:max(14px,env(safe-area-inset-right,0px));bottom:max(1px,env(safe-area-inset-bottom,0px));line-height:1.1;z-index:201;margin:0;pointer-events:none}#opFoot a{pointer-events:auto}
 body:not(:has(#boot)) #opFoot{display:none}
 body:has(#app .hm):has(#modal:not([hidden])) #opFoot{display:block}
-body:has(#app .hm) #modal{padding-bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 32px)}
 .polLink{color:var(--gold,#e8c88c);font-size:12px;text-underline-offset:3px}.polNote{margin:6px 0 0}
 </style></head><body>
 <title>心臓人狼</title>
@@ -2186,7 +2191,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113173746';
+const APP_VER='20261113173747';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
