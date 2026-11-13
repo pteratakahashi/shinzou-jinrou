@@ -627,12 +627,12 @@ grant execute on function public.open_pack() to authenticated;
 
 -- ===== 欠片（2026-11-13）=====
 -- 同じカードの2枚目からは「ダブり」。ダブりを分解すると欠片になり、欠片で持っていないカードを作れる。
--- 欠片の数：ブロンズ1・シルバー2・ゴールド3・レジェンド12。作る値段はその3倍（同じレアリティなら3枚分解で1枚作れる）。
+-- 欠片の数：ブロンズ1・シルバー2・ゴールド4・レジェンド12。作る値段はその3倍（同じレアリティなら3枚分解で1枚作れる）。
 -- 分解しても、どのカードも1枚は必ず残す（collection.n を 1 にする）。数字を変えるときは _shard_v だけ直す（画面は shard_state から読む）
 alter table public.packs add column if not exists shards integer not null default 0;
 create or replace function public._shard_v(t text)
 returns integer language sql immutable as $$
-  select case t when 'L' then 12 when 'G' then 3 when 'S' then 2 else 1 end;
+  select case t when 'L' then 12 when 'G' then 4 when 'S' then 2 else 1 end;
 $$;
 -- 自分の欠片の数と、値段の表 {"shards":数, "rate":3, "v":{"B":1,…}, "tiers":{"カード":"B",…}}
 create or replace function public.shard_state()
