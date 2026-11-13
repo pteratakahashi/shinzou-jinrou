@@ -2245,7 +2245,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113193144';
+const APP_VER='20261113193536';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4623,7 +4623,7 @@ function render0(){
     b.onclick=e=>{if(lpFired){lpFired=false;return}if(e.target.closest('.hinfo')||!canPickIn(me,ph)||S.busy)return showCardInfo(card().type);const c=card();S.sel=S.sel===c?null:c;render()};
     b.ondblclick=()=>{if(ph!=='play'||S.busy)return;S.sel=card();C[S.sel.type].set?onSet():onPlay()};
   });
-  if(!SP){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}
+  if(!SP&&$('#bPlay')){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}   // 観戦（1人の視点）ではボタンを出していない
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
   $('#quit').onclick=e=>{if(S.watch)return watchLeave();if(S.replay){rpcStop();RPV.cur=null;VIEW='replay';draw_();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
