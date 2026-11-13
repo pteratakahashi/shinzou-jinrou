@@ -1171,12 +1171,12 @@ body.onHome{overflow:hidden}
 .hmId span{display:flex;gap:4px;flex-wrap:wrap}.hmId em{font-style:normal;font-size:10px;padding:0 7px;cursor:pointer}
 .hmGear{flex:none;width:38px;height:38px;border-radius:10px;border:2px solid #c9984a;background:linear-gradient(180deg,#5a2230,#2a0910);color:#ffe7b0;padding:7px;cursor:pointer;box-shadow:0 3px 0 #1a0508}
 .hmGear svg,.hmIc svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.hmEvt{position:absolute;left:10px;top:76px;width:min(58%,300px);text-align:left;display:flex;flex-direction:column;gap:1px;padding:7px 10px 8px;border-radius:4px 14px 14px 4px;cursor:pointer;color:#fff;
+.hmEvt{position:absolute;left:10px;top:max(76px,var(--hmTopY,0px));width:min(58%,300px);text-align:left;display:flex;flex-direction:column;gap:1px;padding:7px 10px 8px;border-radius:4px 14px 14px 4px;cursor:pointer;color:#fff;
   background:linear-gradient(90deg,rgba(150,20,40,.92),rgba(60,8,20,.8) 70%,transparent);border-left:4px solid #ffd45e;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .hmEvt b{font-family:var(--game);font-weight:400;font-size:12px;color:#ffd45e;letter-spacing:.1em}
 .hmEvt span{font-size:11px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 2px #000}
 .hmEvt .bdg{position:absolute;right:6px;top:-7px}
-.hmSide{position:absolute;right:8px;top:76px;display:flex;flex-direction:column;gap:9px}
+.hmSide{position:absolute;right:8px;top:max(76px,var(--hmTopY,0px));display:flex;flex-direction:column;gap:9px}
 .hmIc{position:relative;width:58px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;border:0;background:none;cursor:pointer;color:#fff}
 .hmIc i{display:block;width:46px;height:46px;padding:10px;border-radius:50%;color:#ffe7b0;
   background:radial-gradient(circle at 50% 30%,#6a2434,#2a0910 70%) padding-box,var(--frame) border-box;border:2px solid transparent;box-shadow:0 3px 0 rgba(0,0,0,.5),inset 0 2px 0 rgba(255,220,180,.25)}
@@ -1355,7 +1355,7 @@ html.fit-land .bt .hand{padding-top:10px}
 html.fit-land .bt .tableRow .tcg.s,html.fit-land .bt .tableRow .emptySlot,html.fit-land .bt .tableRow .deckPile{width:24px;font-size:4px}
 
 /* --- ダイアログ：どの幅でも画面からはみ出さない --- */
-#modal .sheet{box-sizing:border-box;max-width:min(620px,100%);max-height:calc(var(--vh,100vh) - 24px);overscroll-behavior:contain}
+#modal .sheet{box-sizing:border-box;max-width:min(620px,100%);max-height:min(calc(var(--vh,100vh) - 24px),100%);overscroll-behavior:contain}
 #modal .sheet .grid{grid-template-columns:repeat(auto-fill,minmax(min(78px,29%),1fr))}
 @media (max-width:340px){#modal .sheet{padding:12px}#modal .sheet h2{font-size:18px}}
 html.fit-land #modal .sheet{max-width:min(760px,100%)}
@@ -1372,8 +1372,8 @@ html.fit-land #modal .sheet .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
 }
 @media (max-height:560px){
   .hmTop{padding:3px 6px 3px 3px}.hmAv{width:38px;height:38px}.hmGear{width:34px;height:34px}
-  .hmEvt{top:62px;padding:4px 8px 5px}.hmEvt span{-webkit-line-clamp:1}
-  .hmSide{top:62px;gap:4px}.hmIc{width:40px}.hmIc i{width:34px;height:34px;padding:7px}.hmIc span{display:none}
+  .hmEvt{top:max(62px,var(--hmTopY,0px));padding:4px 8px 5px}.hmEvt span{-webkit-line-clamp:1}
+  .hmSide{top:max(62px,var(--hmTopY,0px));gap:4px}.hmIc{width:40px}.hmIc i{width:34px;height:34px;padding:7px}.hmIc span{display:none}
   .hmB{height:42px;padding:5px 10px}.hmB b{font-size:15px}.hmMain{height:90px}.hmDock{bottom:16px}
   .hmLogo{top:33%}.hmLogo small{display:none}
   .hmResume{padding:3px 10px;font-size:12px}
@@ -4239,8 +4239,9 @@ const FIT={c:null,
     if(F.wide){r.style.setProperty('--colL',F.colL+'px');r.style.setProperty('--colR',F.colR+'px');r.style.setProperty('--tcw',F.tcw+'px');r.style.setProperty('--centerW',F.centerW+'px');r.style.setProperty('--colGap',(F.w3?(F.h<860?12:14):0)+'px')}
     return F;
   },
-  // ホーム：右のアイコンの列が下のボタンに重なるときは、2列に折り返す
-  home(){const sd=document.querySelector('.hmSide'),dk=document.querySelector('.hmDock');if(!sd||!dk)return;
+  // ホーム：右のアイコンの列が下のボタンに重なるときは、2列に折り返す。上の帯が高いとき（ノッチのある画面・称号が2段目に折り返したとき）は、お知らせと右のアイコンを帯の下まで下げる
+  home(){const sd=document.querySelector('.hmSide'),dk=document.querySelector('.hmDock'),tp=document.querySelector('.hmTop'),hm=document.querySelector('.hm');if(!sd||!dk)return;
+    if(tp&&hm)document.documentElement.style.setProperty('--hmTopY',Math.ceil(tp.getBoundingClientRect().bottom-hm.getBoundingClientRect().top+8)+'px');
     document.documentElement.style.setProperty('--sideH',Math.max(90,Math.floor(dk.getBoundingClientRect().top-sd.getBoundingClientRect().top-8))+'px');
     document.documentElement.style.setProperty('--sideW',Math.ceil(sd.getBoundingClientRect().width+12)+'px')},
   // 描画のあと：推理表を「全種類が必ず見える」列数・行の高さにし、カード説明の位置を手札の上に合わせる
@@ -5115,6 +5116,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:104,d:'2026-11-13',t:'iPhoneなどで、ホームの「お知らせ」が上の称号に重ならないようにしました。お知らせなどの窓が画面の上にはみ出して「閉じる」が押しにくかったのも直しました（Discordでいただいた要望です）。'},
   {id:103,d:'2026-11-13',t:'ランクのプレートの見た目を整えました：黒い板に金属のふち、名前は金属調の飾り文字になり、ランキングで左右がそろうようになりました。'},
   {id:102,d:'2026-11-13',t:'ランクの表示が、紋章つきの金属のプレートになりました（BRONZE・SILVER・GOLD・PLATINUM・DIAMOND・MASTER）。ランキング、ホーム、対戦のはじまりの画面で見られます。'},
   {id:101,d:'2026-11-13',t:'ランクに紋章（月と狼）が付きました。ランクポイントはゲージで見られます。ランクマッチの結果画面では、ゲージが増えたり減ったりする様子と、もらったカードが同じ所に出ます。'},
