@@ -2238,7 +2238,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113190915';
+const APP_VER='20261113192223';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -5198,6 +5198,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:114,d:'2026-11-14',t:'友達対戦に、観戦者を1人呼べるようになりました。2人がそろっている部屋に、3人目が同じ部屋コード（またはリンク）で入ると、観戦になります。観戦では、どちらの手札と心臓も見えません。'},
   {id:113,d:'2026-11-14',t:'見た目の直し：PCの対戦画面で「最近使ったカード」が山札に重なっていたのを直しました／ランクのプレートは、名前が板のまん中に来るようにしました／共鳴の表示をひかえめにしました／ホームの名前の下の称号をなくしました（称号は、対戦のはじまりの画面に出ます）。'},
   {id:112,d:'2026-11-14',t:'カードの調整：猛り狼を強くしました。コストで相手に知られる種類は2つから1つに／共鳴したときはコストなし。さらに1枚捨てさせ、自分は1枚引く、に変わりました（Discordでいただいた要望です）。'},
   {id:111,d:'2026-11-14',t:'「猛り狼」を強くしました：コストで相手に知られる種類が2つから1つに減りました。共鳴したときはコストがなくなり、さらに1枚捨てさせたうえで、自分も1枚引けるようになりました。'},
@@ -5726,7 +5727,8 @@ function netRecv(m){
       NET.opp=String(m.name||'相手').replace(/[<>&"]/g,'').slice(0,10)||'相手';NET.oppUid=typeof m.uid==='string'&&UUID_RE.test(m.uid)?m.uid:null;NET.oppRp=Number.isFinite(m.rp)?m.rp:null;
       NET.oppPx=m.av==='custom'&&pxOk(m.px)?m.px:null;NET.oppAv=NET.oppPx?'custom':(typeof m.av==='string'&&C[m.av]?m.av:'villager');NET.oppTitle=typeof m.tt==='string'&&titleName(m.tt)?m.tt:'';
       if(VIEW==='online')renderOnline();break;
-    case'full':netFail('その部屋はもう対戦が始まっています。');break;
+    // 部屋に2人そろっているときは、観戦者として入り直す（友達対戦だけ）
+    case'full':if(MM.on||NET.ranked||!NET.code)netFail('その部屋はもう対戦が始まっています。');else netWatch(NET.code);break;
     case'bye':netLost(`${NET.opp||'相手'}さんが対戦をやめました。`);break;
     case'deck':if(!deckOk(m.deck)||NET.verBad)return;NET.ready.cpu=m.deck;if(NET.host)netMaybeStart();if(VIEW==='online')renderOnline();break;
     // ここから下はゲストが受け取るもの
@@ -5859,7 +5861,8 @@ async function onlineRejoin(){
 // ホストへの新しい接続（観戦・新規・同じ試合への再接続）
 function hostConn(peer,c){
   if(NET.peer!==peer)return;
-  if(c.metadata&&c.metadata.watch){try{c.close()}catch(e){}return}
+  // 友達対戦の部屋は、3人目を観戦者として1人だけ受け入れる（2026-11-14）。ランクマッチは観戦できない
+  if(c.metadata&&c.metadata.watch){if(NET.ranked||MM.on){c.on('open',()=>{try{c.send({t:'nowatch'})}catch(e){}setTimeout(()=>{try{c.close()}catch(e){}},800)});return}return specBind(c)}
   const rj=c.metadata&&c.metadata.rejoin;
   if(rj&&S&&S.online&&!S.guest&&!S.over&&S.gid===rj){
     if(NET.conn&&NET.conn!==c){const old=NET.conn;NET.conn=null;old.__dead=true;try{old.close()}catch(e){}}
@@ -6009,10 +6012,10 @@ function liveEnd(){
   const p={p_code:LIVE.code,p_tok:LIVE.tok};LIVE.code='';
   LADDER.sb.rpc('live_end',p).then(({error})=>{if(error)console.error(error)});
 }
-// ホスト側：観戦者のつなぎ込み（8人まで）
+// ホスト側：観戦者のつなぎ込み（友達対戦の部屋に1人まで）
 function specBind(c){
   c.on('open',()=>{
-    if(NET.specs.length>=8||!NET.conn){try{c.send({t:'nowatch'})}catch(e){}setTimeout(()=>{try{c.close()}catch(e){}},800);return}
+    if(NET.specs.length>=1||!NET.conn){try{c.send({t:'nowatch'})}catch(e){}setTimeout(()=>{try{c.close()}catch(e){}},800);return}
     // 先にいる観戦者へ送り切ってから加え、新しい人には最近のログ込みの盤面をまとめて送る（以後は差分だけ）
     NET.sync(true);NET.specs.push(c);
     try{c.send({t:'hello',host:netName(),guest:NET.opp||'相手'});if(S&&S.online&&!S.guest)c.send({t:'snap',s:netSnap(true,true)})}catch(e){}
@@ -6056,7 +6059,7 @@ function watchRecv(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){
     case'hello':NET.watchNames={me:cleanName(m.guest),cpu:cleanName(m.host)};WATCH.state='wait';WATCH.tries=0;if(VIEW==='watch')renderWatch();break;
-    case'nowatch':watchFail('この試合は観戦できませんでした（観戦の人数がいっぱいか、もう終わっています）。');break;
+    case'nowatch':watchFail('この部屋には入れませんでした（対戦する2人と観戦1人で、もういっぱいです）。');break;
     case'start':S=null;NET.fxq=Promise.resolve();WATCH.state='wait';if(VIEW==='battle'){closeModal();VIEW='watch'}renderWatch();break;
     case'snap':guestApply(m.s);if(VIEW==='watch'&&S){VIEW='battle';window.scrollTo(0,0);render()}break;
     case'fx':if(VIEW==='battle')guestFx(m.n,m.a);break;
@@ -6071,10 +6074,9 @@ async function watchOver(m){
   await fxShow('<div class="koT">K.O.</div>',1300);fxClear();SFX.win();
   const hh=typeof m.hh==='string'&&C[m.hh]?m.hh:null,gh=typeof m.gh==='string'&&C[m.gh]?m.gh:null;
   const hearts=[hh&&`${esc(S.names.cpu)}さんは〈${N(hh)}〉`,gh&&`${esc(S.names.me)}さんは〈${N(gh)}〉`].filter(Boolean).join('、');
-  const v=await modal(`<div class="result"><img class="resArt" src="scenes/win.png" alt=""><span class="big win">${esc(win)}さんの勝ち</span>${hearts?`<p>最後の心臓：${hearts}でした。</p>`:''}<div class="btns"><button type="button" class="b primary" id="wNext">別の試合を観戦する</button><button type="button" class="b" id="wStay">この2人の次の試合を待つ</button><button type="button" class="b" id="wMenu">メニューへ</button></div></div>`,(md,done)=>{
-    md.querySelector('#wNext').onclick=()=>done('next');md.querySelector('#wStay').onclick=()=>done('stay');md.querySelector('#wMenu').onclick=()=>done('menu');
+  const v=await modal(`<div class="result"><img class="resArt" src="scenes/win.png" alt=""><span class="big win">${esc(win)}さんの勝ち</span>${hearts?`<p>最後の心臓：${hearts}でした。</p>`:''}<div class="btns"><button type="button" class="b primary" id="wStay">この2人の次の試合を待つ</button><button type="button" class="b" id="wMenu">メニューへ</button></div></div>`,(md,done)=>{
+    md.querySelector('#wStay').onclick=()=>done('stay');md.querySelector('#wMenu').onclick=()=>done('menu');
   });
-  if(v==='next')return watchStart();
   if(v==='menu')return watchLeave();
   if(!NET.spec){WATCH.state='ended';return go('watch')}
   if(S&&S.over){S=null;WATCH.state='wait';go('watch')}
@@ -6092,17 +6094,14 @@ function renderWatch(){
   setBg(null);
   const st=WATCH.state,nm2=NET.watchNames;
   const spin=(t,s)=>`<div class="onCard mmCard"><div class="mmSpin"></div><p class="onBig">${t}</p>${s?`<p class="note">${s}</p>`:''}</div>`;
-  const body=st==='finding'?spin('対戦中の試合を探しています…'):st==='joining'?spin('試合につないでいます…'):st==='wait'?spin(nm2?`${esc(nm2.cpu)} さん vs ${esc(nm2.me)} さん`:'試合につながりました','次の試合が始まるのを待っています…')
+  const body=st==='finding'?spin('対戦中の試合を探しています…'):st==='joining'?spin('観戦で入っています…'):st==='wait'?spin(nm2?`${esc(nm2.cpu)} さん vs ${esc(nm2.me)} さん`:'試合につながりました','次の試合が始まるのを待っています…')
     :st==='none'?`<div class="onCard"><p class="onBig">いま対戦中の試合はありません</p><p class="note">少し時間をおいてから、もう一度探してみてください。</p></div>`
     :st==='ended'?`<div class="onCard"><p class="onBig">試合が終わりました</p><p class="note">対戦していた人が部屋を閉じました。</p></div>`
     :st==='err'?`<div class="onErr">${esc(WATCH.err)}</div>`:'';
-  const busy=st==='finding'||st==='joining';
-  $('#app').innerHTML=`<div class="sceneBanner"><img src="scenes/home_b.png" alt=""><div class="sbText"><b>試合を観戦</b><span>いま対戦中の誰かの試合をのぞく</span></div></div><div class="top"><span></span><button type="button" class="b small" id="wBack">メニューへ</button></div>
+  $('#app').innerHTML=`<div class="sceneBanner"><img src="scenes/home_b.png" alt=""><div class="sbText"><b>友達の対戦を観戦</b><span>部屋がいっぱいだったので、観戦で入りました</span></div></div><div class="top"><span></span><button type="button" class="b small" id="wBack">メニューへ</button></div>
     ${body}
-    ${busy?'':`<div class="btns"><button type="button" class="b primary" id="wAgain">${st==='wait'?'別の試合を探す':'もう一度探す'}</button></div>`}
     <p class="note">観戦中は、どちらの手札と心臓も見えません。見えるのは、使われたカードと、相手に知られたカードだけです。</p>`;
   $('#wBack').onclick=watchLeave;
-  const a=$('#wAgain');if(a)a.onclick=()=>watchStart();
 }
 
 /* 部屋の画面 */
@@ -6139,7 +6138,7 @@ function renderOnline(){
     body=`<div class="onCard"><span class="label">あなたの名前（相手に表示されます）</span><div class="nameRow">${nameEdHTML('oName')}</div></div>
       <div class="menu">
         ${LADDER.on()?`<div class="mi"><b>ランクマッチ</b><span>${LADDER.uid()?'いま対戦相手を探している人と自動でマッチングします。勝つとランクが上がります。':'Googleでログインすると、知らない人とも自動でマッチングして対戦できます。'}</span><div class="btns" ${LADDER.uid()?'':'data-gsi'}>${LADDER.uid()?'<button type="button" class="b primary" id="oMatch">相手を探す</button>':'<button type="button" class="b primary" id="oLogin">Googleでログイン</button>'}</div>${LADDER.uid()?'':'<p class="note polNote">'+POLICY_LINK+'</p>'}</div>`:''}
-        <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
+        <div class="mi"><b>部屋を作る</b><span>部屋コードとリンクができます。それを友達に送ります。3人目が同じコードで入ると、観戦できます。</span><div class="btns"><button type="button" class="b primary" id="oHost">部屋を作る</button></div></div>
         <div class="mi"><b>部屋に参加する</b><span>友達から届いた5文字のコードを入れます。</span><div class="btns"><input id="oCode" class="codeIn" maxlength="5" autocapitalize="characters" autocomplete="off" value="${esc(NET.code||'')}" placeholder="ABCDE"><button type="button" class="b primary" id="oJoin">参加する</button></div></div>
       </div>`;
   }
