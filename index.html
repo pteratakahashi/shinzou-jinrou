@@ -53,6 +53,7 @@ html.fit-wide .dvGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
 .dm.em{border-style:dashed;border-bottom-width:1px;background:rgba(0,0,0,.25);cursor:default}.dm.em span{position:static;display:flex;height:100%;align-items:center;justify-content:center;background:none;color:var(--dim);padding:0}
 @media (max-width:700px){.dmRow{grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.dmHint{display:none}}
 @media (max-height:520px) and (orientation:landscape){.dmRow{grid-template-columns:repeat(14,minmax(0,1fr))}.dm{aspect-ratio:1.5/1}}
+@media (max-height:520px) and (orientation:landscape){.dm .dmA{display:none}}  /* 横向きの小さいマスでは、属性の印が名前に重なるので出さない（下の色の線で分かる） */
 
 /* ランクマッチを待ちながらの CPU 対戦（2026-11-12） */
 .mmInline{display:inline-block;margin-left:10px;padding:0 8px;font:500 11px/1.7 var(--body);color:var(--gold);border:1px solid var(--hair);white-space:nowrap;vertical-align:middle}
@@ -1786,6 +1787,7 @@ h1,h2,h3,.top h1{font-weight:700;letter-spacing:.14em;color:var(--ivory);text-sh
 .mi:not(:disabled):active{transform:translateY(1px)}
 .mi img{opacity:.6}
 .battleSel .mi{min-height:70px}.battleSel .mi.big{min-height:92px}.battleSel .mi.big b{font-size:clamp(22px,5.4vw,28px)}
+@media (max-width:360px){.battleSel .mi.big{padding-top:32px}}  /* 幅の狭い画面：右上の札が題の文字に重ならないように */
 .miTag{font:700 11px var(--pcf);letter-spacing:.1em;color:var(--gold);background:rgba(10,4,6,.6);border:1px solid var(--hair2);border-radius:2px;padding:2px 8px;box-shadow:none;transform:none}
 .coin{font-family:var(--pcf);font-weight:700;letter-spacing:.04em;border:1px solid var(--hair);background:rgba(10,4,6,.5);box-shadow:none;color:var(--ivory)}
 .coin i{box-shadow:none;background:radial-gradient(circle at 35% 30%,#fff,#c9d0de 45%,#7d859f)}
@@ -1832,6 +1834,7 @@ h1,h2,h3,.top h1{font-weight:700;letter-spacing:.14em;color:var(--ivory);text-sh
 .hmB img{display:none}.hmMain img{opacity:.38;height:120%;filter:saturate(.7)}
 .hmB b,.hmMain b{font-family:var(--pcf);font-weight:700;font-size:14px;letter-spacing:.12em;-webkit-text-stroke:0;text-shadow:none}
 .hmMain b{font-size:clamp(19px,5.4vw,24px);letter-spacing:.18em;color:#fff3e4}
+html.fit-land .hmMain b{font-size:clamp(15px,3.1vw,24px);white-space:nowrap}  /* 横向き：ボタンは画面の半分の幅なので、字も幅に合わせる（幅の狭い機種で「ランクマッチ」が切れていた） */
 .hmMain span{font:500 11px var(--pcf);letter-spacing:.08em;color:#e2b9bf;text-shadow:none}
 .hmB:active,.hmMain:active{transform:translateY(1px)}
 .hmResume{font-weight:700;letter-spacing:.08em;border:1px solid var(--hair2);color:#f3dcae;background:rgba(40,26,10,.78);backdrop-filter:blur(4px)}
@@ -2058,7 +2061,17 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .tier.t5{--tc:#f2c260!important}
 .tier.t5 b{background:linear-gradient(180deg,#7a1424 0,#3a0911 60%,#1c0408 100%) padding-box,linear-gradient(180deg,#ffe9a8,#f2c260 45%,#8a5e14) border-box}
 .hmId .tier,.profSub .tier{font-size:10px}
+/* ホームの上の帯：ランクの札は中身の幅にする（幅の狭い画面で、となりの銀貨の数に重ならないように）。称号は1行のまま。
+   幅が400px より狭い画面では、札の字とボタンを少しずつ小さくして、いちばん長い札（PLATINUM III）でも収める */
+.hmId .tier b{width:auto;min-width:0}.hmId .ptitle{white-space:nowrap}.hmId span{min-width:0}
+html.fit-p .hmId .tier{font-size:clamp(7.5px,2.4vw,10px)}
+@media (max-width:400px){html.fit-p .hmTop{gap:6px}html.fit-p .hmTop .hmGear{width:32px;height:32px;padding:6px}html.fit-p .hmTop>.coin{padding:2px 8px 2px 3px;gap:4px}}
+@media (max-width:350px){html.fit-p .hmTop{gap:4px}html.fit-p .hmTop>.coin{font-size:12px;padding:2px 6px 2px 3px;gap:3px}html.fit-p .hmTop .hmGear{width:28px;height:28px;padding:5px}html.fit-p .hmTop .hmAv{width:36px;height:36px}}
 .vsTx .tier{font-size:13px}
+/* 対戦のはじまり：幅の狭い画面では、顔とランクの札を小さくして画面の中に収める（札と名前が画面の端で切れていた）。長い名前は「…」で止める */
+.vsTx{flex:0 1 auto}.vsNm{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:379px){.vsOv{padding-left:12px;padding-right:12px}.vsP{gap:10px}.vsAv{width:84px;height:84px}.vsTx .tier{font-size:11px}.vsNm{font-size:19px}}
+@media (max-width:339px){.vsAv{width:72px;height:72px}.vsTx .tier{font-size:10px}.vsNm{font-size:17px}}
 .board .tier{font-size:9.5px}.board .tier b{width:10.9em;padding-right:.6em}.board .tier b .rkTx{font-size:1.08em;letter-spacing:.04em}
 ol.board li{grid-template-columns:1.3em minmax(0,1fr) auto 2.6em 2.9em;gap:5px;padding-left:5px;padding-right:6px}ol.board .bdName{font-size:13px}ol.board .bdWl{font-size:11px}
 .rgName .rkTx{font-size:1.15em;-webkit-text-stroke:.7px rgba(20,6,8,.5)}
@@ -4247,7 +4260,13 @@ const FIT={c:null,
   home(){const sd=document.querySelector('.hmSide'),dk=document.querySelector('.hmDock'),tp=document.querySelector('.hmTop'),hm=document.querySelector('.hm');if(!sd||!dk)return;
     if(tp&&hm)document.documentElement.style.setProperty('--hmTopY',Math.ceil(tp.getBoundingClientRect().bottom-hm.getBoundingClientRect().top+8)+'px');
     document.documentElement.style.setProperty('--sideH',Math.max(90,Math.floor(dk.getBoundingClientRect().top-sd.getBoundingClientRect().top-8))+'px');
-    document.documentElement.style.setProperty('--sideW',Math.ceil(sd.getBoundingClientRect().width+12)+'px')},
+    document.documentElement.style.setProperty('--sideW',Math.ceil(sd.getBoundingClientRect().width+12)+'px');
+    // ロゴ：お知らせの文字に重なるとき（低い画面）は、お知らせの下まで下げる。下のボタンに届くなら字を小さくする
+    const lg=document.querySelector('.hmLogo'),h1=lg&&lg.querySelector('h1'),ev=document.querySelector('.hmEvt'),F=this.get();
+    if(lg&&h1){lg.style.top='';h1.style.fontSize='';
+      if(!F.wide&&!F.land&&ev&&hm&&ev.getClientRects().length){const need=ev.getBoundingClientRect().bottom+6,d=need-h1.getBoundingClientRect().top;
+        if(d>0){lg.style.top=Math.round(lg.getBoundingClientRect().top-hm.getBoundingClientRect().top+d)+'px';
+          const r=h1.getBoundingClientRect(),avail=dk.getBoundingClientRect().top-8-r.top;if(r.height>avail&&avail>18)h1.style.fontSize=Math.floor(parseFloat(getComputedStyle(h1).fontSize)*avail/r.height)+'px'}}}},
   // 描画のあと：推理表を「全種類が必ず見える」列数・行の高さにし、カード説明の位置を手札の上に合わせる
   after(){
     const F=this.apply(),r=document.documentElement,mid=document.querySelector('.btMid');
@@ -5059,7 +5078,7 @@ function gsiRender(){
   document.querySelectorAll('[data-gsi]').forEach(el=>{
     if(el.dataset.gsiDone)return;el.dataset.gsiDone='1';
     el.innerHTML='';el.classList.add('gsiBox');
-    try{google.accounts.id.renderButton(el,{type:'standard',theme:'filled_black',size:'large',text:'signin_with',shape:'pill',locale:'ja',width:240})}catch(e){console.error(e)}
+    try{google.accounts.id.renderButton(el,{type:'standard',theme:'filled_black',size:'large',text:'signin_with',shape:'pill',locale:'ja',width:Math.max(200,Math.min(240,Math.floor(el.clientWidth||240)))}/* 幅の狭い枠（3つ並び）では、枠に収まる幅にする */)}catch(e){console.error(e)}
   });
 }
 async function gsiDone(r){
