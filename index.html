@@ -2002,6 +2002,19 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 @media (min-width:900px) and (min-height:520px){.vsOv{grid-template-rows:auto 1fr auto;grid-template-columns:1fr auto 1fr;column-gap:28px}.vsHead,.vsFoot{grid-column:1/-1}.vsP{flex-direction:column;text-align:center;width:auto;max-width:36vw}.vsP.vB{flex-direction:column;text-align:center}.vsTx,.vsP.vB .vsTx{align-items:center}.vsAv{width:190px;height:190px}.vsNm{font-size:40px}.vsMid{width:auto;flex-direction:column}.vsMid i{display:none}.vsMid b{font-size:110px}.vsBg{background:linear-gradient(100deg,#2a0b12 0%,#16080b 46%,#07070f 54%,#10142e 100%)}.vsBg::after{left:50%;right:auto;top:-20%;bottom:-20%;width:3px;height:auto;background:linear-gradient(180deg,transparent,#e8c88c 30%,#fff 50%,#e8c88c 70%,transparent);transform:rotate(8deg);animation-name:vsLineV}}
 @keyframes vsLineV{from{transform:rotate(8deg) scaleY(0)}to{transform:rotate(8deg) scaleY(1)}}
 @media (max-height:560px) and (max-width:899px){.vsAv{width:72px;height:72px}.vsNm{font-size:22px}.vsMid b{font-size:44px}}
+/* 欠片 */
+.shBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;border:1px solid var(--hair,rgba(232,200,140,.28));background:rgba(20,8,12,.55);padding:10px 12px;margin:10px 0}
+.shBar .note{flex-basis:100%;margin:0;font-size:12px}
+.shHave{display:inline-flex;align-items:center;gap:6px;font-weight:700}.shHave b{font-size:20px;color:#bfe9ff;font-variant-numeric:tabular-nums}
+.shIc{display:inline-block;width:.8em;height:.8em;transform:rotate(45deg);background:linear-gradient(135deg,#e6f7ff,#7fc8f0 45%,#3a6fb0);box-shadow:0 0 6px rgba(127,200,240,.7);margin:0 .25em 0 .15em;vertical-align:-.02em}
+.cardPick>.shCell{display:flex;flex-direction:column;gap:5px;min-width:0}
+.cardPick>.shCell>div:first-child{display:flex;flex:1}.cardPick>.shCell>div:first-child>.tcg{flex:1}
+.cardPick.shOn .shAct{min-height:30px;display:flex}
+.cardPick .shBtn{flex-direction:row;align-items:center;justify-content:center;gap:3px}
+.cardPick .shBtn{flex:1;border-radius:0;font:700 12px var(--body,sans-serif);padding:5px 4px;border:1px solid rgba(127,200,240,.5);background:rgba(20,40,70,.5);color:#d8efff;cursor:pointer;white-space:nowrap;min-width:0}
+.shBtn b{color:#fff}.cardPick .shBtn.mk{border-color:var(--gold,#e8c88c);background:rgba(120,30,44,.55);color:#f1e8d8}
+.shBtn.short{opacity:.5}
+.shGot{width:min(60vw,200px);margin:10px auto;display:flex}.shGot .tcg{flex:1}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -2491,6 +2504,11 @@ setInterval(()=>{if(!document.hidden)CLOUD.push(true)},60000);
 const STD_SINGLE='greatdet';
 const stdDeck=()=>({types:[...STARTER],single:STD_SINGLE});
 const COLL={map:{},at:{}};
+/* 欠片（2026-11-13）。同じカードの2枚目からは「ダブり」。分解すると欠片になり、欠片で持っていないカードを作れる。
+   数も値段もサーバーが持つ（shard_state）。サーバーのSQLが古くて読めないあいだは SH.ok=false のままで、画面には何も出さない */
+const SH={ok:false,n:0,rate:3,v:{},tiers:{},busy:false};
+const shDup=k=>Math.max(0,(COLL.map[k]||0)-1),shVal=k=>SH.v[SH.tiers[k]]||0,shCost=k=>SH.rate*shVal(k);
+const shDupAll=()=>Object.keys(COLL.map).reduce((a,k)=>a+shDup(k)*shVal(k),0);
 if(SV.collCache&&SV.collCache.map){COLL.map={...SV.collCache.map};COLL.at={...(SV.collCache.at||{})}}
 // 罠師は、前はスタンダードデッキに入っていた（2026-11-12 口封じと入れ替え）。前から使っていた人が困らないよう、全員が持っている扱いのまま
 const FREE_OWN=['trapper','baker'];  // パン屋も、沈黙僧と入れ替えた（2026-11-12）
@@ -2962,6 +2980,56 @@ function renderHowto(){
   ${tabBarHTML('')}`;
   $('#back').onclick=()=>go('menu');$('#hwTut').onclick=()=>startTutorial();$('#hwPlay').onclick=()=>startFree();$('#hwCards').onclick=()=>go('cards');bindTabBar();
 }
+/* ---- 欠片：カード一覧から、ダブりの分解と、持っていないカードの生成 ---- */
+const shOn=()=>SH.ok&&!!LADDER.uid();
+const shIc='<i class="shIc" aria-hidden="true"></i>';
+function shBarHTML(){
+  const all=shDupAll();
+  return`<div class="shBar"><span class="shHave">${shIc}欠片 <b>${SH.n}</b></span><button type="button" class="b small" id="shAll" ${all?'':'disabled'}>ダブりをまとめて分解${all?`（+${all}）`:''}</button>
+    <p class="note">同じカードの2枚目からは「ダブり」です。分解すると欠片になり、欠片で持っていないカードを作れます（同じレアリティなら、3枚分解で1枚）。分解しても1枚は必ず残るので、デッキには今までどおり使えます。</p></div>`;
+}
+function shCellHTML(k){
+  if(!SH.tiers[k])return'<div class="shAct"></div>';
+  const d=shDup(k);
+  if(owns(k))return`<div class="shAct">${d?`<button type="button" class="shBtn" data-dust="${k}">ダブり${d}枚を分解 <b>+${d*shVal(k)}</b></button>`:''}</div>`;
+  const c=shCost(k);
+  return`<div class="shAct"><button type="button" class="shBtn mk ${SH.n>=c?'':'short'}" data-craft="${k}">作る ${shIc}<b>${c}</b></button></div>`;
+}
+const shErr=e=>{const m=String(e&&e.message||e||'');return /no shards/.test(m)?'欠片が足りません。':/owned/.test(m)?'そのカードはもう持っています。':'うまくいきませんでした。少し待ってから、もう一度ためしてください。'};
+async function shCall(fn,args){
+  if(SH.busy)return null;SH.busy=true;
+  try{const {data,error}=await LADDER.sb.rpc(fn,args);if(error)throw error;if(data&&Number.isFinite(data.shards))SH.n=data.shards;return data}
+  catch(e){console.error(e);await shMsg(shErr(e));return null}
+  finally{SH.busy=false}
+}
+const shMsg=t=>modal(`<div class="info"><div class="infoText"><p>${t}</p><div class="btns"><button type="button" class="b" id="shOk">閉じる</button></div></div></div>`,(m,done)=>{m.querySelector('#shOk').onclick=()=>done()});
+const shAsk=(h,t,yes)=>modal(`<div class="info"><div class="infoText"><h2>${h}</h2><p>${t}</p><div class="btns"><button type="button" class="b primary" id="shY">${yes}</button><button type="button" class="b" id="shN">やめる</button></div></div></div>`,(m,done)=>{m.querySelector('#shY').onclick=()=>done(true);m.querySelector('#shN').onclick=()=>done(false)},()=>false);
+function shRedraw(){if(VIEW!=='cards')return;const y=window.scrollY;renderCards();window.scrollTo(0,y)}
+async function shDust(k){
+  const n=k?shDup(k):Object.keys(COLL.map).reduce((a,x)=>a+shDup(x),0),g=k?n*shVal(k):shDupAll();
+  if(!n)return;
+  if(!k&&!await shAsk('ダブりをまとめて分解',`ダブっているカード <b>${n}枚</b>を分解して、欠片 <b>${g}</b>にします。どのカードも1枚は残ります。`,'分解する'))return;
+  const r=await shCall('dust_cards',k?{p_k:k}:{});if(!r)return;
+  for(const x of(k?[k]:Object.keys(COLL.map)))if(COLL.map[x]>1)COLL.map[x]=1;
+  SV.collCache={uid:LADDER.uid(),map:COLL.map,at:COLL.at};save();
+  try{SFX.coin()}catch(e){}
+  shRedraw();
+}
+async function shCraft(k){
+  const c=shCost(k);
+  if(SH.n<c)return shMsg(`欠片が足りません（〈${N(k)}〉を作るには <b>${c}</b>、いま <b>${SH.n}</b>）。ダブったカードを分解すると欠片が増えます。`);
+  if(!await shAsk(`〈${N(k)}〉を作る`,`欠片 <b>${c}</b>を使って、〈${N(k)}〉を作ります（いまの欠片 ${SH.n} → ${SH.n-c}）。`,'作る'))return;
+  const r=await shCall('craft_card',{p_k:k});if(!r)return;
+  COLL.map[k]=1;COLL.at[k]=Math.floor(Date.now()/1000);SV.collCache={uid:LADDER.uid(),map:COLL.map,at:COLL.at};save();
+  try{SFX.legend()}catch(e){}
+  shRedraw();
+  await modal(`<div class="info"><div class="infoText" style="text-align:center;width:100%"><h2>カードを作りました</h2><div class="shGot">${cardHTML(k,'p')}</div><div class="btns" style="justify-content:center"><button type="button" class="b primary" id="shOk">閉じる</button></div></div></div>`,(m,done)=>{m.querySelector('#shOk').onclick=()=>done()});
+}
+function shBind(){
+  const a=$('#shAll');if(a)a.onclick=()=>shDust(null);
+  document.querySelectorAll('[data-dust]').forEach(b=>b.onclick=e=>{e.stopPropagation();shDust(b.dataset.dust)});
+  document.querySelectorAll('[data-craft]').forEach(b=>b.onclick=e=>{e.stopPropagation();shCraft(b.dataset.craft)});
+}
 // カード一覧（下のタブの「カード」）
 let CF='all';
 function renderCards(){
@@ -2970,9 +3038,10 @@ function renderCards(){
   $('#app').innerHTML=`<div class="top"><h1>カード一覧</h1><span class="note">所持 ${ownedCount()}/${CARDS.length}種</span></div>
   <p class="note tierLeg">レアリティ：<b class="tierTx t-B">ブロンズ</b> → <b class="tierTx t-S">シルバー</b> → <b class="tierTx t-G">ゴールド</b> → <b class="tierTx t-L">レジェンド</b></p>
   ${filterBar(CFS,{single:true,sort:true})}
-  <div class="cardPick" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div class="${owns(c.k)?'':'unown'}">${cardHTML(c.k,'p')}</div>`).join('')}</div>
+  ${shOn()?shBarHTML():''}
+  <div class="cardPick ${shOn()?'shOn':''}" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${list.map(c=>`<div class="shCell"><div class="${owns(c.k)?'':'unown'}">${cardHTML(c.k,'p')}</div>${shOn()?shCellHTML(c.k):''}</div>`).join('')}</div>
   ${tabBarHTML('cards')}`;
-  bindFilter(CFS,()=>{const y=window.scrollY;renderCards();window.scrollTo(0,y)});bindTabBar();
+  bindFilter(CFS,()=>{const y=window.scrollY;renderCards();window.scrollTo(0,y)});bindTabBar();shBind();
 }
 
 // 対戦中に開くルール。#modal（カード選択など）とぶつからないよう専用の重ね画面にする。閉じれば対戦はそのまま
@@ -4732,7 +4801,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     try{
       await LADDER.lib();
       LADDER.sb=window.supabase.createClient(RANK_CFG.url,RANK_CFG.key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
-      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};COLL.at={};LADDER.packs=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
+      LADDER.sb.auth.onAuthStateChange((ev,ses)=>{const u=ses&&ses.user||null;if((u&&u.id)===LADDER.uid())return;LADDER.user=u;LADDER.prof=null;COLL.map={};COLL.at={};SH.ok=false;SH.n=0;LADDER.packs=null;if(u)LADDER.refresh();else{LADDER.state='out';LADDER.redraw()}});
       const {data}=await LADDER.sb.auth.getSession();
       LADDER.user=data&&data.session&&data.session.user||null;
       try{const u=new URL(location.href);if(u.searchParams.has('code')){u.searchParams.delete('code');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
@@ -4769,12 +4838,13 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     COLL.map=data&&typeof data==='object'?data:{};
     // 手に入れた時刻（並びかえ用）。サーバーのSQLが古くて読めないときは、前回の控えのまま
     try{const r=await LADDER.sb.rpc('my_collection_at');if(LADDER.uid()!==me)return;if(!r.error&&r.data&&typeof r.data==='object')COLL.at=r.data}catch(e){}
+    try{const r=await LADDER.sb.rpc('shard_state');if(LADDER.uid()!==me)return;if(!r.error&&r.data&&r.data.tiers){SH.ok=true;SH.n=r.data.shards|0;SH.rate=r.data.rate||3;SH.v=r.data.v||{};SH.tiers=r.data.tiers}}catch(e){}
     SV.collCache={uid:me,map:COLL.map,at:COLL.at};save();
     gotCheck();
   },
   redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='packs'&&!P)renderPacks();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
   login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
-  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};COLL.at={};LADDER.packs=null;SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
+  async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};COLL.at={};SH.ok=false;SH.n=0;LADDER.packs=null;SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
   async startMatch(mid){if(!LADDER.rated()||!mid)return;const {error}=await LADDER.sb.rpc('start_match',{p_match:mid,p_opp:NET.oppUid});if(error)console.error(error)},
   async report(mid,won,reason,opp=NET.oppUid){
     const me=LADDER.uid();
