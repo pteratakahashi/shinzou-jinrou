@@ -2028,6 +2028,7 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 .lfBody .lgh{background:#12080b;font-size:13px;padding:5px 0;z-index:1}
 .lfBody .lr{padding:5px 0 5px 10px}
 .lfBody .lk{flex:none}
+.gotDust{display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0 2px}.gotDust .note{margin:0}.gotDust .note b{color:#bfe9ff}
 </style>
 
 <div id="boot" aria-hidden="true"><div class="bootIn"><svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z" fill="#ff4561" stroke="#2a0610" stroke-width="1.2"/></svg><b>心臓<span>人狼</span></b><i></i></div></div><div id="bgArt" aria-hidden="true"></div><div class="wrap" id="app"></div>
@@ -2148,7 +2149,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113035137';
+const APP_VER='20261113072251';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3994,7 +3995,14 @@ async function gameOver(w){
    ・相手の報告待ち（pending）のとき：SV.pendGot にその時の所持を覚えておき、あとでカードが増えたら「届きました」と出す（gotCheck） */
 const ownedIn=(base,k)=>STARTER.includes(k)||FREE_OWN.includes(k)||k===STD_SINGLE||((base||{})[k]||0)>0;
 function gotRevealHTML(keys,base){
-  return`<div class="reveal gotRev">${keys.filter(k=>C[k]).map((k,i)=>{const dup=ownedIn(base,k);return`<button type="button" class="flip rr-${tierRR(k)}" data-k="${k}" style="animation-delay:${i*90}ms" aria-label="${N(k)}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(k,'p')}</div></div><div class="res ${dup?'dup':'new'}">${dup?'かぶり':'NEW'}</div></button>`}).join('')}</div>`;
+  return`<div class="reveal gotRev">${keys.filter(k=>C[k]).map((k,i)=>{const dup=ownedIn(base,k);return`<button type="button" class="flip rr-${tierRR(k)}" data-k="${k}" style="animation-delay:${i*90}ms" aria-label="${N(k)}"><div class="inner"><div class="face">${backHTML('p')}</div><div class="face front">${cardHTML(k,'p')}</div></div><div class="res ${dup?'dup':'new'}">${dup?'かぶり':'NEW'}</div></button>`}).join('')}</div>${gotDustHTML(keys,base)}`;
+}
+// もらったカードの中にダブり（2枚目から）があれば、その場で欠片にできるボタンを出す。分解しても1枚は残る
+function gotDustHTML(keys,base){
+  if(!shOn())return'';
+  const n={};keys.forEach(k=>{if(C[k])n[k]=(n[k]||0)+1});
+  const ks=Object.keys(n).filter(k=>((base||{})[k]||0)+n[k]>1);
+  return ks.length?`<div class="gotDust"><button type="button" class="b small" data-gotdust="${ks.join(',')}">ダブりを分解して欠片にする</button><span class="note" data-gotdustn></span></div>`:'';
 }
 // 伏せたカードを順にめくる（押してもめくれる。めくったカードを押すと効果）
 function gotRun(root){
@@ -4002,6 +4010,16 @@ function gotRun(root){
   const open=b=>{if(b.classList.contains('on'))return;b.classList.add('on');b.style.animation='none';const rr=tierRR(b.dataset.k),r=b.getBoundingClientRect();
     setTimeout(()=>{if(rr==='L'){SFX.legend();screenFlash('gold');FXC.burst('#f3cf6d',70,6,r.left+r.width/2,r.top+r.height/2)}else if(rr==='R'){SFX.rare();FXC.burst('#b9c7e8',35,6,r.left+r.width/2,r.top+r.height/2)}else SFX.flip()},300)};
   bs.forEach((b,i)=>{b.onclick=()=>{if(b.classList.contains('on'))showCardInfo(b.dataset.k);else open(b)};setTimeout(()=>{if(b.isConnected)open(b)},700+i*650)});
+  const db=root.querySelector('[data-gotdust]'),dn=root.querySelector('[data-gotdustn]');
+  if(db)db.onclick=async()=>{
+    db.disabled=true;if(dn)dn.textContent='分解しています…';let got=0;
+    try{
+      for(const k of db.dataset.gotdust.split(',')){const {data,error}=await LADDER.sb.rpc('dust_cards',{p_k:k});if(error)throw error;got+=data.got|0;SH.n=data.shards|0;if(COLL.map[k]>1)COLL.map[k]=1}
+      try{SFX.coin()}catch(e){}
+      db.hidden=true;if(dn)dn.innerHTML=`分解しました　${shIc}欠片 <b>+${got}</b>（いま ${SH.n}）`;
+      LADDER.loadColl();
+    }catch(e){console.error(e);db.disabled=false;if(dn)dn.textContent='うまくいきませんでした。もう一度ためしてください。'}
+  };
 }
 function gotHTML(d){
   if(!d||!d.ranked)return'';
@@ -4593,7 +4611,10 @@ function bindMissions(){
   document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>{
     const m=SV.daily.list[+b.dataset.claim],def=MISSIONS.find(x=>x.id===m.id);if(!def||m.claimed||m.prog<def.n)return;
     m.claimed=true;SV.coins+=def.r;save();SFX.coin();
-    const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top+r.height/2);renderMenu();
+    const r=b.getBoundingClientRect();coinBurst(r.left+r.width/2,r.top+r.height/2);
+    // 押したボタンをその場で「受取済み」に変える（ミッションの窓の中のボタンは、ホームを描き直しても残ってしまうため）
+    const li=b.closest('li');if(li){li.classList.remove('ok');li.classList.add('claimed')}b.outerHTML='<span class="msnC">受取済み</span>';
+    if(VIEW==='menu'){renderMenu()}
   });
 }
 function coinBurst(x,y){
@@ -5016,6 +5037,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:100,d:'2026-11-13',t:'ランクマッチのあとにもらったカードがダブりだったとき、その場で「ダブりを分解して欠片にする」ボタンが出るようになりました。不具合の直し：デイリーミッションの窓で報酬を受け取ったあと、受け取りボタンが残って見えていたのを直しました。'},
   {id:99,d:'2026-11-13',t:'いまのランクポイント（何ptか）が見えるようになりました。ランクマッチの「マッチング開始」の画面と、右上の歯車の「対人ランク」に出ます（Discordでいただいた要望です）。'},
   {id:98,d:'2026-11-13',t:'デッキ編成に「このデッキをコピー」ボタンが付きました。いま選んでいるデッキと同じ中身の新しいデッキが作れます（デッキは6つまで）。'},
   {id:97,d:'2026-11-13',t:'対戦画面をすっきりさせました：推理の表の「確率」の表示と、ログの「推理だけ」の切りかえをなくしました。'},
