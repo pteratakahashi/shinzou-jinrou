@@ -4914,7 +4914,7 @@ function rankCardHTML(){
   const ladder=TIERS.map((t,i)=>`<i class="${i<rk.i?'done':i===rk.i?'cur':''}" style="--tc:${t[1]}" title="${t[0]}"></i>`).join('');
   return`<div class="rankCard in"><div class="rkTop"><span class="label">対人ランク</span><span class="rkSub">${g?`${p.pos}位 / ${p.total}人`:'まだ対戦していません'}</span></div>
     <div class="rkMain"><b class="rkTier" style="--tc:${rk.col}">${rk.name}${rk.div?`<small> ${rk.div}</small>`:''}</b>${rk.master?`<span class="rkSub">マスターレート <b class="rkRate">${p.rating}</b></span>`:''}</div>
-    ${rk.master?'':`<div class="rkBar" style="--tc:${rk.col}"><i style="width:${rk.w}%"></i></div><span class="rkSub">あと${100-rk.w}ptで${rk.next}${rk.i===4?'（マスターになるとレートが公開されます）':''}</span>`}
+    ${rk.master?'':`<div class="rkBar" style="--tc:${rk.col}"><i style="width:${rk.w}%"></i></div><span class="rkSub">ランクポイント <b>${Math.max(0,p.rp||0)}pt</b>・あと${100-rk.w}ptで${rk.next}${rk.i===4?'（マスターになるとレートが公開されます）':''}</span>`}
     <div class="rkLadder">${ladder}</div>
     <div class="statline"><span>戦績 <b>${p.wins}勝${p.losses}敗</b></span><span>勝率 <b>${g?wr+'%':'－'}</b></span></div>
     <div class="btns"><button type="button" class="b primary small" id="rkMatch">ランクマッチ</button><button type="button" class="b small" id="rkBoard">ランキングと対戦履歴</button><button type="button" class="b small" id="rkLogout">ログアウト</button></div></div>`;
@@ -5016,6 +5016,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:99,d:'2026-11-13',t:'いまのランクポイント（何ptか）が見えるようになりました。ランクマッチの「マッチング開始」の画面と、右上の歯車の「対人ランク」に出ます（Discordでいただいた要望です）。'},
   {id:98,d:'2026-11-13',t:'デッキ編成に「このデッキをコピー」ボタンが付きました。いま選んでいるデッキと同じ中身の新しいデッキが作れます（デッキは6つまで）。'},
   {id:97,d:'2026-11-13',t:'対戦画面をすっきりさせました：推理の表の「確率」の表示と、ログの「推理だけ」の切りかえをなくしました。'},
   {id:96,d:'2026-11-13',t:'対戦画面に「ログ」ボタンが付きました（まん中の、最後の出来事が出ている帯の右）。押すと、これまでに起きたことが画面いっぱいに文字で読めます。「推理だけ」にしぼることもできます。'},
@@ -5190,8 +5191,8 @@ function rankPrep(){
 }
 const rankDeck=()=>{deckInit();const x=MM.pick==='std'?null:SV.decks[MM.pick];return x&&deckLegal(x)?{name:x.name,types:[...x.types],single:x.single}:{name:'スタンダードデッキ',...stdDeck()}};
 function rankPrepHTML(){
-  const d=rankDeck(),std=MM.pick==='std';
-  return`<div class="onCard"><p class="onBig">ランクマッチ</p><p class="note">使用するデッキを確かめて、「マッチング開始」を押してください。相手が見つかると、そのまま対戦が始まります。</p>
+  const d=rankDeck(),std=MM.pick==='std',p=LADDER.prof,rk=p?rankOf(p.rp):null;
+  return`<div class="onCard"><p class="onBig">ランクマッチ</p>${rk?`<p class="rateLine">いまのランク：${tierHTML(p.rp)} ${rk.master?`マスターレート <b>${p.rating}</b>`:`ランクポイント <b>${Math.max(0,p.rp||0)}pt</b>（あと${100-rk.w}ptで${rk.next}）`}</p>`:''}<p class="note">使用するデッキを確かめて、「マッチング開始」を押してください。相手が見つかると、そのまま対戦が始まります。</p>
     <p class="label" style="margin-top:14px">使用するデッキ</p>
     <button type="button" class="mi main rpDeck" id="rpDeck" aria-label="使用するデッキを変える"><b>${std?'':deckIcHTML(SV.decks[MM.pick]||d)}${esc(d.name)}</b><span>${catSummary(d.types)}・シングル〈${N(d.single)}〉</span><em>押すと、ほかのデッキに変えられます</em></button>
     <div class="btns" style="margin-top:14px"><button type="button" class="b primary" id="rpStart">マッチング開始</button><button type="button" class="b" id="rpEdit">デッキを編成する</button><button type="button" class="b" id="rpNo">やめる</button></div></div>`;
