@@ -3857,7 +3857,7 @@ function cpuScore(p,c){
     case 'pack':s=o.hand.length?2.6:.3;break;case 'poisoner':s=o.hand.length<=3?3.2:2;break;
     case 'bastion':s=2.2;break;case 'sentinel':s=p.setCard?2.8:1.8;break;case 'peddler':s=1.9;break;case 'apprentice':s=2;break;
     case 'whitewolf':s=o.hand.length?4.2:.2;break;case 'teller':s=new Set(p.discard.map(x=>C[x.type].cat)).size>=3?4:1;break;
-    case 'greatdet':s=4.2;break;case 'oracle':s=4.6;break;case 'curser':s=maxP>.4?3.8:.4;break;case 'saint':s=p.life===1?(threat>.3?1.5:4.5):-1;break;case 'timewitch':s=p.hand.length>=4?4:1;break;
+    case 'greatdet':s=live>5?4.2:.5;break;case 'oracle':s=4.6;break;case 'curser':s=maxP>.4?3.8:.4;break;case 'saint':s=p.life===1?(threat>.3?1.5:4.5):-1;break;case 'timewitch':s=p.hand.length>=4?4:1;break;
   }
   if(C[c.type].e.includes('襲撃：')&&o.hand.length<=(['wolf','pack','alpha','berserker','cursewolf'].includes(c.type)?2:1)&&!o.f.ward)s+=3;
   if(C[c.type].attr&&!C[c.type].set&&p.lastAttr===C[c.type].attr)s+=1;
@@ -5136,6 +5136,7 @@ const UPDATES=[
   {id:92,d:'2026-11-13',t:'同じアカウントで別の端末からログインしたとき、デッキがそろわないことがあったのを直しました。はじめてつながる端末では、両方の端末のデッキを残して合わせます（6つまで）。'},
   {id:91,d:'2026-11-13',t:'カードの調整：星読みは、対人戦での勝率が高かったため、通常カード（属性なし）になり、共鳴がなくなりました。効果は「相手の心臓の名前が偶数文字か奇数文字かを知る」だけです。しばらくこれで様子を見ます。'},
   {id:90,d:'2026-11-13',t:'利用規約・配信や動画についての決まり・プライバシーポリシーを載せました。設定と、Googleでログインのボタンの下から読めます。'},
+  {id:90,d:'2026-11-13',t:'不具合の直し：CPUが、もう候補をへらせないのに〈名探偵〉（妖狐で化けた分もふくむ）を何度も使ってしまうのを直しました。候補が5種類以下のときは、ほかのカードを優先します。'},
   {id:89,d:'2026-11-13',t:'ログインすると、毎日1パックもらえるようになりました（その日はじめてゲームを開いたときに届きます。Googleでログインしている人が対象です）。'},
   {id:88,d:'2026-11-12',t:'不具合の直し：妖狐などで「カードをえらぶ画面」が出る直前に手札のカードの説明を開くと、えらぶ画面が消えて対戦が止まってしまうことがある不具合を直しました。'},
   {id:87,d:'2026-11-12',t:'デッキ編成の上に固定されている「いまのデッキ」の小さなカードに、属性（月・血・聖・影・通常）の印が付きました。PCの対戦画面で、説明が長いカードを選ぶと文が途中で切れて読めなかったのを直しました。チュートリアルの「まん中の推理の状況」という案内を、PCでも分かる言い方に直しました（Discordでいただいた要望です）。'},
