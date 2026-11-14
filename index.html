@@ -2262,7 +2262,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114063412';
+const APP_VER='20261114063456';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2283,7 +2283,7 @@ const maxOwn=k=>C[k].single?1:3;
 /* ================= utils ================= */
 const $=s=>document.querySelector(s);
 /* 演出をひかえめにするか。パソコンやスマホの「アニメーションを減らす」設定には従わない（切っている人は演出が飛んで爆速になり、おかしく見えた。2026-11-14）。設定の「演出」で選ぶ */
-/* 重さ（設定の「重さ」。端末ごとに覚える＝ほかの端末とは合わせない）：0 ふつう／1 軽い（飾りの光や動きを止める。html.lite）／2 最軽量（演出は最低限。html.lite と html.rm） */
+/* 重さ（設定の「重さ」。端末ごとに覚える＝ほかの端末とは合わせない）：0 ふつう／1 軽い（飾りの光や動きを止める。html.lite）／2 最軽量（動きを全部止める。進む速さ・表示の長さは変えない＝プテラ「軽くするのは演出のみ、快適さは損なわない」。html.lite と html.rm） */
 let GFX=0;try{const g=localStorage.getItem('hw2_gfx');GFX=g!=null?(+g||0):(JSON.parse(localStorage.getItem('hw2_save')||'{}').rm?2:0)}catch(e){}GFX=GFX===1||GFX===2?GFX:0;
 const RM=GFX===2,LITE=GFX>=1;document.documentElement.classList.toggle('rm',RM);document.documentElement.classList.toggle('lite',LITE);
 // 打ち切った対戦（S.aborted：ランクマッチの相手が見つかって中断した CPU 対戦）の続きは、ここで止めて二度と動かさない
@@ -2770,7 +2770,7 @@ function showSettings(){
     ${rankCardHTML()}
     <div class="sndSet"><span class="label">音楽</span><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}><button type="button" class="b small" id="mBgm">${bgmOn()?'ON':'OFF'}</button></div>
     <div class="sndSet"><span class="label">効果音</span><input type="range" id="mSfxVol" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}><button type="button" class="b small" id="mSfx">${sndOn()?'ON':'OFF'}</button></div>
-    <div class="btns"><span class="label">重さ</span>${['ふつう','軽い','最軽量'].map((t,i)=>`<button type="button" class="b small${GFX===i?' primary':''}" data-gfx="${i}" ${GFX===i?'aria-pressed="true"':''}>${t}</button>`).join('')}<span class="note" style="flex-basis:100%">スマホが熱くなるときは「軽い」に。飾りの光や動きを止めます。「最軽量」は演出を最低限にして、速く進みます</span></div>
+    <div class="btns"><span class="label">重さ</span>${['ふつう','軽い','最軽量'].map((t,i)=>`<button type="button" class="b small${GFX===i?' primary':''}" data-gfx="${i}" ${GFX===i?'aria-pressed="true"':''}>${t}</button>`).join('')}<span class="note" style="flex-basis:100%">スマホが熱くなるときは「軽い」に。飾りの光や動きを止めます。「最軽量」は動きを全部止めます。どちらも進む速さは同じです</span></div>
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     ${LADDER.uid()?`<div class="btns"><span class="label">記録</span><button type="button" class="b small" id="clSync">ほかの端末と合わせる</button><span class="note" id="clSt">${CLOUD.last?(CLOUD.last.err?'合わせられませんでした：'+esc(CLOUD.last.err):new Date(CLOUD.last.t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+' '+CLOUD.last.how+'（銀貨 '+CLOUD.last.coins+'）'):'まだ合わせていません'}</span></div>`:''}
     ${LADDER.admin?`<div class="btns"><span class="label">運営</span><button type="button" class="b small" id="stRep">リプレイを見る</button></div>`:''}
@@ -5251,7 +5251,7 @@ async function saveName(v){
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
   {id:120,d:'2026-11-14',t:'カードの調整：5枚を変えました。墓守は、さらに捨て札からランダムに3枚を山札に戻す／パン屋は「捨て札から3枚まで選んで山札に戻し、1枚引く。共鳴で1つ知る」に（属性は聖）／罠師は「相手が攻撃系カードを使ったとき、相手の手札の攻撃系カードをすべて捨てさせる。共鳴で2枚引く」に／占星術師は1〜3種類まで選べるように（共鳴は1枚引くだけ）／聖女は「すべてのカードを山札に戻して心臓を入れかえ、相手の推理をリセットし、ライフを1回復」に。山札切れへの対策として、捨て札を山札に戻せるカードができました。'},
-  {id:119,d:'2026-11-14',t:'設定（歯車）に「重さ」を足しました。スマホが熱くなるときは「軽い」にすると、カードの光や背景の動きなど、ずっと動いている飾りが止まります（カードを使ったときの演出はそのまま）。「最軽量」は演出を最低限にして、速く進みます。端末ごとに選べます。'},
+  {id:119,d:'2026-11-14',t:'設定（歯車）に「重さ」を足しました。スマホが熱くなるときは「軽い」にすると、カードの光や背景の動きなど、ずっと動いている飾りが止まります（カードを使ったときの演出はそのまま）。「最軽量」は動きを全部止めます。どちらも、進む速さや何が起きたかの表示は「ふつう」と同じです。端末ごとに選べます。'},
   {id:118,d:'2026-11-14',t:'演出が飛んだり、とても速く進んだりすることがあるのを直しました。パソコンやスマホで「アニメーション効果」を切っていると、ゲームの演出まで止まっていました。これからは端末の設定に関係なく、ふつうの演出で動きます。演出を減らしたいときは、設定（歯車）の「重さ」で選べます。'},
   {id:117,d:'2026-11-14',t:'動きを軽くしました：カードの枠の光と、自分の番のふちの光が、パソコンやスマホに大きな負担をかけていて、演出がカクカクすることがありました。見た目はそのままで、負担を約10分の1にしました。'},
   {id:116,d:'2026-11-14',t:'English・한국어・简体中文・繁體中文 に対応しました。端末の言語に合わせて自動で切りかわります。設定（歯車）の「言語 / Language」からも選べます。Now available in English, Korean and Chinese — change it in Settings > Language.'},
