@@ -4662,7 +4662,7 @@ function render0(){
     <div class="tableRow"><div class="slot">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
   </section>
   ${HID?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
-  ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">相手との接続が切れました。戻ってくるのを待っています… <b id="pauseSec">${pauseLeftText()}</b>${NET.ranked&&NET.mid?'（相手が戻ってこなければ、あなたの勝ちになります）':'（戻ってこなければ、対戦を終了します）'}</div>`:''}
+  ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">${netSelfDown()?'あなたの接続が切れました。つなぎ直しています…':'相手との接続が切れました。戻ってくるのを待っています…'} <b id="pauseSec">${pauseLeftText()}</b>${netSelfDown()?(NET.ranked&&NET.mid?'（つながらなければ、あなたの負けになります）':'（つながらなければ、対戦を終了します）'):NET.ranked&&NET.mid?'（相手が戻ってこなければ、あなたの勝ちになります）':'（戻ってこなければ、対戦を終了します）'}</div>`:''}
   <div class="actions btAct"><div class="phase">${phase}${S.online&&!S.over&&S.deadline?`<span class="tLeft" id="tLeft"></span>`:''}${mmInlineHTML()}</div>
     ${S.sel?`<div class="detail">〈${N(S.sel.type)}〉${effHTML(C[S.sel.type].e)}${C[S.sel.type].set?'':'<span class="bluffNote">「ブラフ」＝伏せ札のふりをして伏せる。次の相手ターンに相手がカードを使わなければ成功：手札に戻り、1枚多く使え、相手の心臓ではない種類を1つ知る。</span>'}${resOk(S.sel)&&C[S.sel.type].e.includes('共鳴：')?`<span class="resnote">　今使うと共鳴：${C[S.sel.type].e.split('共鳴：')[1]}</span>`:''}</div>`:'<div class="detail ph" aria-hidden="true"></div>'}
     ${S.watch?`<p class="note">観戦中です（${RP?'両方の手札と心臓が見えています':esc(S.names.me)+'さんの視点'}）。下の「視点」で切りかえられます。</p>`:RP?'<p class="note">リプレイです。両方の手札と心臓が見えています。</p>':SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
@@ -5292,6 +5292,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:128,d:'2026-11-15',t:'対戦中に接続が切れたとき、切れたのが自分の側か相手の側かを見分けるようにしました。自分の側（オフラインになった、アプリを裏に回して止まっていた、など）のときは「あなたの接続が切れました」と出て、2分たっても戻れなければ自分の負けとして記録します。前は、切れた側も「自分の勝ち」と報告していたため、ちゃんと待っていた人が負けになることがありました。'},
   {id:127,d:'2026-11-14',t:'マイページを、下のメニューのいちばん右（前の「ランキング」の場所）に移しました。アイコン・名前・称号をここで変えられ、自分のランクも見られます。「世界ランキング」を押すと、みんなの順位が開きます。戦績とリプレイは、同じページの下にあります。'},
   {id:126,d:'2026-11-14',t:'対戦中のログ（記録）のいちばん上に、この試合でどちらが先攻・後攻かをいつも出すようにしました。'},
   {id:125,d:'2026-11-14',t:'「マイページ」ができました（ホームのグラフのアイコンから）。自分の勝率、直近50試合の勝ち負け、デッキごとの戦績、相手のシングルごとの戦績などを見られます。ランクマッチと友達との対戦は、あとから「リプレイ」で自分の視点のまま見返せます（新しい30試合ぶん）。記録はこの端末に残り、このアップデートのあとに遊んだ対戦から入ります。'},
@@ -5961,12 +5962,12 @@ function netBind(c,rejoin){
   c.on('error',()=>{if(c.__dead||NET.conn!==c)return;netDrop()});
 }
 function netDrop(){if(S&&S.online&&!S.over&&!NET.leaving&&!S.spec)return netPause();netLost()}
-function netLost(msg){
+function netLost(msg,self){
   NET.paused=false;NET.resumedAt=0;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);ONL.clear();
   if(!NET.conn&&!NET.peer)return;
   const live=!!(S&&S.online&&!S.over&&NET.mid),mid=NET.mid,opp=NET.oppUid;
   const leaving=NET.leaving;netReset();
-  if(live&&!leaving)LADDER.report(mid,true,'disconnect',opp);
+  if(live&&!leaving)LADDER.report(mid,!self,'disconnect',opp);  // self＝切れていたのが自分の側（勝ちとして報告しない）
   if(S&&S.online)S.over=true;
   if(leaving)return;
   NET.err=msg||'相手との接続が切れました。';
@@ -6049,6 +6050,7 @@ function timeUpTick(){
   NET.sync();
 }
 setInterval(()=>{
+  {const was=netSelfDown();netSelfChk();TICK_AT=Date.now();if(NET.paused&&!was&&netSelfDown()&&VIEW==='battle'&&S&&S.online&&!S.over)render()}
   timeUpTick();
   const el=document.getElementById('tLeft');
   {const ps=document.getElementById('pauseSec');if(ps)ps.textContent=pauseLeftText()}
@@ -6058,14 +6060,23 @@ setInterval(()=>{
 // 通信が切れたとき：対戦中なら2分は再接続を待つ
 // 待てる残り時間（「あと1分43秒」）。NET.pauseAt から2分
 function pauseLeftText(){const ms=Math.max(0,REJOIN_MS-(Date.now()-(NET.pauseAt||Date.now()))),t=Math.ceil(ms/1000);return`あと${t>=60?Math.floor(t/60)+'分':''}${t%60}秒`}
+// 切れたのが自分の側かどうかを見分ける（2026-11-15）。自分の側と見なすのは：端末がオフライン／画面が5秒より長く止まっていた（アプリを裏に回した等）／
+// 接続サーバーとのつながりが切れた、のどれかが、切れる直前（20秒以内）か待っている間にあったとき。どれも無ければ相手の側として扱う
+let SELF_AT=0,TICK_AT=Date.now(),SIG_WAS=false;
+function netSelfChk(){
+  const now=Date.now(),sd=!!(NET.peer&&!NET.peer.destroyed&&NET.peer.disconnected);
+  if(navigator.onLine===false||now-TICK_AT>5000||(sd&&!SIG_WAS)||(sd&&NET.paused&&NET.pauseAt&&now-NET.pauseAt>15000))SELF_AT=now;
+  SIG_WAS=sd;
+}
+const netSelfDown=()=>!!(SELF_AT&&NET.pauseAt&&SELF_AT>=NET.pauseAt-20000);
 function netPause(){
   if(NET.paused)return;
   // つながってすぐ（15秒以内）にまた切れたときは、待ち時間を2分に戻さず、前の続きから数える（つながっては切れるのくり返しで、いつまでも終わらないのを防ぐ）
   const flap=NET.pauseAt&&NET.resumedAt&&Date.now()-NET.resumedAt<15000;
-  NET.paused=true;if(!flap)NET.pauseAt=Date.now();NET.resumedAt=0;
+  NET.paused=true;if(!flap)NET.pauseAt=Date.now();NET.resumedAt=0;netSelfChk();
   try{if(NET.conn)NET.conn.close()}catch(e){}NET.conn=null;
   if(S){S.paused=true;S.pauseLeft=S.deadline?Math.max(5000,S.deadline-Date.now()):null}
-  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},Math.max(0,REJOIN_MS-(Date.now()-NET.pauseAt)));
+  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netSelfChk();const me=netSelfDown();netLost(me?'あなたの接続が切れていたため、対戦を終了しました。':`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`,me)}},Math.max(0,REJOIN_MS-(Date.now()-NET.pauseAt)));
   if(!NET.host)guestRetry();
   if(VIEW==='battle')render();
 }
@@ -6103,7 +6114,7 @@ async function onlineRejoin(){
   const L=onlineLoad();if(!L){ONL.clear();return go('online')}
   NET.host=true;NET.state='opening';S=L.S;S.paused=true;S.deadline=Date.now()+TURN_MS;S.pauseLeft=TURN_MS;NET.paused=true;NET.pauseAt=Date.now();NET.resumeNext=L.next;
   log('― 中断したところ（ターンのはじめ）から再開します。相手を待っています ―','sys');render();
-  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netLost(`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`)}},REJOIN_MS);
+  clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused){NET.paused=false;netSelfChk();const me=netSelfDown();netLost(me?'あなたの接続が切れていたため、対戦を終了しました。':`${NET.opp||'相手'}さんが戻ってこなかったため、対戦を終了しました。`,me)}},REJOIN_MS);
   try{await NET.lib()}catch(e){return}
   let tries=0;
   const open=()=>{const peer=NET.peer=mkPeer(ROOM_PREFIX+NET.code);
