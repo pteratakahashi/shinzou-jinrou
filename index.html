@@ -614,8 +614,8 @@ details .in{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .r-L.lg .ttext{background:rgba(36,14,6,.75)}
 .lives .lost{display:inline-block;animation:lifeLost .8s ease-out}
 @keyframes lifeLost{0%{transform:scale(2.2);color:#fff;text-shadow:0 0 12px var(--blood)}100%{transform:none}}
-.side.active::before{content:"";position:absolute;inset:-1px;border-radius:12px;pointer-events:none;box-shadow:0 0 22px rgba(233,166,76,.25);animation:breathe 2.4s ease-in-out infinite}
-@keyframes breathe{50%{box-shadow:0 0 34px rgba(233,166,76,.45)}}
+.side.active::before{content:"";position:absolute;inset:-1px;border-radius:12px;pointer-events:none;box-shadow:0 0 34px rgba(233,166,76,.45);opacity:.5;animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{50%{opacity:1}}
 .chainTag{font-size:11px;font-weight:700;color:var(--candle)}
 
 /* ---- announcer / heartbreak / round ---- */
@@ -2089,11 +2089,15 @@ ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-l
 .tcg.p:not(.tx) .tart{flex:1!important;height:auto!important;aspect-ratio:auto!important}
 .cardPick>.shCell>div:first-child>.cardBtn{flex:1;min-width:0}.cardPick>.shCell .cardBtn>.tcg{flex:1;width:100%}
 /* 光る演出は枠だけ（シルバーとゴールド）。カード全体を横切る光はやめた。枠の形で切り抜けないブラウザでは光らせない */
-.r-S>.cfr::after,.r-G>.cfr::after{content:"";position:absolute;inset:-1px;pointer-events:none;background:linear-gradient(115deg,transparent 36%,rgba(255,255,255,.75) 48%,transparent 60%);background-size:250% 100%;animation:shine 4.5s linear infinite;
+/* 軽くするため、光の帯は「位置をずらす」だけで動かす（毎コマ描き直さない。2026-11-14 配信で演出がカクつく報告）。枠の形の切り抜きは外側の b、動く帯は b::after */
+.cfr>b{display:none}
+.r-S>.cfr>b,.r-G>.cfr>b{display:block;position:absolute;inset:-1px;overflow:hidden;pointer-events:none;
   -webkit-mask-box-image:var(--fr) 122 / 5.4% 7.5% stretch;mask-border:var(--fr) 122 / 5.4% 7.5% stretch}
-.r-G>.cfr::after{animation-duration:3.6s}
-@supports not ((-webkit-mask-box-image:none) or (mask-border:none)){.cfr::after{display:none!important}}
-@media (prefers-reduced-motion:reduce){.cfr::after{animation:none!important;display:none}}
+.r-S>.cfr>b::after,.r-G>.cfr>b::after{content:"";position:absolute;top:0;bottom:0;left:0;width:60%;background:linear-gradient(115deg,transparent 12%,rgba(255,255,255,.75) 50%,transparent 88%);transform:translateX(-150%);animation:frShine 4.5s linear infinite;will-change:transform}
+.r-G>.cfr>b::after{animation-duration:3.6s}
+@keyframes frShine{from{transform:translateX(-150%)}to{transform:translateX(475%)}}
+@supports not ((-webkit-mask-box-image:none) or (mask-border:none)){.cfr>b{display:none!important}}
+@media (prefers-reduced-motion:reduce){.cfr>b{display:none!important}}
 /* 銀貨：ふちと厚みのある硬貨の絵（まん中に心臓の刻印） */
 .coin i,.coinFly{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='.45' stop-color='%23cfd6e6'/%3E%3Cstop offset='1' stop-color='%23737b96'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238d95b0'/%3E%3Cstop offset='1' stop-color='%23e9eef9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='20' cy='22.5' rx='17' ry='16' fill='%234d5470'/%3E%3Ccircle cx='20' cy='19.5' r='17' fill='url(%23a)' stroke='%234d5470' stroke-width='1.6'/%3E%3Ccircle cx='20' cy='19.5' r='12.6' fill='url(%23b)' stroke='%236a728e' stroke-width='1.1'/%3E%3Cpath d='M20 27.6c-5.4-3.9-8-6.7-8-10 0-2.4 1.8-4.1 4-4.1 1.6 0 3.1.9 4 2.3.9-1.4 2.4-2.3 4-2.3 2.2 0 4 1.7 4 4.1 0 3.3-2.6 6.1-8 10z' fill='%235b6380' stroke='%23f4f7ff' stroke-width='.9'/%3E%3Cpath d='M8.2 13.5a13.8 13.8 0 0 1 9-9.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' opacity='.85'/%3E%3C/svg%3E") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important}
 .coin i{width:21px;height:21px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}.coin.sm i{width:16px;height:16px}
@@ -2246,7 +2250,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261113201227';
+const APP_VER='20261114053823';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2515,7 +2519,7 @@ function cardHTML(k,size='m',extra=''){
   // 文を載せるのは、大きく見せる演出（size 'l'）と、えらぶ画面の大きいカード（extra に 'tx'）だけ
   const text=(size==='l'||/\btx\b/.test(extra))?`<div class="ttext">${effHTML(c.e)}</div>`:'';
   const alt=altOn(k);
-  return `<div class="tcg fr ${size} cat-${c.cat} r-${tierCls(c)} ${alt?'altArt':''} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:''}</div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${alt?'alt/'+k+'.webp':k+'.png'}" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}<i class="cfr"></i></div>`;
+  return `<div class="tcg fr ${size} cat-${c.cat} r-${tierCls(c)} ${alt?'altArt':''} ${extra}"><div class="tname"><span class="nm">${c.n}</span>${c.attr?`<span class="atb" style="--ac:${ATTR_COL[c.attr]}">${c.attr}</span>`:''}</div><div class="tart"><span class="glyph">${c.g}</span><img src="art/${alt?'alt/'+k+'.webp':k+'.png'}" alt="" loading="lazy" decoding="async" onerror="this.remove()">${size!=='s'?`<span class="catl">${CAT[c.cat]}${c.set?'・伏せ':''}</span>`:''}</div>${text}<i class="cfr"><b></b></i></div>`;
 }
 const backHTML=(size='s',label='')=>`<div class="tcg back ${size}"><span class="bk">心</span>${label?`<span class="bl">${label}</span>`:''}</div>`;
 
@@ -5208,6 +5212,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:117,d:'2026-11-14',t:'動きを軽くしました：カードの枠の光と、自分の番のふちの光が、パソコンやスマホに大きな負担をかけていて、演出がカクカクすることがありました（とくに配信中）。見た目はそのままで、負担を約10分の1にしました。'},
   {id:116,d:'2026-11-14',t:'English・한국어・简体中文・繁體中文 に対応しました。端末の言語に合わせて自動で切りかわります。設定（歯車）の「言語 / Language」からも選べます。Now available in English, Korean and Chinese — change it in Settings > Language.'},
   {id:115,d:'2026-11-14',t:'友達対戦の観戦で、2人の手札と心臓が見えるようになりました。観戦している人は、下のボタンで視点（両方見える／どちらか1人の視点）をいつでも切りかえられます。'},
   {id:114,d:'2026-11-14',t:'友達対戦に、観戦者を1人呼べるようになりました。2人がそろっている部屋に、3人目が同じ部屋コード（またはリンク）で入ると、観戦になります。観戦では、どちらの手札と心臓も見えません。'},
