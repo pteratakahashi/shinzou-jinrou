@@ -2155,7 +2155,14 @@ html.rm .twin.res,html.rm .hc.glow::after{animation:none}
 #modal.peekOk .sheet{pointer-events:auto;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 18px 60px rgba(0,0,0,.85)}
 #modal.peekOn .sheet>*:not(.pickBtns){display:none}
 #modal.peekOn .sheet{width:auto;padding:8px 10px;gap:0;overflow:hidden}
-#modal.peekOn .sheet #mOk{display:none}
+#modal.peekOn .sheet #mOk,#modal.peekOn .sheet #mTx{display:none}
+/* えらぶ画面：カードの絵だけ（効果の文は「効果も見る」で出す。2026-11-15） */
+.cardPick:not(.pkArt) .pcArt{display:none}
+.cardPick.pkArt .pcBig,.cardPick.pkArt .pcRow{display:none!important}
+.cardPick.pkArt{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))!important;gap:10px}
+.cardPick.pkArt .pcArt{display:flex}.cardPick.pkArt .pcArt>.tcg{flex:1;width:100%}
+.cardPick.pkArt button.on .tcg{outline:3px solid var(--candle)!important}
+@media (max-width:560px){.cardPick.pkArt{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px}}
 html.fit-wide #modal.peekOk{padding-right:calc(var(--colR,440px) + 30px)}
 /* 観戦・リプレイで見えている相手の手札は、重ねずに並べる（2026-11-15） */
 html.fit-wide .bt .oppHand.open{padding-left:0;gap:5px;overflow:visible}
@@ -2306,7 +2313,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114171841';
+const APP_VER='20261114172257';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2567,7 +2574,7 @@ async function fxHeartBreak(victim,from){
   VOICE.say('Heart break!',{pitch:.45});quake();
   // タコの心臓がはじける瞬間（約0.85秒後）に合わせて光と破片を出す
   setTimeout(()=>{hitstop(140);screenFlash('white');setTimeout(()=>screenFlash('red'),140);quake();FXC.burst('#ef5a68',110,11);FXC.ring('#ef5a68');FXC.ring('#ffffff')},850);
-  await fxShow(`<div class="hbWrap"><div class="hbOcto">${octoSVG(life,fr,'',Date.now()-(.25-.35)*1000,octoOf(victim==='me'?S.me:S.cpu))}</div><div class="hbText">HEART BREAK</div><div class="hbSub">${victim==='me'?MYN():OPN()}の心臓 残り${life}つ</div></div>`,1900);fxClear();
+  await fxShow(`<div class="hbWrap"><div class="hbOcto">${octoSVG(life,fr,'',Date.now()-(.25-.35)*1000,octoOf(victim==='me'?S.me:S.cpu))}</div><div class="hbText">HEART BREAK</div><div class="hbSub">${victim==='me'?MYH():OPN()}の心臓 残り${life}つ</div></div>`,1900);fxClear();
 }
 function catSummary(types){return ['info','atk','grd','sup','cur'].map(ct=>[ct,types.filter(k=>C[k].cat===ct).length]).filter(([ct,n])=>n||ct!=='cur').map(([ct,n])=>`${CAT[ct]}${n}`).join('・')}
 
@@ -3383,6 +3390,8 @@ const OPNraw=()=>S&&S.online?(S.names&&S.names.cpu||'相手'):'CPU';
 const OPN=()=>esc(OPNraw());
 const MYraw=()=>S&&(S.spec||S.replay)?(S.names&&S.names.me||'プレイヤー'):'あなた';
 const MYN=()=>esc(MYraw());
+// 「〜の心臓」は、自分の分も「あなた」ではなく名前で出す（2026-11-15。プテラの希望で統一）
+const MYH=()=>esc(S&&(S.spec||S.replay)?MYraw():(S&&S.online&&S.names&&S.names.me)||netName());
 const nm=t=>String(t).replace(/@me/g,MYraw()).replace(/@cpu/g,OPNraw());
 function by(p,fn){const pv=S.decider;S.decider=p;try{return fn()}finally{S.decider=pv}}
 
@@ -3512,7 +3521,7 @@ async function fxNarrow(target,all,dead,gone){
   if(!G.length)return;
   const left=all.length-D.size-G.length,step=Math.max(45,Math.min(120,800/G.length)),t0=520;
   G.forEach((t,i)=>SFX.crush(i,(t0+i*step+80)/1000));
-  await fxShow(`<div class="dim"></div><div class="nwWrap ${target==='me'?'me':'cpu'}"><div class="nwH"><b>${target==='me'?MYN():OPN()}の心臓の候補</b><span>${left+G.length} → <em>${left}</em>種</span></div><div class="nwGrid n${all.length>15?'L':'S'}">${all.map(ty=>{const gi=G.indexOf(ty);return`<div class="nwT ${D.has(ty)?'dead':gi>=0?'gone':''}" style="--art:url(art/${ty}.png)${gi>=0?`;--d:${t0+gi*step}ms`:''}"><span>${C[ty].n}</span></div>`}).join('')}</div></div>`,t0+G.length*step+850);
+  await fxShow(`<div class="dim"></div><div class="nwWrap ${target==='me'?'me':'cpu'}"><div class="nwH"><b>${target==='me'?MYH():OPN()}の心臓の候補</b><span>${left+G.length} → <em>${left}</em>種</span></div><div class="nwGrid n${all.length>15?'L':'S'}">${all.map(ty=>{const gi=G.indexOf(ty);return`<div class="nwT ${D.has(ty)?'dead':gi>=0?'gone':''}" style="--art:url(art/${ty}.png)${gi>=0?`;--d:${t0+gi*step}ms`:''}"><span>${C[ty].n}</span></div>`}).join('')}</div></div>`,t0+G.length*step+850);
   fxClear();
 }
 const aliveOf=obs=>{const w=probs(obs).w;return Object.keys(w).filter(t=>w[t]>0)};
@@ -3584,11 +3593,14 @@ function pickMulti(title,sub,opts,count){
     ok.onclick=()=>done(sel.map(i=>opts[i].value));
   },()=>opts.slice(0,count).map(o=>o.value));
 }
+let PKTX=false;  // えらぶ画面で効果の文も出すか（その場かぎり）
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
-  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type];return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p','tx')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]}・${TIER_N[d.t]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button>${S&&VIEW==='battle'?'<button type="button" class="b" id="mPeek">盤面を見る</button>':''}</div>`;
+  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick ${PKTX?'':'pkArt'}">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type];return`<button type="button" data-i="${i}" class="cat-${d.cat}" aria-label="${d.n}"><span class="pcArt">${cardHTML(c.type,'m')}</span><span class="pcBig">${cardHTML(c.type,'p','tx')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]}・${TIER_N[d.t]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button><button type="button" class="b" id="mTx">${PKTX?'絵だけにする':'効果も見る'}</button>${S&&VIEW==='battle'?'<button type="button" class="b" id="mPeek">盤面を見る</button>':''}</div>`;
   return modal(html,(m,done)=>{
     const sel=[];const ok=m.querySelector('#mOk');
+    // えらぶ画面は、カードの絵だけを並べる。効果の文は「効果も見る」を押したときだけ出す（2026-11-15）
+    {const tx=m.querySelector('#mTx');if(tx)tx.onclick=()=>{PKTX=!PKTX;m.querySelector('.cardPick').classList.toggle('pkArt',!PKTX);tx.textContent=PKTX?'絵だけにする':'効果も見る'}}
     // 対戦中のえらぶ画面は、うしろの盤面を暗くしない。「盤面を見る」でえらぶ画面をたたんで、相手のデッキなどを確かめられる（2026-11-15）
     {const pk=m.querySelector('#mPeek');if(pk){m.classList.add('peekOk');pk.onclick=()=>{const on=m.classList.toggle('peekOn');pk.textContent=on?'えらぶ画面にもどる':'盤面を見る'}}}
     if(TUT.on&&S&&S.tut&&TUT.pickOnly)m.querySelectorAll('.cardPick button').forEach(b=>{if(cards[+b.dataset.i].type!==TUT.pickOnly){b.disabled=true;b.classList.add('tutDim')}});
@@ -4677,10 +4689,10 @@ function render0(){
   </section>
   <section class="zone tracker btMid">
     <div class="sh"><span class="label">推理の状況</span></div>
-    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button></div>
+    ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYH()}の心臓 <em>${liveCount(cpu)}</em>種</button></div>
     <div class="duo t-${TRK}">
       <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${NM?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me,RP&&cpu.heart?cpu.heart.type:null)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
-      <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
+      <div class="col"><div class="colh"><b>${MYH()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:`<div class="duo t-opp"><div class="col"><div class="colh"><b>${OPN()}のデッキ</b><span>相手の心臓は、この中の1枚</span></div><div class="grid">${typesOf(cpu).map(ty=>tileHTML(cpu,ty,{cnt:{},w:{[ty]:1}},'button','tip')).join('')}</div><div></div></div><div class="col"><div class="colh"><b>${MYN()}のデッキ</b><span>この中の1枚を心臓にする</span></div><div class="grid">${typesOf(me).map(ty=>tileHTML(me,ty,{cnt:{},w:{[ty]:1}},'button','tip')).join('')}</div><div></div></div></div>`}
   </section>
   ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
@@ -5318,6 +5330,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:130,d:'2026-11-15',t:'「あなたの心臓」と出ていた所（推理ボード、心臓の候補が減る演出など）を、自分の名前で出すようにしました／カードをえらぶ画面（心臓えらびなど）は、カードの絵だけを並べるようにしました。効果の文を読みたいときは、下の「効果も見る」を押すと今までの表示になります。'},
   {id:129,d:'2026-11-15',t:'対戦まわりをまとめて直しました。「使わずに進む」ボタンをなくしました（「心臓を宣言」と「ターン終了」を、カードを使う前からそのまま押せます。何もせずにターン終了を押したときは、もう一度押して確かめます）／心臓をえらぶ画面で、うしろの盤面が暗くならなくなりました。相手のデッキが最初から推理ボードに出ていて、「盤面を見る」を押すとえらぶ画面をたためます／リプレイで、好きなターンへ飛べるようになりました（下の帯の ◀ ▶ と、ターンの選択）／観戦とリプレイで、「あなた」ではなくプレイヤーの名前が出るようにしました／観戦で見えている相手の手札を、重ねずに並べました／PCの対戦画面で、右の推理ボードを元の幅に戻し、中央を広くしました／マイページの戦績に、CPU戦を入れないようにしました。'},
   {id:128,d:'2026-11-15',t:'対戦中に接続が切れたとき、切れたのが自分の側か相手の側かを見分けるようにしました。自分の側（オフラインになった、アプリを裏に回して止まっていた、など）のときは「あなたの接続が切れました」と出て、2分たっても戻れなければ自分の負けとして記録します。前は、切れた側も「自分の勝ち」と報告していたため、ちゃんと待っていた人が負けになることがありました。'},
   {id:127,d:'2026-11-14',t:'マイページを、下のメニューのいちばん右（前の「ランキング」の場所）に移しました。アイコン・名前・称号をここで変えられ、自分のランクも見られます。「世界ランキング」を押すと、みんなの順位が開きます。戦績とリプレイは、同じページの下にあります。'},
