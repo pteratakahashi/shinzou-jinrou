@@ -4540,7 +4540,9 @@ function logHTML(){
   const groups=[];
   for(const l of items){let g=groups[groups.length-1];if(!g||g.turn!==l.turn){g={turn:l.turn,actor:l.actor,rows:[]};groups.push(g)}g.rows.push(l)}
   if(!groups.length)return'<div class="note">まだ記録がありません。</div>';
-  return groups.reverse().map(g=>`<div class="lg"><div class="lgh ${g.actor}">${g.turn?g.turn+'ターン目':'開始前'}<span>${g.actor==='me'?MYN()+'のターン':g.actor==='cpu'?`${OPN()}のターン`:''}</span></div>${g.rows.map(l=>{const k=logKind(l.t);return`<div class="lr ${l.who}">${k?`<span class="lk ${k}">${KIND_L[k]}</span>`:''}<span class="lt">${fmtLog(l.t)}</span></div>`}).join('')}</div>`).join('');
+  // この試合の先攻・後攻を、ログのいちばん上にいつも出す（1ターン目を動かした側が先攻）
+  const f1=S.log.find(l=>l.turn===1&&(l.actor==='me'||l.actor==='cpu'));
+  return(f1?`<div class="note">この試合：${f1.actor==='me'?MYN():OPN()}が先攻、${f1.actor==='me'?OPN():MYN()}が後攻</div>`:'')+groups.reverse().map(g=>`<div class="lg"><div class="lgh ${g.actor}">${g.turn?g.turn+'ターン目':'開始前'}<span>${g.actor==='me'?MYN()+'のターン':g.actor==='cpu'?`${OPN()}のターン`:''}</span></div>${g.rows.map(l=>{const k=logKind(l.t);return`<div class="lr ${l.who}">${k?`<span class="lk ${k}">${KIND_L[k]}</span>`:''}<span class="lt">${fmtLog(l.t)}</span></div>`}).join('')}</div>`).join('');
 }
 function histRow(who,label){
   const items=S.hist.filter(h=>h.who===who).slice(-20).reverse();
@@ -5282,6 +5284,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:126,d:'2026-11-14',t:'対戦中のログ（記録）のいちばん上に、この試合でどちらが先攻・後攻かをいつも出すようにしました。'},
   {id:125,d:'2026-11-14',t:'「マイページ」ができました（ホームのグラフのアイコンから）。自分の勝率、直近50試合の勝ち負け、デッキごとの戦績、相手のシングルごとの戦績などを見られます。ランクマッチと友達との対戦は、あとから「リプレイ」で自分の視点のまま見返せます（新しい30試合ぶん）。記録はこの端末に残り、このアップデートのあとに遊んだ対戦から入ります。'},
   {id:124,d:'2026-11-14',t:'ランクマッチ：マスターレートの動き方を見直しました。1戦で動く数字を10〜22の間におさめたので、勝っても少ししか増えず、負けると大きく減る、という差が小さくなります。「あなたの最近の対戦」のレートの増減は、どの端末で遊んだ対戦にも出るようになりました。'},
   {id:123,d:'2026-11-14',t:'デッキ編成とカード一覧で、カードのランク（ブロンズ・シルバー・ゴールド・レジェンド）ごとに絞り込めるようになりました。系統・属性の下にある「ランク」の段から選べます。'},
