@@ -2150,6 +2150,22 @@ html.rm .twin.res,html.rm .hc.glow::after{animation:none}
 .hc .twin.res{font-size:8.5px;font-weight:700;padding:0 6px;letter-spacing:.04em;bottom:15%;box-shadow:0 0 0 1px #7a4a00,0 0 5px 1px rgba(255,200,90,.6);animation:none}
 .hc.glow::after{background:linear-gradient(0deg,rgba(255,205,95,.28),rgba(255,205,95,.06) 40%,transparent 60%);animation-duration:1.8s}
 .hc.glow .tcg{box-shadow:0 0 0 1.5px #ffd36b,0 0 10px 2px rgba(255,200,90,.45)}
+/* えらぶ画面（心臓えらびなど）：うしろの盤面を暗くしない。「盤面を見る」でたたむ（2026-11-15） */
+#modal.peekOk{background:none;pointer-events:none}
+#modal.peekOk .sheet{pointer-events:auto;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 18px 60px rgba(0,0,0,.85)}
+#modal.peekOn .sheet>*:not(.pickBtns){display:none}
+#modal.peekOn .sheet{width:auto;padding:8px 10px;gap:0;overflow:hidden}
+#modal.peekOn .sheet #mOk{display:none}
+html.fit-wide #modal.peekOk{padding-right:calc(var(--colR,440px) + 30px)}
+/* 観戦・リプレイで見えている相手の手札は、重ねずに並べる（2026-11-15） */
+html.fit-wide .bt .oppHand.open{padding-left:0;gap:5px;overflow:visible}
+html.fit-wide .bt .oppHand.open .tcg{margin-left:0;width:min(var(--tcw,58px),calc((var(--centerW,900px) - 660px) / var(--n,6) - 5px));min-width:26px}
+/* リプレイの帯：ターンを選んで飛ぶ */
+#rpcBar .rcTurn,#rpcBar .rcA,#rpcBar .rcB{display:inline-flex;align-items:center;gap:4px}
+@media (max-width:560px){#rpcBar .rcA .rcT{width:auto}}
+#rpcBar select{font:700 12px var(--pcf);background:#1a0b10;color:var(--ivory);border:1px solid var(--gold);padding:4px 6px;max-width:150px}
+#rpcBar button:disabled{opacity:.4;cursor:default}
+body:has(#rpcBar) #modal{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
 /* 観戦の視点を切りかえる帯（リプレイの帯と同じ見た目） */
 #wvBar{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(18,8,11,.94);border:1px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.6);white-space:nowrap}
 #wvBar .rcT{font:700 12px var(--pcf);color:var(--gold);padding:0 6px}
@@ -2290,7 +2306,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114105913';
+const APP_VER='20261114171841';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3104,7 +3120,7 @@ function rulesListHTML(){
     <h3>自分のターンにすること</h3>
     <ol class="hwFlow">
       <li><b>1枚引く</b><span>自動で引きます</span></li>
-      <li><b>カードを1枚使う</b><span>使うと効果が出て、そのカードは捨て札として公開されます。裏向きに<b>伏せる</b>ことも、使わずに進むこともできます</span></li>
+      <li><b>カードを1枚使う</b><span>使うと効果が出て、そのカードは捨て札として公開されます。裏向きに<b>伏せる</b>ことも、使わずにターンを終えることもできます</span></li>
       <li><b>心臓を宣言する</b><span>相手の心臓だと思う種類を1回まで言えます。言わずにターンを終えてもOK</span></li>
     </ol>
   </div></section>
@@ -3487,7 +3503,7 @@ async function fxPlay(k,who){
   await fxShow(`<div class="dim"></div><div class="fxcard sum r${r}" style="--gc:${col}"><div class="rays"></div><div class="glowring"></div><div class="cardWrap">${cardHTML(k,'l')}<div class="glare"></div></div><div class="nameplate"><span class="np-cat">${CAT[c.cat]}</span><b>${c.n}</b></div><div class="by">${who==='me'?MYN():OPN()}が使用${who==='cpu'?'<span class="tapHint">タップで次へ</span>':''}</div></div>`,who==='cpu'?2800:(r==='C'?1300:1500),who==='cpu');
   const el=$('#fx .fxcard');if(el)el.classList.add('out-'+who);await sleep(330);fxClear();
 }
-async function fxBanner(who){const sp=S&&S.spec,t=who==='me'?(sp?`${MYN()}のターン`:'あなたのターン'):`${OPN()}のターン`;SFX.turn(who);await fxShow(`<div class="turnBand ${who}"><div class="tbEn">${sp?'TURN':who==='me'?'YOUR TURN':'ENEMY TURN'}</div><div class="tbJp">${t}</div><div class="tbShine"></div></div>`,1100);fxClear()}
+async function fxBanner(who){const sp=S&&(S.spec||S.replay),t=who==='me'?(sp?`${MYN()}のターン`:'あなたのターン'):`${OPN()}のターン`;SFX.turn(who);await fxShow(`<div class="turnBand ${who}"><div class="tbEn">${sp?'TURN':who==='me'?'YOUR TURN':'ENEMY TURN'}</div><div class="tbJp">${t}</div><div class="tbShine"></div></div>`,1100);fxClear()}
 // 候補が絞られた時：その人の心臓の候補の盤面を出して、消えた候補をつぶす（2026-11-11）
 // target＝心臓を読まれている側（'me'／'cpu'）、all＝その人のデッキの種類、dead＝前から消えていた種類、gone＝今回消えた種類
 async function fxNarrow(target,all,dead,gone){
@@ -3523,7 +3539,7 @@ async function fxStamp(t,cls,k){
 /* ---- modals ---- */
 // def：時間切れのときに自動で決める答え。modalAuto() で今の選択を自動で決め、modalKill() で答えずに閉じる
 let MODAL_CUR=null;const KILL={kill:1};
-function modal(html,setup,def){return new Promise(res=>{const m=$('#modal');if(MODAL_CUR)MODAL_CUR.fin(KILL);m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;m.onclick=null;const cur={def};const fin=v=>{if(cur.end)return;cur.end=1;if(MODAL_CUR===cur){MODAL_CUR=null;m.hidden=true;m.innerHTML=''}res(v)};cur.fin=fin;MODAL_CUR=cur;setup(m,fin)})}
+function modal(html,setup,def){return new Promise(res=>{const m=$('#modal');if(MODAL_CUR)MODAL_CUR.fin(KILL);m.classList.remove('peekOk','peekOn');m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false;m.onclick=null;const cur={def};const fin=v=>{if(cur.end)return;cur.end=1;if(MODAL_CUR===cur){MODAL_CUR=null;m.hidden=true;m.innerHTML='';m.classList.remove('peekOk','peekOn')}res(v)};cur.fin=fin;MODAL_CUR=cur;setup(m,fin)})}
 function modalAuto(){const c=MODAL_CUR;if(c&&c.def){let v;try{v=c.def()}catch(e){v=null}c.fin(v);return true}return false}
 function modalKill(){const c=MODAL_CUR;if(c)c.fin(KILL)}
 function tileHTML(target,ty,view,tag='div',cls=''){
@@ -3570,9 +3586,11 @@ function pickMulti(title,sub,opts,count){
 }
 function pickCards(cards,title,sub,min,max){
   if(S&&S.decider&&S.decider.remote)return NET.ask({k:'cards',cards:cards.map(c=>[c.id,c.type]),title,sub,min,max}).then(ids=>(ids||[]).map(i=>S.byId[i]).filter(c=>c&&cards.includes(c)));
-  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type];return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p','tx')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]}・${TIER_N[d.t]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button></div>`;
+  const html=`<h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<div class="cardPick">${cards.map((c,i)=>[c,i]).sort((x,y)=>byCat(x[0].type,y[0].type)).map(([c,i])=>{const d=C[c.type];return`<button type="button" data-i="${i}" class="cat-${d.cat}"><span class="pcBig">${cardHTML(c.type,'p','tx')}</span><span class="pcRow"><span class="pcThumb">${cardHTML(c.type,'s')}</span><span class="pcInfo"><span class="pcName">${d.n}<small>${d.single?'シングル':CAT[d.cat]}・${TIER_N[d.t]}</small></span><span class="pcEff">${effHTML(d.e)}</span></span><span class="pcChk" aria-hidden="true"></span></span></button>`}).join('')}</div><div class="btns pickBtns"><button type="button" class="b primary" id="mOk" ${min?'disabled':''}>決定</button>${S&&VIEW==='battle'?'<button type="button" class="b" id="mPeek">盤面を見る</button>':''}</div>`;
   return modal(html,(m,done)=>{
     const sel=[];const ok=m.querySelector('#mOk');
+    // 対戦中のえらぶ画面は、うしろの盤面を暗くしない。「盤面を見る」でえらぶ画面をたたんで、相手のデッキなどを確かめられる（2026-11-15）
+    {const pk=m.querySelector('#mPeek');if(pk){m.classList.add('peekOk');pk.onclick=()=>{const on=m.classList.toggle('peekOn');pk.textContent=on?'えらぶ画面にもどる':'盤面を見る'}}}
     if(TUT.on&&S&&S.tut&&TUT.pickOnly)m.querySelectorAll('.cardPick button').forEach(b=>{if(cards[+b.dataset.i].type!==TUT.pickOnly){b.disabled=true;b.classList.add('tutDim')}});
     m.querySelectorAll('.cardPick button').forEach(b=>b.onclick=()=>{if(b.disabled)return;
       const i=+b.dataset.i;const j=sel.indexOf(i);
@@ -4082,15 +4100,20 @@ async function useAs(P,c,asSet){
   if(S.phase==='play'&&((f.req<=0&&f.opt<=0)||!P.hand.length))S.phase='guess';
   S.busy=false;render();
 }
-function onSkip(){if(S&&S.replay)return;if(PH()!=='play'||S.busy)return;if(!tutOk('skip'))return;S.sel=null;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'skip'});render();return}skipAs(S.me)}
+// カードを使う場面を切り上げる（宣言・ターン終了を押したときに、いっしょに行う。2026-11-15 に「使わずに進む」ボタンをなくした）
+let ENDARM=0;  // 何もしないままの「ターン終了」は、もう一度押して確かめる（押しまちがい防止）。値は確かめ中のターン番号
 function skipAs(P){if(S.phase!=='play'||S.cur!==P||S.busy)return;P.f.req=0;P.f.opt=0;S.phase='guess';render()}
 async function onGuess(){
   if(S&&S.replay)return;
-  if(PH()!=='guess'||S.busy||S.me.f.guesses<=0||!S.me.hand.length)return;
+  const ph0=PH();
+  if((ph0!=='guess'&&ph0!=='play')||S.busy||S.me.f.guesses<=0||!S.me.hand.length)return;
   if(!tutOk('guess'))return;
   const r=await pickTypes(S.cpu,1,'心臓を宣言する',`${OPN()}の心臓だと思う種類を選んでください。外すと手札をランダムに2枚捨てます。`,true,S.me);
-  if(!r)return;
-  if(S.guest){S.busy=true;NET.send({t:'cmd',c:'guess',ty:r[0]});render();return}
+  if(!r||r===KILL)return;
+  if(S.busy||S.cur!==S.me)return;
+  S.sel=null;
+  if(S.guest){S.busy=true;if(PH()==='play')NET.send({t:'cmd',c:'skip'});NET.send({t:'cmd',c:'guess',ty:r[0]});render();return}
+  if(S.phase==='play')skipAs(S.me);
   return guessAs(S.me,r[0]);
 }
 async function guessAs(P,ty){
@@ -4099,7 +4122,12 @@ async function guessAs(P,ty){
   if(res==='over')return;
   if(res==='hit'){S.phase='none';render();S.endTurn()}else render();
 }
-function onEnd(){if(S&&S.replay)return;if(PH()!=='guess'||S.busy)return;if(!tutOk('end'))return;if(S.me.f.mustGuess&&S.me.f.guesses>0&&S.me.hand.length)return;if(S.guest){S.busy=true;NET.send({t:'cmd',c:'end'});render();return}endAs(S.me)}
+const endNeedsArm=()=>{const f=S.me.f;return PH()==='play'&&f.req>0&&!f.played&&(!RULES.freeSet||f.setFree>0)&&S.me.hand.some(c=>!C[c.type].set&&!useBlock(S.me,c.type))&&ENDARM!==S.turnNo};
+function onEnd(){if(S&&S.replay)return;const ph=PH();if((ph!=='guess'&&ph!=='play')||S.busy)return;if(!tutOk('end'))return;if(S.me.f.mustGuess&&S.me.f.guesses>0&&S.me.hand.length)return;
+  if(endNeedsArm()){ENDARM=S.turnNo;render();return}
+  S.sel=null;
+  if(S.guest){S.busy=true;if(ph==='play')NET.send({t:'cmd',c:'skip'});NET.send({t:'cmd',c:'end'});render();return}
+  if(S.phase==='play')skipAs(S.me);endAs(S.me)}
 function endAs(P){if(S.phase!=='guess'||S.cur!==P||S.busy)return;if(P.f.mustGuess&&P.f.guesses>0&&P.hand.length)return;S.phase='none';render();S.endTurn()}
 
 /* ---- flow ---- */
@@ -4272,27 +4300,27 @@ const inHand=k=>S&&S.me.hand.some(c=>c.type===k);
 const TUT_STEPS=[
  {when:()=>myTurn(1)&&PH()==='play',btn:'次へ',allow:{},sel:'.btMid',text:'あなたのターンです。いま光っている「推理の状況」（スマホではまん中、PCでは右）に並んでいるのが、<b>相手の心臓の候補</b>（相手のデッキの14種類）です。カードを使って、この候補を少しずつ減らしていきます。'},
  {when:()=>myTurn(1),skip:()=>!inHand('seer'),done:()=>(myPlayed('seer')&&!S.busy)||!myTurn(1),allow:{cards:['seer'],btns:['play'],types:['wolf','madman']},sel:'.hc[aria-label="占い師"]',text:'手札の<b>〈占い師〉</b>をタップして「使う」を押そう。種類を選ぶと、相手の心臓がその中にあるかがわかります。今回は<b>〈人狼〉と〈狂人〉</b>を選んでください。'},
- {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'「この中に心臓はない」とわかったので、表から<b>2つ消えました</b>（14→12）。カードを使えるのは<b>1ターンに1枚</b>です。宣言（心臓を当てる）はまだ早いので、「ターン終了」を押そう。'},
+ {when:()=>myTurn(1)&&!S.busy,done:()=>!myTurn(1),allow:{btns:['skip','end']},sel:'#bEnd',text:'「この中に心臓はない」とわかったので、表から<b>2つ消えました</b>（14→12）。カードを使えるのは<b>1ターンに1枚</b>です。宣言（心臓を当てる）はまだ早いので、「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===2,done:()=>myTurn(3),text:'相手のターンです。相手がどう動くか見ていよう。'},
  {when:()=>myTurn(3)&&PH()==='play'&&!S.busy,skip:()=>!inHand('medium'),done:()=>(myPlayed('medium')&&!S.busy)||!myTurn(3),allow:{cards:['medium'],btns:['play'],opts:['info']},sel:'.hc[aria-label="霊媒師"]',text:'次は<b>〈霊媒師〉</b>でさらに絞ろう。このカードには<b>コスト</b>があり、使うと自分の心臓ではない種類を1つ、相手に知られます。効果は、系統を1つ選んで、相手の心臓がその系統かどうかの判定です。今回は<b>「情報」</b>を選んでください。'},
- {when:()=>myTurn(3)&&!S.busy,done:()=>!myTurn(3),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'「情報」系統ではなかったので、情報系の3種が消えました（12→9）。こうやって<b>少しずつ候補を絞っていく</b>のが、このゲームの基本です。「ターン終了」を押そう。'},
+ {when:()=>myTurn(3)&&!S.busy,done:()=>!myTurn(3),allow:{btns:['skip','end']},sel:'#bEnd',text:'「情報」系統ではなかったので、情報系の3種が消えました（12→9）。こうやって<b>少しずつ候補を絞っていく</b>のが、このゲームの基本です。「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===4,done:()=>myTurn(5),text:'相手のターンです。'},
  {when:()=>myTurn(5)&&PH()==='play'&&!S.busy,skip:()=>!inHand('villager'),done:()=>(myPlayed('villager')&&!S.busy)||!myTurn(5),allow:{cards:['villager'],btns:['play']},sel:'.hc[aria-label="村人"]',text:'今度は<b>〈村人〉</b>を使おう。前のターンに使った霊媒師と同じ<b>「聖」の属性</b>なので<b>共鳴</b>して、効果が上乗せされます（光っているのが共鳴できるカード）。共鳴すると、候補がもう1つ消えます。'},
  {when:()=>myTurn(5)&&!S.busy&&myPlayed('villager'),skip:()=>!inHand('silencer'),done:()=>!!S.me.setCard||!myTurn(5),allow:{cards:['silencer'],btns:['set']},sel:'.hc[aria-label="口封じ"]',text:'村人の効果で、このターンは<b>もう1枚</b>使えます。カードは、使うかわりに<b>伏せる</b>こともできます。<b>〈口封じ〉</b>をタップして「伏せる」を押そう。伏せたカードは<b>相手のターンに自動で発動</b>します。口封じは、相手が使ったカードを1回無効にします。'},
- {when:()=>myTurn(5)&&!S.busy,done:()=>!myTurn(5),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'伏せられました。「ターン終了」を押して、相手の様子を見よう。'},
+ {when:()=>myTurn(5)&&!S.busy,done:()=>!myTurn(5),allow:{btns:['skip','end']},sel:'#bEnd',text:'伏せられました。「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===6,done:()=>myTurn(7),text:'相手のターンです。伏せたカードがどうなるか見ていよう。'},
  {when:()=>myTurn(7)&&PH()==='play'&&!S.busy,allow:{},btn:'次へ',sel:'.oppLast',text:'相手は〈人狼〉で手札を捨てさせようとしましたが、<b>伏せていた口封じが発動して無効</b>にしました！ 口封じは発動すると、相手の心臓ではない種類も1つ教えてくれます。相手が前のターンに何をしたかは、相手の欄の<b>「前のターン」</b>で確認できます。'},
  {when:()=>myTurn(7)&&!S.busy,allow:{},btn:'次へ',sel:'.disBtn',text:'<b>捨て札</b>をタップすると、捨てられたカードの一覧が見られます。捨て札の数で効果が変わるカードもあるので、ときどき確認しよう。カードを<b>長押し</b>すると効果の説明も見られます。'},
  {when:()=>myTurn(7)&&!S.busy,skip:()=>!inHand('medium'),done:()=>((S.acts||[]).filter(a=>a.who==='me'&&a.kind==='play'&&a.k==='medium').length>=2&&!S.busy)||!myTurn(7),allow:{cards:['medium'],btns:['play'],opts:['grd']},sel:'.hc[aria-label="霊媒師"]',text:'ここまでで候補はだいぶ減りました。もう一度<b>〈霊媒師〉</b>を使って、今度は<b>「防御」</b>を選んでみよう。'},
- {when:()=>myTurn(7)&&!S.busy,done:()=>!myTurn(7),allow:{btns:['skip','end']},sel:'#bSkip,#bEnd',text:'<b>「防御」系統だとわかりました！</b> 防御系ではない候補がすべて消えて、残りはわずかです。あと一息。「ターン終了」を押そう。'},
+ {when:()=>myTurn(7)&&!S.busy,done:()=>!myTurn(7),allow:{btns:['skip','end']},sel:'#bEnd',text:'<b>「防御」系統だとわかりました！</b> 防御系ではない候補がすべて消えて、残りはわずかです。あと一息。「ターン終了」を押そう。'},
  {allow:{},when:()=>S.cur===S.cpu&&S.turnNo===8,done:()=>myTurn(9),text:'相手のターンです。'},
  {when:()=>myTurn(9)&&PH()==='play'&&!S.busy,skip:()=>!inHand('seer')||liveCount(S.me)<=1,done:()=>((S.acts||[]).filter(a=>a.who==='me'&&a.kind==='play'&&a.k==='seer').length>=2&&!S.busy)||!myTurn(9),allow:{cards:['seer'],btns:['play'],types:['fox','silencer']},sel:'.hc[aria-label="占い師"]',text:'残った候補を、もう一度<b>〈占い師〉</b>でたしかめよう。<b>〈妖狐〉と〈口封じ〉</b>を選んでください。'},
- {when:()=>S.turnNo>=9&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>12,allow:{btns:['skip','guess'],types:['hunter']},sel:'#bSkip,#bGuess',text:'「この中に心臓はない」ので、残った候補は<b>〈狩人〉だけ</b>。これで確定です。<b>「心臓を宣言」</b>を押して、<b>〈狩人〉</b>と宣言しよう（外れると手札を2枚捨てますが、今回は当たります）。'},
+ {when:()=>S.turnNo>=9&&S.cur===S.me&&!S.busy,done:()=>!!lastGuess()||S.turnNo>12,allow:{btns:['skip','guess'],types:['hunter']},sel:'#bGuess',text:'「この中に心臓はない」ので、残った候補は<b>〈狩人〉だけ</b>。これで確定です。<b>「心臓を宣言」</b>を押して、<b>〈狩人〉</b>と宣言しよう（外れると手札を2枚捨てますが、今回は当たります）。'},
  {allow:{},when:()=>!!lastGuess()&&!S.busy,btn:'次へ',textFn:()=>lastGuess().r==='hit'?'<b>的中！</b> 相手のライフが1減りました（タコの心臓が1つ止まります）。当てられた側は、全部のカードを混ぜ直して心臓を選び直します。これを<b>3回</b>当てたら勝ちです。':'外れ…。でも外れた種類は候補から消えました。残りの候補から、次のターンにもう一度宣言しよう。'},
  {when:()=>S.cur===S.me&&S.turnNo>=11&&PH()==='play'&&!S.busy,enter:tutRaidSetup,done:()=>tutActed('raid')||!myTurnAt(),allow:{cards:['wolf'],btns:['play']},sel:'.hc[aria-label="人狼"]',text:'勝ち方はもう1つあります。<b>攻撃系のカード</b>で相手の手札を<b>0枚</b>にすると<b>「襲撃」</b>になり、相手のライフが1減ります。練習のため、相手の手札を1枚にしました。<b>〈人狼〉</b>を使って0枚にしよう。'},
  {allow:{},when:()=>tutActed('raid')&&S.cur===S.me&&PH()==='play'&&!S.busy,btn:'次へ',text:'<b>襲撃成功！</b> 宣言しなくてもライフを削れました。襲撃された側は、<b>心臓はそのまま</b>で手札が5枚になるまで引き直します。襲撃したターンはそこで終わります。'},
  {when:()=>S.cur===S.me&&PH()==='play'&&!S.busy&&S.turnNo>(TUT.raidTurn||0),enter:()=>{TUT.bluffWait=true;tutNeed('villager');render()},allow:{cards:['villager'],btns:['set']},done:()=>(S.me.setCard&&!C[S.me.setCard.type].set)||!myTurnAt(),sel:'.hc[aria-label="村人"]',text:'次は<b>ブラフ</b>。伏せ専用ではないカードも、選んで<b>「ブラフ」</b>ボタンを押すと伏せられます（効果は出ません。これも1ターンに1枚のうちに入ります）。相手は「口封じかも…」と警戒します。<b>〈村人〉</b>を選んで「ブラフ」を押そう。'},
- {allow:{btns:['skip','end']},when:()=>S.cur===S.me&&!S.busy,done:()=>S.cur!==S.me,sel:'#bSkip,#bEnd',text:'伏せられました。このまま「宣言に進む」→「ターン終了」を押して、相手の様子を見よう。'},
+ {allow:{btns:['skip','end']},when:()=>S.cur===S.me&&!S.busy,done:()=>S.cur!==S.me,sel:'#bEnd',text:'伏せられました。このまま「ターン終了」を押して、相手の様子を見よう。'},
  {allow:{},when:()=>S.cur===S.cpu,done:()=>S.cur===S.me&&PH()==='play'&&!S.busy,text:'相手のターンです。あなたの伏せカードを警戒しているようです…。'},
  {allow:{},when:()=>S.cur===S.me&&!S.busy,btn:'次へ',textFn:()=>((S.acts||[]).some(a=>a.who==='me'&&a.kind==='bluff'&&a.turn===S.turnNo)?'<b>ブラフ成功！</b> 相手は警戒してカードを1枚も使いませんでした。ブラフしたカードは<b>手札に戻り</b>、このターンは<b>カードを1枚多く使えます</b>。さらに、<b>相手の心臓ではない種類を1つ</b>知りました。':'今回はブラフが見破られました。相手が次のターンにカードを使わなければブラフ成功で、そのカードが手札に戻り、カードを1枚多く使え、相手の心臓ではない種類も1つわかります。')+'（自分のデッキに伏せ専用カードがないと、ブラフはばれてしまいます）'},
  {when:()=>!S.busy,btn:'チュートリアルを終える',text:'チュートリアルはここまでです。勝ち方は、①宣言で心臓を<b>3回当てる</b>　②攻撃カードの<b>襲撃</b>でライフを削る　③相手の<b>山札が切れる</b>、の3つ。<br><b>相手の心臓は、あと1つ。ここからは、自分で相手の心臓を当ててみよう！</b>'},
@@ -4304,7 +4332,7 @@ function tutOk(btn,type){if(TUT.bypass)return true;const a=tutAllow();if(!a)retu
 function tutNudge(){const b=document.getElementById('tutBox');if(b){b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge')}return false}
 function tutApply(){
   const a=tutAllow();if(!a||!$('#modal').hidden)return;
-  const ids={bPlay:'play',bSet:'set',bSkip:'skip',bGuess:'guess',bEnd:'end'};
+  const ids={bPlay:'play',bSet:'set',bGuess:'guess',bEnd:'end'};
   for(const [id,k] of Object.entries(ids)){const e=document.getElementById(id);if(e&&!(a.btns||[]).includes(k))e.disabled=true}
   document.querySelectorAll('.hc').forEach(e=>{const k=NAME2K[e.getAttribute('aria-label')];e.classList.toggle('tutDim',!(a.cards||[]).includes(k))});
 }
@@ -4387,7 +4415,7 @@ const FIT={c:null,
     const land=w>h&&h<=520&&w>=480,phone=w<=700&&!land,tight=phone&&h<700,xs=phone&&h<540;
     /* w3（左に記録の欄をいつも出す3列の配置）は使わない：PC でも記録はしまっておき、上の「記録」を押すと左から出る。そのぶん中央が広くなる（2026-11-14 プテラ：配信で画面が小さくなるため） */
     const wide=w>=1000&&!land,w3=false,W=Math.min(w,2800);
-    const colL=w3?Math.round(Math.max(270,Math.min(520,W*.2))):0,colR=wide?Math.round(Math.max(330,Math.min(760,W*.3))):0;
+    const colL=w3?Math.round(Math.max(270,Math.min(520,W*.2))):0,colR=wide?Math.round(Math.max(330,Math.min(680,W*.26))):0;
     const ws=wide&&h<860,centerW=wide?W-(ws?24:32)-colL-colR-(ws?12:14)*(w3?2:1):0;
     let handW=86;
     if(wide)handW=Math.round(Math.max(76,Math.min(190,h*.122,centerW*.16)));
@@ -4504,7 +4532,7 @@ function lastActsHTML(){
   const parts=A.filter(a=>a.turn===T&&a.kind!=='start').map(a=>{
     if(a.kind==='play')return chip(a.k)+(a.res?'<span class="laRes">共鳴</span>':'')+(a.copy?'<span class="laSub">妖狐で</span>':'');
     if(a.kind==='set')return a.who==='cpu'?'<span class="laSub">1枚伏せた</span>':'';
-    if(a.kind==='trig')return`<span class="laSub">${a.who==='me'?'あなたの':'相手の'}伏せ</span>${chip(a.k)}<span class="laSub">発動</span>`;
+    if(a.kind==='trig')return`<span class="laSub">${S.spec||S.replay?(a.who==='me'?MYN():OPN())+'の':a.who==='me'?'あなたの':'相手の'}伏せ</span>${chip(a.k)}<span class="laSub">発動</span>`;
     if(a.kind==='guess')return a.who==='cpu'?`<span class="laSub">「${N(a.k)}」と宣言→</span><b class="la-${a.r}">${a.r==='hit'?'的中':a.r==='void'?'無効':'外れ'}</b>`:'';
     if(a.kind==='bluff')return a.who==='cpu'?'<b class="la-hit">ブラフ成功</b>':'';
     if(a.kind==='raid')return a.who==='cpu'?'<b class="la-hit">襲撃</b>':'';
@@ -4601,22 +4629,22 @@ function render0(){
   try{REC.snap()}catch(e){REC.on=false;console.error(e)}  // 記録でしくじっても、対戦は止めない
   if(VIEW!=='battle'||!S)return;
   const ph=PH();
-  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.rpAll,HID=SP&&!RP;  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
+  const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.rpAll,HID=SP&&!RP,NM=SP||!!S.replay;  // NM＝観戦・リプレイ（「あなた」と言わず、名前で出す）  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
   const logScroll=$('#log')?.scrollTop||0,logFScroll=$('#logF')?.scrollTop||0;
   if(!S.log.length)LOGFULL=false;  // 新しい対戦に、前の対戦で開いたままのログを持ちこまない
   const kn=S.know.me;
   const notes=[];if(kn.stale)notes.push('※妖狐より前の判定を含む');if(kn.allowed)notes.push(`候補：${[...kn.allowed].map(N).join('・')}`);if(kn.excluded.size)notes.push(`除外：${[...kn.excluded].map(N).join('・')}`);
   let phase='';
-  if(SP)phase=S.over?'対戦終了':S.cur?`${S.cur===me?MYN():OPN()}のターン`:'心臓を選んでいます…';
+  if(NM)phase=S.over?'対戦終了':S.cur?`${S.cur===me?MYN():OPN()}のターン`:'心臓を選んでいます…';
   else if(S.over)phase='対戦終了';
   else if(ph==='cpu')phase=S.cur?`${OPN()}が考えています…`:`${OPN()}が心臓を選んでいます…`;
   const fsN=RULES.freeSet&&me.f.setFree>0&&!SP?'（伏せは別枠であと1回）':'';
-  if(SP||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）。使わないなら「宣言に進む」`)+fsN;
-  else if(ph==='guess')phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
+  if(NM||S.over||ph==='cpu');else if(ph==='play')phase=(me.f.req>0?`カードを使ってください（あと${me.f.req}枚${me.f.opt?`、追加であと${me.f.opt}枚使える`:''}）`:`さらにカードを使えます（あと${me.f.opt}枚）`)+fsN;
+  else if(ph==='guess'&&!NM)phase=!me.hand.length?'手札が0枚なので宣言できません。まもなく自動でターンを終了します。':me.f.mustGuess&&me.f.guesses>0?'狂人の効果で、このターンは必ず宣言しなければなりません。':me.f.guesses>0?`心臓を宣言するか、ターンを終了してください（宣言あと${me.f.guesses}回）`:'このターンはもう宣言できません。まもなく自動でターンを終了します。';
   if(ph==='guess'&&fsN&&!SP&&!S.over)phase+=fsN;
   if(S.asking&&S.asking!==me&&!S.over&&!S.picking)phase=`${OPN()}が選んでいます…`;
-  else if(S.asking&&SP&&!S.over&&!S.picking)phase=`${MYN()}が選んでいます…`;
-  if(S.picking&&!S.over)phase=S.picking===me&&!SP?'新しい心臓を選んでください':`${S.picking===me?MYN():OPN()}が新しい心臓を選んでいます…`;
+  else if(S.asking&&NM&&!S.over&&!S.picking)phase=`${MYN()}が選んでいます…`;
+  if(S.picking&&!S.over)phase=S.picking===me&&!NM?'新しい心臓を選んでください':`${S.picking===me?MYN():OPN()}が新しい心臓を選んでいます…`;
   if(!HID)me.hand.sort((a,b)=>byCat(a.type,b.type)||a.id-b.id);
   const resOk=c=>!!C[c.type].attr&&!C[c.type].set&&((me.lastAttr&&me.lastAttr===C[c.type].attr)||me.f.forceRes);
   if(ph==='play'&&!SP&&!HID&&!S.over&&!S.picking&&!S.asking&&me.hand.some(resOk))phase+='';
@@ -4630,7 +4658,7 @@ function render0(){
   $('#app').innerHTML=`<div class="bt">
   <header class="btTop">
     <div class="btRound"><span>ROUND</span><b>${S.round||1}</b><span>${S.turnNo?S.turnNo+'ターン':''}${wn?`・観戦${wn}人`:''}</span></div>
-    <div class="btTurn ${S.over?'':S.picking?(S.picking===me?'me':'op'):S.cur===me?'me':S.cur?'op':''}">${S.over?'対戦終了':S.picking?(S.picking===me?(SP?MYN()+'が心臓を選ぶ':'心臓を選ぶ'):OPN()+'が心臓を選ぶ'):S.cur?(S.cur===me?(SP?MYN()+'のターン':'あなたのターン'):OPN()+'のターン'):'心臓を選ぶ'}</div>
+    <div class="btTurn ${S.over?'':S.picking?(S.picking===me?'me':'op'):S.cur===me?'me':S.cur?'op':''}">${S.over?'対戦終了':S.picking?(S.picking===me?(NM?MYN()+'が心臓を選ぶ':'心臓を選ぶ'):OPN()+'が心臓を選ぶ'):S.cur?(S.cur===me?(NM?MYN()+'のターン':'あなたのターン'):OPN()+'のターン'):'心臓を選ぶ'}</div>
     <div class="btIcons"><button type="button" class="ib" id="bLog" aria-label="記録を見る">${BIC.log}<span>記録</span></button><button type="button" class="ib" id="bMenu" aria-label="メニュー" aria-expanded="${BTMENU}">${BIC.menu}<span>メニュー</span></button></div>
     <div class="btMenuBack" id="bMenuBack" ${BTMENU?'':'hidden'}></div>
     <div class="btMenu" role="menu" ${BTMENU?'':'hidden'}>
@@ -4644,22 +4672,22 @@ function render0(){
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
-    <div class="tableRow"><div class="slot">${RP&&cpu.heart&&cpu.heart.type?cardHTML(cpu.heart.type,'s'):backHTML('s')}心臓</div><div class="slot">${cpu.setCard?(RP&&cpu.setCard.type?cardHTML(cpu.setCard.type,'s'):backHTML('s','伏せ')):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand ${RP?'open':''}" aria-hidden="true">${cpu.hand.map(c=>RP&&c.type?cardHTML(c.type,'s'):backHTML('s')).join('')}</div></div></div>
+    <div class="tableRow"><div class="slot">${RP&&cpu.heart&&cpu.heart.type?cardHTML(cpu.heart.type,'s'):backHTML('s')}心臓</div><div class="slot">${cpu.setCard?(RP&&cpu.setCard.type?cardHTML(cpu.setCard.type,'s'):backHTML('s','伏せ')):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand ${RP?'open':''}" style="--n:${Math.max(1,cpu.hand.length)}" aria-hidden="true">${cpu.hand.map(c=>RP&&c.type?cardHTML(c.type,'s'):backHTML('s')).join('')}</div></div></div>
     ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
     <div class="sh"><span class="label">推理の状況</span></div>
     ${ready?`<div class="trkTabs" role="tablist"><button type="button" role="tab" class="chip ${TRK==='opp'?'on':''}" data-trk="opp" aria-selected="${TRK==='opp'}">${OPN()}の心臓 <em>${liveCount(me)}</em>種</button><button type="button" role="tab" class="chip ${TRK==='me'?'on':''}" data-trk="me" aria-selected="${TRK==='me'}">${MYN()}の心臓 <em>${liveCount(cpu)}</em>種</button></div>
     <div class="duo t-${TRK}">
-      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${SP?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me,RP&&cpu.heart?cpu.heart.type:null)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
+      <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${NM?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me,RP&&cpu.heart?cpu.heart.type:null)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
       <div class="col"><div class="colh"><b>${MYN()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
-    </div>`:'<span class="note">心臓を選ぶと始まります。</span>'}
+    </div>`:`<div class="duo t-opp"><div class="col"><div class="colh"><b>${OPN()}のデッキ</b><span>相手の心臓は、この中の1枚</span></div><div class="grid">${typesOf(cpu).map(ty=>tileHTML(cpu,ty,{cnt:{},w:{[ty]:1}},'button','tip')).join('')}</div><div></div></div><div class="col"><div class="colh"><b>${MYN()}のデッキ</b><span>この中の1枚を心臓にする</span></div><div class="grid">${typesOf(me).map(ty=>tileHTML(me,ty,{cnt:{},w:{[ty]:1}},'button','tip')).join('')}</div><div></div></div></div>`}
   </section>
   ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
   <div class="lastLog btLast llRow ${S.last?S.last.who:''}"><span class="llTx" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</span><button type="button" class="llBtn" id="bLogFull" aria-label="ログを大きく開く"><span>ログ</span></button></div>
   <section class="zone side btMe ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
     <div class="sh"><span class="who">${MYN()}</span>${lives(me)}${mini(me)}</div>${badges(me)}
-    <div class="tableRow"><div class="slot">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${SP?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
+    <div class="tableRow"><div class="slot">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${HID?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
   </section>
   ${HID?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">${netSelfDown()?'あなたの接続が切れました。つなぎ直しています…':'相手との接続が切れました。戻ってくるのを待っています…'} <b id="pauseSec">${pauseLeftText()}</b>${netSelfDown()?(NET.ranked&&NET.mid?'（つながらなければ、あなたの負けになります）':'（つながらなければ、対戦を終了します）'):NET.ranked&&NET.mid?'（相手が戻ってこなければ、あなたの勝ちになります）':'（戻ってこなければ、対戦を終了します）'}</div>`:''}
@@ -4668,9 +4696,8 @@ function render0(){
     ${S.watch?`<p class="note">観戦中です（${RP?'両方の手札と心臓が見えています':esc(S.names.me)+'さんの視点'}）。下の「視点」で切りかえられます。</p>`:RP?'<p class="note">リプレイです。両方の手札と心臓が見えています。</p>':SP?'<p class="note">観戦中です。おたがいの手札と心臓は見えません（相手に知られたカードと、使われたカードだけが見えます）。</p>':`<div class="btns actBtns">
       <button type="button" class="b primary" id="bPlay" ${ph==='play'&&S.sel&&!S.busy&&!C[S.sel.type].set&&!useBlock(me,S.sel.type)?'':'disabled'}>${S.sel&&C[S.sel.type].set?'伏せ専用':S.sel&&czBlock(me,S.sel.type)?'呪いで使えない':S.sel&&useBlock(me,S.sel.type)?'今は使えない':'使う'}</button>
       <button type="button" class="b ${S.sel&&!C[S.sel.type].set?'bluff':''}" id="bSet" ${canSetIn(me,ph)&&S.sel&&!S.busy?'':'disabled'}>${S.sel&&!C[S.sel.type].set?(me.setCard?'ブラフ（伏せ直し）':'ブラフ'):(me.setCard?'伏せ直す':'伏せる')}</button>
-      ${ph==='play'?`<button type="button" class="b" id="bSkip" ${S.busy?'disabled':''}>${me.f.req>0?'使わずに進む':'宣言に進む'}</button>`:''}
-      <button type="button" class="b danger" id="bGuess" ${ph==='guess'&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
-      <button type="button" class="b endT" id="bEnd" ${ph==='guess'&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>ターン終了</button>
+      <button type="button" class="b danger" id="bGuess" ${(ph==='guess'||ph==='play')&&me.f.guesses>0&&me.hand.length&&!S.busy?'':'disabled'}>心臓を宣言</button>
+      <button type="button" class="b endT" id="bEnd" ${(ph==='guess'||ph==='play')&&!S.busy&&!(me.f.mustGuess&&me.f.guesses>0&&me.hand.length)?'':'disabled'}>${ph==='play'&&ENDARM===S.turnNo&&me.f.req>0&&!me.f.played?'使わずに終了（もう一度押す）':'ターン終了'}</button>
     </div>`}</div>
   <div class="logFull ${LOGNEW?'in':''}" id="logFull" role="dialog" aria-label="ログ" ${LOGFULL?'':'hidden'}>
     <div class="lfHead"><b>ログ</b><button type="button" class="b small" id="bLogFullClose">閉じる</button></div>
@@ -4711,7 +4738,6 @@ function render0(){
     b.ondblclick=()=>{if(ph!=='play'||S.busy)return;S.sel=card();C[S.sel.type].set?onSet():onPlay()};
   });
   if(!SP&&$('#bPlay')){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}   // 観戦（1人の視点）ではボタンを出していない
-  const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
   $('#quit').onclick=e=>{if(S.watch)return watchLeave();if(S.replay){rpcBack();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
 }
@@ -5292,6 +5318,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:129,d:'2026-11-15',t:'対戦まわりをまとめて直しました。「使わずに進む」ボタンをなくしました（「心臓を宣言」と「ターン終了」を、カードを使う前からそのまま押せます。何もせずにターン終了を押したときは、もう一度押して確かめます）／心臓をえらぶ画面で、うしろの盤面が暗くならなくなりました。相手のデッキが最初から推理ボードに出ていて、「盤面を見る」を押すとえらぶ画面をたためます／リプレイで、好きなターンへ飛べるようになりました（下の帯の ◀ ▶ と、ターンの選択）／観戦とリプレイで、「あなた」ではなくプレイヤーの名前が出るようにしました／観戦で見えている相手の手札を、重ねずに並べました／PCの対戦画面で、右の推理ボードを元の幅に戻し、中央を広くしました／マイページの戦績に、CPU戦を入れないようにしました。'},
   {id:128,d:'2026-11-15',t:'対戦中に接続が切れたとき、切れたのが自分の側か相手の側かを見分けるようにしました。自分の側（オフラインになった、アプリを裏に回して止まっていた、など）のときは「あなたの接続が切れました」と出て、2分たっても戻れなければ自分の負けとして記録します。前は、切れた側も「自分の勝ち」と報告していたため、ちゃんと待っていた人が負けになることがありました。'},
   {id:127,d:'2026-11-14',t:'マイページを、下のメニューのいちばん右（前の「ランキング」の場所）に移しました。アイコン・名前・称号をここで変えられ、自分のランクも見られます。「世界ランキング」を押すと、みんなの順位が開きます。戦績とリプレイは、同じページの下にあります。'},
   {id:126,d:'2026-11-14',t:'対戦中のログ（記録）のいちばん上に、この試合でどちらが先攻・後攻かをいつも出すようにしました。'},
@@ -5632,8 +5659,28 @@ async function rpcStart(data,meta,pov,mine){
   // 見る人（下に出る人）と相手の名前
   RPC.names=RPC.pov==='me'?{me:data.names.me,cpu:data.names.cpu}:{me:data.names.cpu,cpu:data.names.me};
   NET.spec=RPC.pov==='all';NET.watchNames=RPC.names;NET.fxq=Promise.resolve();
+  // ターンのはじまりの場所（ターンを選んで飛ぶため）
+  RPC.turns=[];{let last=null;data.ev.forEach((e,i)=>{if(e.s&&e.s.turnNo!=null&&e.s.turnNo!==last){last=e.s.turnNo;if(last>0)RPC.turns.push({t:last,i})}})}
   S=null;VIEW='battle';window.scrollTo(0,0);$('#app').innerHTML='<div class="onl"><p class="note">リプレイを始めます…</p></div>';rpcBar();
-  const ev=data.ev;
+  return rpcRun(run);
+}
+// 好きなターンのはじまりへ飛ぶ：そこまでの盤面を演出なしで組み立て、そこから再生を続ける（2026-11-15）
+function rpcSeek(idx){
+  if(!RPC.on||!RPC.data)return;
+  const ev=RPC.data.ev;idx=Math.max(0,Math.min(ev.length-1,idx));
+  const run=++RPC.run;RPC.done=false;
+  if(S)S.aborted=true;  // 出ている途中の演出を止める
+  modalKill();fxClear();fxKick=null;NET.fxq=Promise.resolve();S=null;RPC.snap={};
+  document.body.classList.remove('resultOn','hitstop');
+  let logs=[];
+  for(let i=0;i<=idx;i++){const e=ev[i];if(e.s){rpcMerge(RPC.snap,e.s);if(e.s.logs)logs.push(...e.s.logs)}}
+  if(logs.length>400)logs=logs.slice(-400);
+  RPC.i=idx+1;
+  try{if(RPC.snap.me&&RPC.snap.cpu&&RPC.snap.cards)guestApply(rpcView(RPC.snap,logs,RPC.pov))}catch(err){console.error(err)}
+  rpcBar();rpcRun(run);
+}
+async function rpcRun(run){
+  const data=RPC.data,meta=RPC.meta,ev=data.ev;
   for(;RPC.i<ev.length;RPC.i++){
     const e=ev[RPC.i];
     try{await NET.fxq}catch(_){}
@@ -5688,9 +5735,16 @@ function rpcBar(){
       else if(c==='sp'){RPC.sp=RPC.sp>=3?1:RPC.sp+1;rpcBar()}
       else if(c==='pov'){const d=RPC.data,m=RPC.meta;rpcStop();VIEW='replay';draw_();rpcChoose(d,m)}
       else if(c==='step'){const d=RPC.data,m=RPC.meta;rpcStop();rpvOpen(d,m)}
-      else if(c==='quit')rpcBack()}}
-  const n=RPC.data?RPC.data.ev.length:0;
-  b.innerHTML=`<span class="rcT">${RPC.pov==='all'?'両方見える':esc(RPC.names?RPC.names.me:'')+'の視点'}　${n?Math.round(Math.min(RPC.i+1,n)/n*100):0}%</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button>${RPC.mine?'':'<button type="button" data-rc="pov">視点</button><button type="button" data-rc="step">コマ送り</button>'}<button type="button" data-rc="quit">やめる</button>`;
+      else if(c==='prev'||c==='next'){const T=RPC.turns||[],cur=RPC.snap&&RPC.snap.turnNo||0,k=T.findIndex(x=>x.t===cur),j=c==='prev'?(k<0?0:k-1):(k<0?0:k+1);if(T[j])rpcSeek(T[j].i)}
+      else if(c==='quit')rpcBack()};
+    b.onchange=e=>{const s=e.target.closest('select');if(s&&s.value!==''){const i=+s.value;s.blur();rpcSeek(i)}};
+    b.innerHTML='<span class="rcA"></span><span class="rcTurn"></span><span class="rcB"></span>'}
+  const n=RPC.data?RPC.data.ev.length:0,T=RPC.turns||[],cur=RPC.snap&&RPC.snap.turnNo||0,k=T.findIndex(x=>x.t===cur);
+  const set=(q,h)=>{const el=b.querySelector(q);if(el&&el._h!==h){el._h=h;el.innerHTML=h}};
+  set('.rcA',`<span class="rcT">${RPC.pov==='all'?'両方見える':esc(RPC.names?RPC.names.me:'')+'の視点'}</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button>`);
+  // ターンの選択は、開いている間に作り直さない（選んでいる途中で閉じてしまうため）
+  if(!b.querySelector('select:focus'))set('.rcTurn',T.length?`<button type="button" data-rc="prev" aria-label="前のターンへ" ${k<=0?'disabled':''}>◀</button><select aria-label="ターンを選んで飛ぶ">${k<0?'<option value="" selected>ターンを選ぶ</option>':''}${T.map((x,i)=>`<option value="${x.i}" ${i===k?'selected':''}>${x.t}ターン目${i===k?'（いま）':''}</option>`).join('')}</select><button type="button" data-rc="next" aria-label="次のターンへ" ${k>=T.length-1?'disabled':''}>▶</button>`:'');
+  set('.rcB',`${RPC.mine?'':'<button type="button" data-rc="pov">視点</button><button type="button" data-rc="step">コマ送り</button>'}<button type="button" data-rc="quit">やめる</button>`);
 }
 // ---- 見る側（運営だけ）
 const RPV={list:null,total:0,err:'',cur:null,full:[],i:0,play:false,sp:1,tm:0,meta:null};
@@ -5806,7 +5860,7 @@ const MYREC={on:false,ev:[],st:null,t0:0,
     return out;
   }};
 const MYLOG={
-  get(){const o=lsGet(MYLOG_KEY);return o&&Array.isArray(o.m)?o.m:[]},
+  get(){const o=lsGet(MYLOG_KEY);return o&&Array.isArray(o.m)?o.m.filter(x=>x&&x.mode!=='cpu'):[]},
   // 入りきらないときは、古いリプレイから捨てる（戦績は残す）
   put(m){
     m=m.slice(0,MYLOG_MAX);let n=0;m.forEach(x=>{if(x.rp&&++n>MYLOG_RP)delete x.rp});
@@ -5816,7 +5870,7 @@ const MYLOG={
   // 対戦が終わったとき（gameOver）に呼ぶ。うまくいかなくても対戦には影響させない
   add(win){
     try{
-      if(!S||S.tut||S.replay||S.spec||S.watch)return null;
+      if(!S||S.tut||S.replay||S.spec||S.watch||!S.online)return null;  // CPU戦は戦績に入れない（2026-11-15）
       const on=!!S.online,me=S.me,op=S.cpu,dsig=x=>[...(x.types||[])].sort().join()+'|'+(x.single||''),sig=dsig(me);
       deckInit();const dk=SV.decks.find(x=>dsig(x)===sig);
       const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:Date.now(),mode:on?(NET.ranked?'rank':'friend'):'cpu',won:!!win,opp:on?String(NET.opp||'相手').slice(0,24):'CPU',
@@ -5850,6 +5904,7 @@ function renderMyPage(){
   ecoInit();
   const tn=SV.equip.title&&titleName(SV.equip.title),inn=!!(LADDER.uid()&&LADDER.prof);
   if(VIEW!=='mypage')return;setBg(null);
+  if(MYP.f==='cpu')MYP.f='all';
   const all=MYLOG.get(),F=MYP.f,ms=F==='all'?all:all.filter(x=>x.mode===F);
   const MODE={rank:'ランクマッチ',friend:'友達と対戦',cpu:'CPU戦'},END={heart:'心臓を当てて決着',raid:'襲撃で決着',deck:'山札切れ',quit:'降参'};
   const st=a=>{const n=a.length,w=a.filter(x=>x.won).length;return{n,w,l:n-w,wr:n?Math.round(w/n*100):null}};
@@ -5877,8 +5932,8 @@ function renderMyPage(){
     <div class="mpRank">${rankCardHTML()||'<p class="note">ランクは、いまは使えません。</p>'}</div>
     ${inn?`<button type="button" class="ocLink mpBoard" id="mpBoard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/></svg><span><b>世界ランキング</b><span class="note">みんなの順位と、あなたの最近の対戦を見られます</span></span></button>`:''}
     <h2 class="mpH">戦績</h2>
-    <p class="note" style="margin-top:0">この端末で遊んだ対戦の記録です（2026年11月14日のアップデートのあとに遊んだ対戦から、新しい${MYLOG_MAX}試合まで）。ほかの端末で遊んだ対戦は入りません。</p>
-    <div class="mpTabs">${[['all','すべて'],['rank','ランクマッチ'],['friend','友達と対戦'],['cpu','CPU戦']].map(([k,l])=>`<button type="button" class="b small${F===k?' primary':''}" data-mpf="${k}" ${F===k?'aria-pressed="true"':''}>${l}</button>`).join('')}</div>
+    <p class="note" style="margin-top:0">この端末で遊んだ、ランクマッチと友達との対戦の記録です（CPU戦は入りません。2026年11月14日のアップデートのあとに遊んだ対戦から、新しい${MYLOG_MAX}試合まで）。ほかの端末で遊んだ対戦は入りません。</p>
+    <div class="mpTabs">${[['all','すべて'],['rank','ランクマッチ'],['friend','友達と対戦']].map(([k,l])=>`<button type="button" class="b small${F===k?' primary':''}" data-mpf="${k}" ${F===k?'aria-pressed="true"':''}>${l}</button>`).join('')}</div>
     ${MYP.err?`<div class="onErr">${esc(MYP.err)}</div>`:''}
     ${!ms.length?`<p class="note">まだ記録がありません。対戦が終わると、ここに戦績が並びます。</p>`:`
     <div class="mpTiles">${tile('対戦数',T.n+'戦',`${T.w}勝 ${T.l}敗`)}${tile('勝率',pc(T),'記録のある全部の対戦')}${tile('直近50試合',pc(S50),`${S50.n}戦 ${S50.w}勝 ${S50.l}敗`)}${tile('直近10試合',pc(S10),`${S10.n}戦 ${S10.w}勝 ${S10.l}敗`)}${tile(ms[0].won?'いまの連勝':'いまの連敗',cur+(ms[0].won?'連勝':'連敗'),`いちばん長い連勝 ${best}`)}${tile('1試合の長さ',avgT+'ターン','平均')}</div>
