@@ -99,6 +99,7 @@ begin
       select json_agg(x order by x.at desc) from (
         select coalesce(m.decided_at, m.created_at) as at, m.status,
                case when m.winner = me then m.rp_win else m.rp_loss end as delta,
+               m.delta as rdelta,  -- マスターレートの増減（マスターの人にはこちらを見せる）
                (m.winner = me) as won,
                (select name from players o where o.id = case when m.p1 = me then m.p2 else m.p1 end) as opp
         from matches m where me in (m.p1, m.p2) and m.p1_in and m.p2_in order by m.created_at desc limit 10
@@ -341,7 +342,8 @@ declare
 begin
   select rating into rw from players where id = w for update;
   select rating into rl from players where id = l for update;
-  d := greatest(1, round(32 * (1 - 1 / (1 + power(10, (rl - rw) / 400.0))))::integer);
+  -- 2026-11-14 1戦の動きを 10〜22 におさめる（前は 1〜32。上位の人が「勝って+7・負けて-20」になり、3勝1敗でも増えなかった）
+  d := least(22, greatest(10, round(32 * (1 - 1 / (1 + power(10, (rl - rw) / 400.0))))::integer));
   gw := d + 8;
   gl := greatest(4, d - 6);
   update players set rating = rating + d, rp = rp + gw, wins = wins + 1, updated_at = now() where id = w;
@@ -435,7 +437,7 @@ begin
       select * into m from matches where id = p_match;
     end if;
   end if;
-  return json_build_object('status', m.status, 'delta', case when m.winner = me then m.rp_win else m.rp_loss end, 'won', m.winner = me,
+  return json_build_object('status', m.status, 'delta', case when m.winner = me then m.rp_win else m.rp_loss end, 'rdelta', m.delta, 'won', m.winner = me,
     'ranked', m.ranked, 'got', case when m.rewards is null then null when m.winner = me then m.rewards->'w' else m.rewards->'l' end);
 end $$;
 

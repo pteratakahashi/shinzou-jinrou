@@ -2267,7 +2267,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114064003';
+const APP_VER='20261114102949';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -5264,6 +5264,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:124,d:'2026-11-14',t:'ランクマッチ：マスターレートの動き方を見直しました。1戦で動く数字を10〜22の間におさめたので、勝っても少ししか増えず、負けると大きく減る、という差が小さくなります。「あなたの最近の対戦」のレートの増減は、どの端末で遊んだ対戦にも出るようになりました。'},
   {id:123,d:'2026-11-14',t:'デッキ編成とカード一覧で、カードのランク（ブロンズ・シルバー・ゴールド・レジェンド）ごとに絞り込めるようになりました。系統・属性の下にある「ランク」の段から選べます。'},
   {id:122,d:'2026-11-14',t:'マスターの人向け：対戦の結果画面に、マスターレートがいくつからいくつに変わったかを出すようにしました。ランキングの「あなたの最近の対戦」にも、ランクポイント（pt）とは別に、レートの増減を並べます（この端末で結果画面まで見た対戦から）。'},
   {id:121,d:'2026-11-14',t:'カードの調整：今回の調整の理由です。ランクマッチの記録を調べたところ、山札切れで決まった試合が全体の約8%ありました。一方で、山札切れに備えられるカードはほとんどありませんでした。そこで、捨て札を山札に戻せる効果を、墓守・パン屋・聖女に入れました。あわせて、使われることが少なかった罠師と、占星術師も見直しています。'},
@@ -5513,9 +5514,9 @@ async function showBoard(){
   const sh=document.querySelector('#modal .sheet');if(!sh)return p;
   const me=LADDER.prof;
   const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
-  const mst=!!(me&&me.rp>=MASTER_RP),mrl=SV.mrLog||{};  // マスター帯は、最近の対戦にマスターレートの増減も並べる（この端末で結果画面まで見た対戦だけ覚えている）
-  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt'+(mst&&mrl[x.at]!=null?`<small class="bdMr">レート ${mrl[x.at]>=0?'+':'-'}${Math.abs(mrl[x.at])}</small>`:''):''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
-  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board${mst?' mr':''}">${rec}</ul>${mst?'<p class="note">「pt」はランクポイントの増減、「レート」はマスターレートの増減です。この2つは別の数字で、動く大きさがちがいます。レートの増減は、この端末で結果画面まで見た対戦に出ます。</p>':''}<p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
+  const mst=!!(me&&me.rp>=MASTER_RP),mrl=SV.mrLog||{},mrd=x=>x.rdelta!=null?(x.won?x.rdelta:-x.rdelta):mrl[x.at];  // サーバーが返す増減（rdelta）を使い、無ければこの端末の覚え書き  // マスター帯は、最近の対戦にマスターレートの増減も並べる（この端末で結果画面まで見た対戦だけ覚えている）
+  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt'+(mst&&mrd(x)!=null?`<small class="bdMr">レート ${mrd(x)>=0?'+':'-'}${Math.abs(mrd(x))}</small>`:''):''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
+  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board${mst?' mr':''}">${rec}</ul>${mst?'<p class="note">「pt」はランクポイントの増減、「レート」はマスターレートの増減です。この2つは別の数字で、動く大きさがちがいます。</p>':''}<p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
   sh.querySelector('#bdClose').onclick=()=>{const m=$('#modal');m.hidden=true;m.innerHTML=''};
   return p;
 }
