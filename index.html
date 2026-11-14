@@ -296,7 +296,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--candle);outli
    radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 100% 0/.6em .6em no-repeat,
    radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 0 100%/.6em .6em no-repeat,
    radial-gradient(circle,#fff6d0 0 .12em,#ffd36b .13em .2em,transparent .21em) 100% 100%/.6em .6em no-repeat}
-@media (prefers-reduced-motion:reduce){.r-L{animation:none}}
+html.rm .r-L{animation:none}
 .r-L::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,240,200,.28) 45%,transparent 60%);background-size:250% 100%;animation:shine 3.2s linear infinite;pointer-events:none}
 @keyframes shine{from{background-position:120% 0}to{background-position:-130% 0}}
 .tcg.s{width:56px;font-size:8.5px}
@@ -733,7 +733,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tapHint.fixed{position:fixed;bottom:max(24px,env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center}
 @keyframes hintBlink{50%{opacity:.35}}
 [hidden]{display:none!important}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+html.rm *,html.rm *::before,html.rm *::after{animation:none!important;transition:none!important}
 .onl{padding:24px 0;text-align:center}
 .onCard{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);margin:12px 0}
 .onBig{font-family:var(--display);font-size:20px;margin:0}
@@ -788,7 +788,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .heroTitle{display:flex;align-items:center;gap:12px}
 .heroOcto{width:92px;height:92px;animation:octoBob 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
 @keyframes octoBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
-@media (prefers-reduced-motion:reduce){.octo,.octo *{animation:none!important}.oh.break .oha,.osh{display:none}.oh.break .ohd{opacity:1}}
+html.rm .octo,html.rm .octo *{animation:none!important}html.rm .oh.break .oha,html.rm .osh{display:none}html.rm .oh.break .ohd{opacity:1}
 
 #bgArt{position:fixed;inset:0;z-index:0;pointer-events:none;background-size:cover;background-position:50% 12%;image-rendering:pixelated;opacity:0;transition:opacity .7s}
 #bgArt.on{opacity:1}
@@ -823,7 +823,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tcg.altArt .tart{background:#0b0d1c}.tcg.altArt .tart img{object-position:50% 45%;-webkit-mask-image:none;mask-image:none}
 .tcg.altArt{border:.3em solid transparent;background:linear-gradient(170deg,#2c1640,#120a24) padding-box,conic-gradient(from var(--la),#ffd36b,#ff7ad9,#7af0ff,#9dffb0,#ffd36b) border-box;animation:legRot 4s linear infinite;box-shadow:0 0 1em rgba(255,122,217,.45),0 .35em .9em rgba(0,0,0,.5)}
 .tcg.altArt::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.32) 45%,transparent 60%);background-size:250% 100%;animation:shine 2.6s linear infinite;pointer-events:none;mix-blend-mode:screen}
-@media (prefers-reduced-motion:reduce){.tcg.altArt,.tcg.altArt::after{animation:none}}
+html.rm .tcg.altArt,html.rm .tcg.altArt::after{animation:none}
 .altGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
 .altIt{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
 .altIt b{font-size:13px}.altPrev{width:100%;font-size:9px}.altIt:not(.own) .altPrev .tcg{filter:saturate(.9)}
@@ -844,7 +844,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .pOcto{flex:none;width:56px;height:56px;padding:2px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.2);cursor:pointer}.pOcto .octo{width:100%;height:100%}
 .mi.packMi{background:linear-gradient(135deg,#5a3a0a,#3a1a3a 60%,#1f1838);border-color:#ffd36b;box-shadow:0 0 0 1px rgba(255,211,107,.35),0 0 18px rgba(255,200,90,.25);animation:pkGlow 2.4s ease-in-out infinite}
 @keyframes pkGlow{50%{box-shadow:0 0 0 1px rgba(255,211,107,.6),0 0 28px rgba(255,200,90,.45)}}
-@media (prefers-reduced-motion:reduce){.mi.packMi{animation:none}}
+html.rm .mi.packMi{animation:none}
 .pkCount{font-family:var(--body);font-weight:700;font-size:.7em;background:#ffd36b;color:#2a1a00;border-radius:99px;padding:0 .5em;vertical-align:.15em}
 .giftPk{display:flex;justify-content:center;gap:10px;margin:4px 0 6px}
 .pack.mini{width:64px;height:auto;pointer-events:none;animation:none;justify-content:center;gap:2px}.pack.mini .pkh{font-size:30px;line-height:1}.pack.mini .pk2{font-size:13px;color:#ffd36b;letter-spacing:0}
@@ -862,7 +862,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .sbText span{font-size:12px;color:#e8c98a}
 .flip.still{animation:none}.flip.still .inner{transition:none}.flip.still.on .front .tcg{animation:none}
 .flip.still.on.rr-L::before,.flip.still.on.rr-R::before{animation:raysSpin 10s linear infinite}
-@media (prefers-reduced-motion:reduce){.haImg,.haTitle,.haFog,.haTitle h1 span,.resArt{animation:none!important}}
+html.rm .haImg,html.rm .haTitle,html.rm .haFog,html.rm .haTitle h1 span,html.rm .resArt{animation:none!important}
 /* ===== 対戦画面：1画面の盤面（スクロールしない）。上から 相手／推理表／直前のログ／自分／手札／操作 ===== */
 body:has(#app>.bt){padding:0;height:100dvh;overflow:hidden}
 body:has(#app>.bt) #app{max-width:none;margin:0;gap:0}
@@ -1028,7 +1028,7 @@ body:has(.tabBar){padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 :is(body[data-frame=rainbow] :is(.btHand,.btMe,.fldSide.me),.shopPrev[data-frame=rainbow]) .tcg:not(.back){border-color:transparent;background:linear-gradient(170deg,#2c3462,#161b36) padding-box,linear-gradient(var(--rb,0deg),#ff5a6a,#ffc85a,#6af08a,#5ac8ff,#b67aff,#ff5a6a) border-box;animation:rbSpin 3s linear infinite}
 @property --rb{syntax:'<angle>';inherits:false;initial-value:0deg}
 @keyframes rbSpin{to{--rb:360deg}}
-@media (prefers-reduced-motion:reduce){.tcg{animation:none!important}}
+html.rm .tcg{animation:none!important}
 
 /* ===== 遊び方 ===== */
 .howto{display:flex;flex-direction:column;gap:10px}
@@ -1140,7 +1140,7 @@ h1,h2,h3,.top h1{font-family:var(--game);font-weight:400;letter-spacing:.06em;co
   background:radial-gradient(circle at 50% 30%,#ff8a9b,#e23a55 45%,#8a0f27);border:3px solid #fff0b8;box-shadow:0 0 0 2px #8a5512,0 0 22px rgba(255,80,100,.65),0 5px 0 #3a0610;text-shadow:0 2px 0 #4a0614;animation:tbPulse 2.2s ease-in-out infinite}
 .tabBar .tbBattle span{margin-top:3px;color:#ffd6dc}
 @keyframes tbPulse{50%{box-shadow:0 0 0 2px #8a5512,0 0 34px rgba(255,80,100,.9),0 5px 0 #3a0610}}
-@media (prefers-reduced-motion:reduce){.tabBar .tbBattle i{animation:none}}
+html.rm .tabBar .tbBattle i{animation:none}
 /* --- 対戦を選ぶシート --- */
 .battleSel{display:grid;gap:10px}
 .battleSel .mi{min-height:84px}.battleSel .mi.big b{font-size:clamp(26px,6.5vw,34px);white-space:nowrap}.battleSel .mi.big{min-height:110px;padding-right:40%}
@@ -1208,7 +1208,7 @@ body.onHome{overflow:hidden}
 .hmB .bdg{right:6px;top:6px}
 .hmB:active,.hmMain:active{transform:translateY(3px)}
 .hmMain::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.28) 48%,transparent 60%);background-size:260% 100%;animation:shine 3s linear infinite;pointer-events:none}
-@media (prefers-reduced-motion:reduce){.hmBg img,.hmMascot,.hmMain::after,.hmIc.glow i{animation:none}}
+html.rm .hmBg img,html.rm .hmMascot,html.rm .hmMain::after,html.rm .hmIc.glow i{animation:none}
 @media (max-height:700px){.hmMascot{display:none}.hmLogo{top:40%}}
 .stRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .xBtn{background:linear-gradient(180deg,#5a2230,#2a0910)!important;border:2px solid #c9984a!important;color:#ffe7b0!important;box-shadow:0 3px 0 #1a0508}
@@ -1356,7 +1356,7 @@ html.fit-land .bt .tableRow .tcg.s,html.fit-land .bt .tableRow .emptySlot,html.f
 @media (max-width:340px){#modal .sheet{padding:12px}#modal .sheet h2{font-size:18px}}
 html.fit-land #modal .sheet{max-width:min(760px,100%)}
 html.fit-land #modal .sheet .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
-@media (prefers-reduced-motion:reduce){.btMenu,.btAct .detail{animation:none!important}}
+html.rm .btMenu,html.rm .btAct .detail{animation:none!important}
 
 /* --- ホーム：低い画面・横向きでも、ロゴ・右のアイコン・下のボタンが重ならない --- */
 .hmLogo h1{font-size:clamp(34px,min(14vw,10.5vh),70px)}
@@ -1404,7 +1404,7 @@ html.fit-land .hmResume{padding:3px 10px;font-size:12px}
 @keyframes bootBar{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
 #app.vIn{animation:vIn .2s ease-out}
 @keyframes vIn{from{opacity:0}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){#boot .bootIn,#boot svg,#boot i::after,#app.vIn{animation:none}}
+html.rm #boot .bootIn,html.rm #boot svg,html.rm #boot i::after,html.rm #app.vIn{animation:none}
 
 /* --- ライフ：ハートと数字。タコは減った／増えたときだけ出る --- */
 .bt .lives{position:relative;display:inline-flex;align-items:center;gap:5px;flex:none;padding:2px 9px 2px 8px;border-radius:99px;background:rgba(0,0,0,.38);border:1px solid rgba(201,152,74,.45)}
@@ -1428,7 +1428,7 @@ html.fit-tight .bt .lives .lfH svg,html.fit-land .bt .lives .lfH svg{height:14px
 html.fit-tight .bt .lives .lfN,html.fit-land .bt .lives .lfN{font-size:15px}
 @media (max-width:400px){html.fit-tight .bt .lives .lfL{display:none}}
 @media (max-width:340px){.bt .lives .lfL{display:none}}
-@media (prefers-reduced-motion:reduce){.bt .lives.hurt,.bt .lives .lfH i.chg{animation:none}}
+html.rm .bt .lives.hurt,html.rm .bt .lives .lfH i.chg{animation:none}
 /* --- 待ち時間の豆知識 --- */
 .trivia{margin-top:10px;padding:9px 12px 10px;border-radius:12px;text-align:left;background:rgba(0,0,0,.32);border:1px solid rgba(201,152,74,.4)}
 .trivia b{display:block;font-family:var(--game);font-weight:400;font-size:11px;letter-spacing:.12em;color:#ffd45e;margin-bottom:3px}
@@ -1706,7 +1706,7 @@ html.fit-ws .ohN small{font-size:11.5px}
 html.fit-land .hmIc i,html.fit-wide .hmIc i{width:34px;height:34px;padding:7px}
 html.fit-wide .hmIc{width:auto}
 html.fit-wide .hmHelp{font-size:20px}
-@media (prefers-reduced-motion:reduce){.hmHelp.glow{animation:none}}
+html.rm .hmHelp.glow{animation:none}
 
 /* ===== レジェンド（系統のあるカード）：色は系統のまま。絵の上に 回る光の筋・きらめき・虹の光沢 を重ねて豪華にする =====
    枠は系統の色の金属光沢。レアリティで色を変えるのは名札と右上の印だけ */
@@ -1741,7 +1741,7 @@ html.fit-wide .hmHelp{font-size:20px}
 @keyframes legSweep{0%{background-position:125% 0}55%,100%{background-position:-135% 0}}
 /* 小さく出るところ（盤面の小さい札・推理表・履歴）は、光沢だけにして軽くする */
 .tcg.s.r-L.lg .tart::before,.tcg.s.r-L.lg .tart::after,.tcg.s.r-L.lg::before{display:none}
-@media (prefers-reduced-motion:reduce){.tcg.r-L.lg,.tcg.r-L.lg::before,.tcg.r-L.lg::after,.tcg.r-L.lg .tart::before,.tcg.r-L.lg .tart::after{animation:none}.tcg.r-L.lg::before,.tcg.r-L.lg .tart::after{opacity:.8}.tcg.r-L.lg::after{display:none}}
+html.rm .tcg.r-L.lg,html.rm .tcg.r-L.lg::before,html.rm .tcg.r-L.lg::after,html.rm .tcg.r-L.lg .tart::before,html.rm .tcg.r-L.lg .tart::after{animation:none}html.rm .tcg.r-L.lg::before,html.rm .tcg.r-L.lg .tart::after{opacity:.8}html.rm .tcg.r-L.lg::after{display:none}
 body.resultOn #app .tcg.r-L.lg::before,body.resultOn #app .tcg.r-L.lg .tart::after{opacity:.8}
 
 /* ================= 落ちついた見た目・全画面（2026-11-11）=================
@@ -2097,7 +2097,7 @@ ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-l
 .r-G>.cfr>b::after{animation-duration:3.6s}
 @keyframes frShine{from{transform:translateX(-150%)}to{transform:translateX(475%)}}
 @supports not ((-webkit-mask-box-image:none) or (mask-border:none)){.cfr>b{display:none!important}}
-@media (prefers-reduced-motion:reduce){.cfr>b{display:none!important}}
+html.rm .cfr>b{display:none!important}
 /* 銀貨：ふちと厚みのある硬貨の絵（まん中に心臓の刻印） */
 .coin i,.coinFly{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='.45' stop-color='%23cfd6e6'/%3E%3Cstop offset='1' stop-color='%23737b96'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238d95b0'/%3E%3Cstop offset='1' stop-color='%23e9eef9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='20' cy='22.5' rx='17' ry='16' fill='%234d5470'/%3E%3Ccircle cx='20' cy='19.5' r='17' fill='url(%23a)' stroke='%234d5470' stroke-width='1.6'/%3E%3Ccircle cx='20' cy='19.5' r='12.6' fill='url(%23b)' stroke='%236a728e' stroke-width='1.1'/%3E%3Cpath d='M20 27.6c-5.4-3.9-8-6.7-8-10 0-2.4 1.8-4.1 4-4.1 1.6 0 3.1.9 4 2.3.9-1.4 2.4-2.3 4-2.3 2.2 0 4 1.7 4 4.1 0 3.3-2.6 6.1-8 10z' fill='%235b6380' stroke='%23f4f7ff' stroke-width='.9'/%3E%3Cpath d='M8.2 13.5a13.8 13.8 0 0 1 9-9.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' opacity='.85'/%3E%3C/svg%3E") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important}
 .coin i{width:21px;height:21px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}.coin.sm i{width:16px;height:16px}
@@ -2111,7 +2111,7 @@ ol.board li{grid-template-columns:1.5em minmax(0,1fr) auto 3em;gap:6px;padding-l
 .hc.glow::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(0deg,rgba(255,205,95,.5),rgba(255,205,95,.12) 45%,transparent 70%);animation:resRise 1.2s ease-in-out infinite}
 @keyframes resRise{0%,100%{opacity:.35}50%{opacity:1}}
 .hc.glow .tcg{box-shadow:0 0 0 2px #ffd36b,0 0 18px 5px rgba(255,200,90,.7)}
-@media (prefers-reduced-motion:reduce){.twin.res,.hc.glow::after{animation:none}}
+html.rm .twin.res,html.rm .hc.glow::after{animation:none}
 /* 2026-11-14 の直し */
 /* 最近使ったカード：枠からはみ出して、となりの山札に重なっていた（PC）。入りきらない分は右を切る */
 .bt .myRecent{overflow:hidden}.bt .myRecent .mrRow{max-width:100%}
@@ -2250,7 +2250,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114053823';
+const APP_VER='20261114055605';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2270,7 +2270,8 @@ const maxOwn=k=>C[k].single?1:3;
 
 /* ================= utils ================= */
 const $=s=>document.querySelector(s);
-const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* 演出をひかえめにするか。パソコンやスマホの「アニメーションを減らす」設定には従わない（切っている人は演出が飛んで爆速になり、おかしく見えた。2026-11-14）。設定の「演出」で選ぶ */
+let RM=false;try{RM=!!JSON.parse(localStorage.getItem('hw2_save')||'{}').rm}catch(e){}document.documentElement.classList.toggle('rm',RM);
 // 打ち切った対戦（S.aborted：ランクマッチの相手が見つかって中断した CPU 対戦）の続きは、ここで止めて二度と動かさない
 const sleep=ms=>{const g=typeof S!=="undefined"?S:null;if(g&&g.sim)return Promise.resolve();return new Promise(r=>setTimeout(()=>{if(g&&g.aborted)return;r()},(RM?Math.min(ms,120):ms)/(typeof RPC!=='undefined'&&RPC.on?RPC.sp:1)))};
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -2755,6 +2756,7 @@ function showSettings(){
     ${rankCardHTML()}
     <div class="sndSet"><span class="label">音楽</span><input type="range" id="mBgmVol" min="0" max="1" step="0.05" value="${SV.bgmVol==null?.55:SV.bgmVol}" aria-label="音楽の音量" ${bgmOn()?'':'disabled'}><button type="button" class="b small" id="mBgm">${bgmOn()?'ON':'OFF'}</button></div>
     <div class="sndSet"><span class="label">効果音</span><input type="range" id="mSfxVol" min="0" max="1" step="0.05" value="${sfxVol()}" aria-label="効果音の音量" ${sndOn()?'':'disabled'}><button type="button" class="b small" id="mSfx">${sndOn()?'ON':'OFF'}</button></div>
+    <div class="btns"><span class="label">演出</span><button type="button" class="b small" id="stRm">${SV.rm?'ひかえめ':'ふつう'}</button><span class="note">ひかえめにすると、光や動きを減らして速く進みます</span></div>
     <div class="btns"><span class="label">ヘルプ</span><button type="button" class="b small" id="stHow">遊び方を見る</button>${canInstall()?'<button type="button" class="b small" id="stInst">アプリとしてホーム画面に追加</button>':''}</div>
     ${LADDER.uid()?`<div class="btns"><span class="label">記録</span><button type="button" class="b small" id="clSync">ほかの端末と合わせる</button><span class="note" id="clSt">${CLOUD.last?(CLOUD.last.err?'合わせられませんでした：'+esc(CLOUD.last.err):new Date(CLOUD.last.t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+' '+CLOUD.last.how+'（銀貨 '+CLOUD.last.coins+'）'):'まだ合わせていません'}</span></div>`:''}
     ${LADDER.admin?`<div class="btns"><span class="label">運営</span><button type="button" class="b small" id="stRep">リプレイを見る</button></div>`:''}
@@ -2764,6 +2766,7 @@ function showSettings(){
   modal(html(),(m,done)=>{
     const bind=()=>{
       m.querySelector('#stX').onclick=()=>{done();if(VIEW==='menu')renderMenu()};
+      m.querySelector('#stRm').onclick=()=>{SV.rm=!SV.rm;save();location.reload()};
       m.querySelector('#stHow').onclick=()=>{done();go('howto')};{const bi=m.querySelector('#stInst');if(bi)bi.onclick=()=>{done();installApp()}}
       bindRankCard();bindNameEd('mName',()=>{m.querySelector('.sheet').innerHTML=html();bind()});
       m.querySelector('#mBgm').onclick=()=>{BGM.toggle();if(bgmOn())BGM.set('menu');m.querySelector('.sheet').innerHTML=html();bind()};
@@ -5212,7 +5215,8 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
-  {id:117,d:'2026-11-14',t:'動きを軽くしました：カードの枠の光と、自分の番のふちの光が、パソコンやスマホに大きな負担をかけていて、演出がカクカクすることがありました（とくに配信中）。見た目はそのままで、負担を約10分の1にしました。'},
+  {id:118,d:'2026-11-14',t:'演出が飛んだり、とても速く進んだりすることがあるのを直しました。パソコンやスマホで「アニメーション効果」を切っていると、ゲームの演出まで止まっていました。これからは端末の設定に関係なく、ふつうの演出で動きます。演出を減らしたいときは、設定（歯車）の「演出」で「ひかえめ」を選べます。'},
+  {id:117,d:'2026-11-14',t:'動きを軽くしました：カードの枠の光と、自分の番のふちの光が、パソコンやスマホに大きな負担をかけていて、演出がカクカクすることがありました。見た目はそのままで、負担を約10分の1にしました。'},
   {id:116,d:'2026-11-14',t:'English・한국어・简体中文・繁體中文 に対応しました。端末の言語に合わせて自動で切りかわります。設定（歯車）の「言語 / Language」からも選べます。Now available in English, Korean and Chinese — change it in Settings > Language.'},
   {id:115,d:'2026-11-14',t:'友達対戦の観戦で、2人の手札と心臓が見えるようになりました。観戦している人は、下のボタンで視点（両方見える／どちらか1人の視点）をいつでも切りかえられます。'},
   {id:114,d:'2026-11-14',t:'友達対戦に、観戦者を1人呼べるようになりました。2人がそろっている部屋に、3人目が同じ部屋コード（またはリンク）で入ると、観戦になります。観戦では、どちらの手札と心臓も見えません。'},
