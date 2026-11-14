@@ -350,6 +350,7 @@ body{word-break:auto-phrase;text-wrap:pretty}
 .board li.me{outline:1.5px solid var(--candle)}
 .board .bdPos{color:var(--muted);text-align:right}.board .bdName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.board .bdRate,.board .bdWl{text-align:right}.board .bdWl{color:var(--muted);font-size:12px}
 ul.board li{grid-template-columns:4.6em 1fr 3.4em 3.4em}
+ul.board.mr li{grid-template-columns:4.6em minmax(0,1fr) auto 3.4em}.board .bdMr{display:block;font-size:11px;color:var(--muted);white-space:nowrap}
 .bdRes{font-weight:700;color:var(--muted)}.bdRes.w{color:var(--candle)}.bdRes.l{color:var(--blood)}
 .rateLine{margin:0;font-size:14px;color:var(--muted)}.rateLine b{color:var(--ink)}
 .statline{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -2046,7 +2047,7 @@ html.fit-wide .hm::before{content:"";position:absolute;top:0;right:0;bottom:0;wi
 @keyframes rgUp{0%{transform:scale(.4) rotate(-20deg);filter:brightness(3)}60%{transform:scale(1.35)}100%{transform:none}}
 @keyframes rgDown{0%{transform:translateY(-10px);opacity:.3}100%{transform:none;opacity:1}}
 .resBox{box-sizing:border-box;width:100%;border:1px solid var(--hair,rgba(232,200,140,.28));background:rgba(10,4,6,.5);padding:8px 12px;margin:8px 0}
-.resBox .rateLine{margin:2px 0}.rrHead b{font:800 22px var(--pcf,serif);margin-left:6px}.rrHead b.up{color:#ffd98a}.rrHead b.down{color:#f0a8ae}
+.resBox .rateLine{margin:2px 0}.rrHead b{font:800 22px var(--pcf,serif);margin-left:6px}.rrHead b.up,#rMr b.up{color:#ffd98a}.rrHead b.down,#rMr b.down{color:#f0a8ae}
 @media (max-width:420px){.rgEmb{width:58px;height:58px}.rgName{font-size:19px}.rgNext{width:28px;height:28px}}
 /* ランクの札（プレート）：左に小さな紋章、右に黒い漆の板と金属のふち。名前は金属の飾り文字（.rkTx）で入れる。
    板の幅はどのランクでも同じ（並べたときに左右がそろう） */
@@ -4111,7 +4112,7 @@ async function gameOver(w){
   S.over=true;S.phase='none';render();
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
-  const rated=on&&LADDER.rated()&&NET.mid,rp0=LADDER.prof?Math.max(0,LADDER.prof.rp||0):null,rp=rated?LADDER.report(NET.mid,win,'ko'):null,rMid=NET.mid,rOpp=NET.oppUid;  // rp0＝対戦前のランクポイント（結果画面のゲージの出発点）
+  const rated=on&&LADDER.rated()&&NET.mid,rp0=LADDER.prof?Math.max(0,LADDER.prof.rp||0):null,rt0=LADDER.prof&&Number.isFinite(LADDER.prof.rating)?LADDER.prof.rating:null,rp=rated?LADDER.report(NET.mid,win,'ko'):null,rMid=NET.mid,rOpp=NET.oppUid;  // rp0＝対戦前のランクポイント（結果画面のゲージの出発点）
   if(rated&&!S.guest)REC.send(win);
   if(!on)lsDel(GAME_KEY);else ONL.clear();
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);if(win)quake();FXC.burst('#ffffff',120,12);
@@ -4141,6 +4142,12 @@ async function gameOver(w){
       el.innerHTML=(ok?`<p class="rateLine rrHead">ランクポイント <b class="${d.won?'up':'down'}">${d.won?'+':'-'}${d.delta}pt</b></p>${rankGaugeHTML(rp0)}`
         :`<p class="rateLine">${st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>`:'レートを記録できませんでした。'}</p>${rp0!=null&&st==='pending'?rankGaugeHTML(rp0):''}`)+gotHTML(d);
       if(ok)setTimeout(()=>rankGaugeRun(el.querySelector('.rg'),rp0,rp1),450);
+      // マスター帯：ランクポイントとは別に、マスターレートがいくつ動いたかも出す（戦績を読み直して、対戦前との差を見る）
+      if(ok&&rp1>=MASTER_RP&&rt0!=null){el.querySelector('.rg').insertAdjacentHTML('afterend','<p class="rateLine" id="rMr">マスターレートを確かめています…</p>');
+        LADDER.refresh().then(()=>{const pf=LADDER.prof,ml=m.querySelector('#rMr'),rt1=pf&&pf.rating;if(!Number.isFinite(rt1)){if(ml)ml.remove();return}
+          const dd=rt1-rt0,r0=pf.recent&&pf.recent[0];
+          if(r0&&r0.status==='done'&&r0.won===d.won&&(d.won?dd>0:dd<=0)){const lg=SV.mrLog||{};lg[r0.at]=dd;SV.mrLog=Object.fromEntries(Object.entries(lg).slice(-20));save()}
+          if(ml)ml.innerHTML=`マスターレート ${rt0} → <b>${rt1}</b>（<b class="${dd>=0?'up':'down'}">${dd>=0?'+':'-'}${Math.abs(dd)}</b>）`}).catch(e=>{console.error(e);const ml=m.querySelector('#rMr');if(ml)ml.remove()})}
       gotRun(m);
       if(st==='done'&&rTry){SV.pendGot=null;save();LADDER.refresh()}
       if(st==='pending'&&rTry<15&&rMid&&rOpp)setTimeout(async()=>{
@@ -5255,6 +5262,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:122,d:'2026-11-14',t:'マスターの人向け：対戦の結果画面に、マスターレートがいくつからいくつに変わったかを出すようにしました。ランキングの「あなたの最近の対戦」にも、ランクポイント（pt）とは別に、レートの増減を並べます（この端末で結果画面まで見た対戦から）。'},
   {id:121,d:'2026-11-14',t:'カードの調整：今回の調整の理由です。ランクマッチの記録を調べたところ、山札切れで決まった試合が全体の約8%ありました。一方で、山札切れに備えられるカードはほとんどありませんでした。そこで、捨て札を山札に戻せる効果を、墓守・パン屋・聖女に入れました。あわせて、使われることが少なかった罠師と、占星術師も見直しています。'},
   {id:120,d:'2026-11-14',t:'PCの対戦画面：左にいつも出ていた「使われたカード」と「ログ」をしまいました。右上の「記録」を押すと、左から出てきます。そのぶん中央の盤面が広くなり、右の推理ボードも大きくなりました。'},
   {id:120,d:'2026-11-14',t:'カードの調整：5枚を変えました。墓守は、さらに捨て札からランダムに3枚を山札に戻す／パン屋は「捨て札から3枚まで選んで山札に戻し、1枚引く。共鳴で1つ知る」に（属性は聖）／罠師は「相手が攻撃系カードを使ったとき、相手の手札の攻撃系カードをすべて捨てさせる。共鳴で2枚引く」に／占星術師は1〜3種類まで選べるように（共鳴は1枚引くだけ）／聖女は「すべてのカードを山札に戻して心臓を入れかえ、相手の推理をリセットし、ライフを1回復」に。山札切れへの対策として、捨て札を山札に戻せるカードができました。'},
@@ -5502,8 +5510,9 @@ async function showBoard(){
   const sh=document.querySelector('#modal .sheet');if(!sh)return p;
   const me=LADDER.prof;
   const rows=error?'<p class="note">読み込めませんでした。</p>':(data||[]).map(r=>{const mine=me&&r.name===me.name&&r.rp===me.rp;return`<li class="${mine?'me':''}"><span class="bdPos">${r.pos}</span><span class="bdName">${esc(r.name)}</span>${tierHTML(r.rp)}<span class="bdRate">${r.rating!=null?r.rating:''}</span></li>`}).join('')||'<p class="note">まだだれも対戦していません。</p>';
-  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt':''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
-  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board">${rec}</ul><p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
+  const mst=!!(me&&me.rp>=MASTER_RP),mrl=SV.mrLog||{};  // マスター帯は、最近の対戦にマスターレートの増減も並べる（この端末で結果画面まで見た対戦だけ覚えている）
+  const rec=me&&me.recent&&me.recent.length?me.recent.map(x=>`<li><span class="bdRes ${x.status==='done'?(x.won?'w':'l'):''}">${x.status==='done'?(x.won?'勝ち':'負け'):x.status==='pending'?'集計待ち':'無効'}</span><span class="bdName">vs ${esc(x.opp||'？')}</span><span class="bdRate">${x.status==='done'?(x.won?'+':'-')+x.delta+'pt'+(mst&&mrl[x.at]!=null?`<small class="bdMr">レート ${mrl[x.at]>=0?'+':'-'}${Math.abs(mrl[x.at])}</small>`:''):''}</span><span class="bdWl">${new Date(x.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})}</span></li>`).join(''):'<p class="note">まだありません。</p>';
+  sh.innerHTML=`<h2>ランキング</h2><p class="note">マスターの人は数字（マスターレート）の順、それ以外はランクの順です。</p><ol class="board">${rows}</ol><h2 style="margin-top:14px">あなたの最近の対戦</h2><ul class="board${mst?' mr':''}">${rec}</ul>${mst?'<p class="note">「pt」はランクポイントの増減、「レート」はマスターレートの増減です。この2つは別の数字で、動く大きさがちがいます。レートの増減は、この端末で結果画面まで見た対戦に出ます。</p>':''}<p class="note">「集計待ち」は相手の結果報告を待っている対戦です（10分たつと確定）。両者の報告が食い違った対戦は「無効」になり、ランクは動きません。</p>${close}`;
   sh.querySelector('#bdClose').onclick=()=>{const m=$('#modal');m.hidden=true;m.innerHTML=''};
   return p;
 }
