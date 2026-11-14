@@ -124,6 +124,20 @@ html.fit-wide .pxSide{width:200px}html.fit-wide .pxPal{grid-template-columns:rep
 .rvRow{display:flex;gap:8px;align-items:stretch}
 .rvOpen{flex:1;min-width:0;text-align:left;background:var(--panel);border:1px solid var(--hair);color:var(--ivory);padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .rvOpen b{font:700 15px var(--pcf)}.rvOpen i,.rvVs{font-style:normal;color:var(--dim);font-size:.8em;margin:0 4px}.rvOpen span{font-size:12px;color:var(--dim)}
+/* マイページ（自分の戦績とリプレイ。2026-11-14） */
+.mpTabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.mpTiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:6px;margin:8px 0}
+.mpTile{background:var(--panel);border:1px solid var(--hair);padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mpTile span,.mpTile small{font-size:11px;color:var(--dim)}.mpTile b{font:700 20px var(--pcf);color:var(--ivory);font-variant-numeric:tabular-nums}
+.mpH{font-size:15px;margin:18px 0 6px}
+.mpDots{display:flex;flex-wrap:wrap;gap:3px}.mpDots i{box-sizing:border-box;width:11px;height:11px;border-radius:50%;border:2px solid var(--blood)}.mpDots i.w{background:var(--candle);border-color:var(--candle)}
+.mpRows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.mpRows li{display:grid;grid-template-columns:minmax(0,1fr) minmax(36px,90px) auto 3.2em;gap:8px;align-items:center;padding:6px 8px;background:var(--panel);border:1px solid var(--hair);font-size:13px;font-variant-numeric:tabular-nums}
+.mpRows .mpN{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.mpRows .mpBar{height:6px;background:rgba(255,255,255,.08)}.mpRows .mpBar i{display:block;height:100%;background:var(--candle)}
+.mpRows .mpC{color:var(--dim);font-size:12px;white-space:nowrap}.mpRows b{text-align:right}
+.mpM{cursor:default}.mpM em{font-style:normal;margin-right:6px;color:var(--blood)}.mpM em.w{color:var(--candle)}
+.mpLog .rvRow .b{flex:none;align-self:center}
 .rvBar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--dim);border-bottom:1px solid var(--hair);padding-bottom:6px;margin-bottom:8px}.rvBar b{color:var(--gold)}
 .rvCtl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:#12080b;padding:6px 0;margin-bottom:8px}.rvCtl input{flex:1;min-width:120px}
 .rvGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
@@ -2689,6 +2703,7 @@ function draw_(){
   else if(VIEW==='shop')renderShop();
   else if(VIEW==='octo')renderOcto();
   else if(VIEW==='replay')renderReplay();
+  else if(VIEW==='mypage')renderMyPage();
   else if(VIEW==='cards')renderCards();
   else if(VIEW==='howto')renderHowto();
   else if(VIEW==='draft')renderDraft();
@@ -2718,6 +2733,7 @@ function renderMenu(){
       <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
+      ${side('hmMy','<svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/></svg>','マイページ','')}
       ${side('hmDc','<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9.5L4 20z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>','Discord','')}
       ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):''}
     </nav>
@@ -2755,7 +2771,7 @@ function renderMenu(){
   on('mRank',()=>{NET.err='';rankPrep()});
   on('updAll',showUpdates);on('updAll2',showUpdates);on('pAvatar',pickAvatar);on('mFriend',()=>go('online'));bindMissions();
   on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});
-  on('hmMsn',showMissions);on('hmSet',showSettings);on('hmDc',()=>{window.open(DISCORD_URL,'_blank','noopener')});
+  on('hmMsn',showMissions);on('hmMy',()=>go('mypage'));on('hmSet',showSettings);on('hmDc',()=>{window.open(DISCORD_URL,'_blank','noopener')});
   bindTabBar();
   setTimeout(showGifts,300);setTimeout(showUnlocks,700);
   setTimeout(async()=>{if(VIEW==='menu'&&$('#modal').hidden){await loginBonus();if(VIEW==='menu'&&$('#modal').hidden)a2hsHint()}},400);
@@ -4115,6 +4131,7 @@ async function gameOver(w){
   const win=w===S.me,on=!!S.online;
   if(on&&!S.guest){NET.send({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type});NET.cast({t:'over',w:whoOf(w),hh:S.me.heart&&S.me.heart.type,gh:S.cpu.heart&&S.cpu.heart.type});liveEnd()}
   const rated=on&&LADDER.rated()&&NET.mid,rp0=LADDER.prof?Math.max(0,LADDER.prof.rp||0):null,rt0=LADDER.prof&&Number.isFinite(LADDER.prof.rating)?LADDER.prof.rating:null,rp=rated?LADDER.report(NET.mid,win,'ko'):null,rMid=NET.mid,rOpp=NET.oppUid;  // rp0＝対戦前のランクポイント（結果画面のゲージの出発点）
+  const myId=MYLOG.add(win);  // マイページ用に、この端末へ戦績（とリプレイ）を覚えておく
   if(rated&&!S.guest)REC.send(win);
   if(!on)lsDel(GAME_KEY);else ONL.clear();
   VOICE.say('K.O.!',{rate:.8,pitch:.4});hitstop(160);screenFlash('white');setTimeout(()=>screenFlash('red'),160);if(win)quake();FXC.burst('#ffffff',120,12);
@@ -4143,6 +4160,7 @@ async function gameOver(w){
       const ok=st==='done'&&rp0!=null&&Number.isFinite(d.delta),rp1=ok?Math.max(0,rp0+(d.won?d.delta:-d.delta)):rp0;
       el.innerHTML=(ok?`<p class="rateLine rrHead">ランクポイント <b class="${d.won?'up':'down'}">${d.won?'+':'-'}${d.delta}pt</b></p>${rankGaugeHTML(rp0)}`
         :`<p class="rateLine">${st==='pending'?'相手の結果報告を待っています。まもなくレートに反映されます。':st==='disputed'?'おたがいの結果報告が食い違ったため、この対戦はレートに反映されません。':st==='done'?`ランクポイント <b>${d.won?'+':'-'}${d.delta}pt</b>`:'レートを記録できませんでした。'}</p>${rp0!=null&&st==='pending'?rankGaugeHTML(rp0):''}`)+gotHTML(d);
+      if(ok)MYLOG.patch(myId,{delta:d.won?d.delta:-d.delta});
       if(ok)setTimeout(()=>rankGaugeRun(el.querySelector('.rg'),rp0,rp1),450);
       // マスター帯：ランクポイントとは別に、マスターレートがいくつ動いたかも出す（戦績を読み直して、対戦前との差を見る）
       if(ok&&rp1>=MASTER_RP&&rt0!=null){el.querySelector('.rg').insertAdjacentHTML('afterend','<p class="rateLine" id="rMr">マスターレートを確かめています…</p>');
@@ -4685,7 +4703,7 @@ function render0(){
   if(!SP&&$('#bPlay')){$('#bPlay').onclick=onPlay;$('#bSet').onclick=onSet;$('#bGuess').onclick=onGuess;$('#bEnd').onclick=onEnd}   // 観戦（1人の視点）ではボタンを出していない
   const sk=$('#bSkip');if(sk)sk.onclick=onSkip;
   let armed=false;
-  $('#quit').onclick=e=>{if(S.watch)return watchLeave();if(S.replay){rpcStop();RPV.cur=null;VIEW='replay';draw_();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
+  $('#quit').onclick=e=>{if(S.watch)return watchLeave();if(S.replay){rpcBack();return}if(SP)return watchLeave();if(S.over)return S.online?netLeave():MM.side?mmSideBack():go('menu');if(!armed){armed=true;e.currentTarget.textContent='本当に降参する（もう一度押す）';return}BTMENU=false;if(S.guest)NET.send({t:'cmd',c:'resign'});else gameOver(S.cpu)};
 }
 
 
@@ -5264,6 +5282,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:125,d:'2026-11-14',t:'「マイページ」ができました（ホームのグラフのアイコンから）。自分の勝率、直近50試合の勝ち負け、デッキごとの戦績、相手のシングルごとの戦績などを見られます。ランクマッチと友達との対戦は、あとから「リプレイ」で自分の視点のまま見返せます（新しい30試合ぶん）。記録はこの端末に残り、このアップデートのあとに遊んだ対戦から入ります。'},
   {id:124,d:'2026-11-14',t:'ランクマッチ：マスターレートの動き方を見直しました。1戦で動く数字を10〜22の間におさめたので、勝っても少ししか増えず、負けると大きく減る、という差が小さくなります。「あなたの最近の対戦」のレートの増減は、どの端末で遊んだ対戦にも出るようになりました。'},
   {id:123,d:'2026-11-14',t:'デッキ編成とカード一覧で、カードのランク（ブロンズ・シルバー・ゴールド・レジェンド）ごとに絞り込めるようになりました。系統・属性の下にある「ランク」の段から選べます。'},
   {id:122,d:'2026-11-14',t:'マスターの人向け：対戦の結果画面に、マスターレートがいくつからいくつに変わったかを出すようにしました。ランキングの「あなたの最近の対戦」にも、ランクポイント（pt）とは別に、レートの増減を並べます（この端末で結果画面まで見た対戦から）。'},
@@ -5593,8 +5612,9 @@ async function rpcChoose(data,meta){
     <div class="btns" style="margin-top:12px"><button type="button" class="b" id="pvNo">やめる</button></div>`,(m,done)=>{m.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>done(b.dataset.pv));m.querySelector('#pvNo').onclick=()=>done(null)},()=>null);
   if(v==='me'||v==='cpu'||v==='all')rpcStart(data,meta,v);else if(VIEW==='replay')renderReplay();
 }
-async function rpcStart(data,meta,pov){
+async function rpcStart(data,meta,pov,mine){
   rpcStop(true);
+  RPC.mine=!!mine;  // mine＝マイページから開いた自分のリプレイ（視点は自分だけ。終わったらマイページへ戻る）
   RPC.on=true;RPC.data=data;RPC.meta=meta||RPC.meta;RPC.i=0;RPC.paused=false;RPC.snap={};RPC.pov=pov||RPC.pov||'me';const run=++RPC.run;
   // 見る人（下に出る人）と相手の名前
   RPC.names=RPC.pov==='me'?{me:data.names.me,cpu:data.names.cpu}:{me:data.names.cpu,cpu:data.names.me};
@@ -5619,9 +5639,10 @@ async function rpcStart(data,meta,pov){
   if(run!==RPC.run||!RPC.on)return;
   RPC.done=true;rpcBar();
   const w=data.names[data.winner];
-  const v=await modal(`<div class="result"><span class="big win" style="font-size:30px">決着</span><p><b>${esc(w)}</b> の勝ち</p><div class="btns"><button type="button" class="b primary" id="rcAgain">もう一度見る</button><button type="button" class="b" id="rcPov">視点を変える</button><button type="button" class="b" id="rcStep">コマ送りで見る</button><button type="button" class="b" id="rcList">一覧へ</button></div></div>`,(m,done)=>{m.querySelector('#rcAgain').onclick=()=>done('again');m.querySelector('#rcPov').onclick=()=>done('pov');m.querySelector('#rcStep').onclick=()=>done('step');m.querySelector('#rcList').onclick=()=>done('list')},()=>'list');
+  const v=await modal(`<div class="result"><span class="big win" style="font-size:30px">決着</span><p><b>${esc(w)}</b> の勝ち</p><div class="btns"><button type="button" class="b primary" id="rcAgain">もう一度見る</button>${RPC.mine?'':'<button type="button" class="b" id="rcPov">視点を変える</button><button type="button" class="b" id="rcStep">コマ送りで見る</button>'}<button type="button" class="b" id="rcList">${RPC.mine?'マイページへ':'一覧へ'}</button></div></div>`,(m,done)=>{[['#rcAgain','again'],['#rcPov','pov'],['#rcStep','step'],['#rcList','list']].forEach(([q,r])=>{const b=m.querySelector(q);if(b)b.onclick=()=>done(r)})},()=>'list');
   if(run!==RPC.run)return;
-  if(v==='again')return rpcStart(data,meta,RPC.pov);
+  if(v==='again')return rpcStart(data,meta,RPC.pov,RPC.mine);
+  if(RPC.mine)return rpcBack();
   const m2=RPC.meta;rpcStop();
   if(v==='pov'){VIEW='replay';draw_();rpcChoose(data,m2)}else if(v==='step')rpvOpen(data,m2);else{RPV.cur=null;VIEW='replay';draw_()}
 }
@@ -5639,6 +5660,11 @@ function rpcStop(keep){
   modalKill();fxClear();NET.spec=false;NET.watchNames=null;NET.fxq=Promise.resolve();S=null;
   document.body.classList.remove('inBattle','resultOn','hitstop');
 }
+// 再生をやめて、もとの一覧へ戻る（自分のリプレイならマイページ、運営のリプレイなら運営の一覧）
+function rpcBack(){
+  const mine=RPC.mine;rpcStop();RPC.mine=false;
+  if(mine){VIEW='mypage';window.scrollTo(0,0);draw_()}else{RPV.cur=null;VIEW='replay';draw_()}
+}
 // 再生中に出す小さな操作の帯
 function rpcBar(){
   let b=document.getElementById('rpcBar');
@@ -5649,9 +5675,9 @@ function rpcBar(){
       else if(c==='sp'){RPC.sp=RPC.sp>=3?1:RPC.sp+1;rpcBar()}
       else if(c==='pov'){const d=RPC.data,m=RPC.meta;rpcStop();VIEW='replay';draw_();rpcChoose(d,m)}
       else if(c==='step'){const d=RPC.data,m=RPC.meta;rpcStop();rpvOpen(d,m)}
-      else if(c==='quit'){rpcStop();RPV.cur=null;VIEW='replay';draw_()}}}
+      else if(c==='quit')rpcBack()}}
   const n=RPC.data?RPC.data.ev.length:0;
-  b.innerHTML=`<span class="rcT">${RPC.pov==='all'?'両方見える':esc(RPC.names?RPC.names.me:'')+'の視点'}　${n?Math.round(Math.min(RPC.i+1,n)/n*100):0}%</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button><button type="button" data-rc="pov">視点</button><button type="button" data-rc="step">コマ送り</button><button type="button" data-rc="quit">やめる</button>`;
+  b.innerHTML=`<span class="rcT">${RPC.pov==='all'?'両方見える':esc(RPC.names?RPC.names.me:'')+'の視点'}　${n?Math.round(Math.min(RPC.i+1,n)/n*100):0}%</span><button type="button" data-rc="pause">${RPC.paused?'再生':'一時停止'}</button><button type="button" data-rc="sp">速さ ×${RPC.sp}</button>${RPC.mine?'':'<button type="button" data-rc="pov">視点</button><button type="button" data-rc="step">コマ送り</button>'}<button type="button" data-rc="quit">やめる</button>`;
 }
 // ---- 見る側（運営だけ）
 const RPV={list:null,total:0,err:'',cur:null,full:[],i:0,play:false,sp:1,tm:0,meta:null};
@@ -5731,6 +5757,116 @@ function renderReplay(){
   const li=$('#rvLogIn');if(li)li.scrollTop=li.scrollHeight;
 }
 const swR=r=>r==='me'?'cpu':r==='cpu'?'me':r;
+
+/* ================= マイページ（2026-11-14） =================
+   自分の対戦を、この端末に覚えておく（localStorage の hw2_mylog。サーバーは使わない）。
+   ・戦績：1試合ごとに {id,at,mode,won,opp,dk,turns,os,end,delta} を足す。新しい順に300試合まで
+   ・リプレイ：オンラインの対戦（ランクマッチ・友達との対戦）だけ。自分が対戦中に見ていた盤面（相手の手札と心臓は、知るまで伏せたまま）を、
+     「部屋に入った側が受け取る形」にそろえ、圧縮して持つ（新しい30試合ぶん）。再生は rpcStart(data,{},'cpu',true) */
+const MYLOG_KEY='hw2_mylog',MYLOG_MAX=300,MYLOG_RP=30;
+const MYREC={on:false,ev:[],st:null,t0:0,
+  start(){MYREC.on=true;MYREC.ev=[];MYREC.st={prev:{},last:''};MYREC.t0=Date.now()},
+  // 盤面の、前から変わった所だけを足す（REC.snap と同じ形）
+  push(out,st,sn,at){
+    const c={...sn,left:null,watchers:0,busy:false},logs=c.logs||[];delete c.logs;
+    const j=JSON.stringify(c);if(j===st.last&&!logs.length)return;st.last=j;
+    const d={};
+    for(const k in c){
+      if((k==='me'||k==='cpu'||k==='know')&&c[k]){const sub={};let ch=false;for(const kk in c[k]){const jj=JSON.stringify(c[k][kk]);if(st.prev[k+'.'+kk]!==jj){sub[kk]=c[k][kk];st.prev[k+'.'+kk]=jj;ch=true}}if(ch)d[k]=sub}
+      else{const jj=JSON.stringify(c[k]);if(st.prev[k]!==jj){d[k]=c[k];st.prev[k]=jj}}
+    }
+    if(logs.length)d.logs=logs;
+    out.push({at,s:d});
+  },
+  // 部屋に入った側：ホストから届いた盤面と演出を、そのまま覚える
+  snap(sn){if(!MYREC.on||!sn||MYREC.ev.length>=1500)return;try{MYREC.push(MYREC.ev,MYREC.st,sn,Date.now()-MYREC.t0)}catch(e){MYREC.on=false;console.error(e)}},
+  fx(n,a){if(MYREC.on&&MYREC.ev.length<1500)MYREC.ev.push({at:Date.now()-MYREC.t0,f:[n,a]})},
+  // 部屋を開いた側：何も伏せていない記録（REC.ev）を、自分の視点（相手の秘密は伏せる）に直す
+  fromHost(ev){
+    const full={},out=[],st={prev:{},last:''};
+    for(const e of ev){
+      if(e.f){out.push({at:e.at,f:[e.f[0],Array.isArray(e.f[1])?e.f[1].map(swR):e.f[1]]});continue}
+      if(!e.s)continue;rpcMerge(full,e.s);
+      if(!(full.me&&full.cpu&&full.cards&&full.know))continue;
+      MYREC.push(out,st,rpcView(full,e.s.logs||[],'me'),e.at);
+    }
+    return out;
+  }};
+const MYLOG={
+  get(){const o=lsGet(MYLOG_KEY);return o&&Array.isArray(o.m)?o.m:[]},
+  // 入りきらないときは、古いリプレイから捨てる（戦績は残す）
+  put(m){
+    m=m.slice(0,MYLOG_MAX);let n=0;m.forEach(x=>{if(x.rp&&++n>MYLOG_RP)delete x.rp});
+    for(let i=0;i<8;i++){try{localStorage.setItem(MYLOG_KEY,JSON.stringify({v:1,m}));return}catch(e){let k=0;for(let j=m.length-1;j>=0&&k<5;j--)if(m[j].rp){delete m[j].rp;k++}if(!k)return}}
+  },
+  patch(id,o){if(!id)return;try{const m=MYLOG.get(),x=m.find(y=>y.id===id);if(x){Object.assign(x,o);MYLOG.put(m)}}catch(e){console.error(e)}},
+  // 対戦が終わったとき（gameOver）に呼ぶ。うまくいかなくても対戦には影響させない
+  add(win){
+    try{
+      if(!S||S.tut||S.replay||S.spec||S.watch)return null;
+      const on=!!S.online,me=S.me,op=S.cpu,dsig=x=>[...(x.types||[])].sort().join()+'|'+(x.single||''),sig=dsig(me);
+      deckInit();const dk=SV.decks.find(x=>dsig(x)===sig);
+      const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:Date.now(),mode:on?(NET.ranked?'rank':'friend'):'cpu',won:!!win,opp:on?String(NET.opp||'相手').slice(0,24):'CPU',
+        dk:dk?dk.name:sig===dsig(stdDeck())?'スタンダードデッキ':'そのほかのデッキ',turns:S.turnNo||0,os:op.single||null,
+        end:S.deckOut?'deck':(win?op:me).life>0?'quit':(S.acts||[]).slice(-3).some(a=>a.kind==='raid')?'raid':'heart'};
+      let ev=null;
+      if(on&&typeof CompressionStream!=='undefined'){
+        if(S.guest){if(MYREC.on&&MYREC.ev.length)ev=MYREC.ev;MYREC.on=false}
+        else if(REC.on&&REC.ev.length){REC.snap();ev=MYREC.fromHost(REC.ev)}
+      }
+      const m=MYLOG.get();m.unshift(e);MYLOG.put(m);
+      if(ev&&ev.length)REC.zip({v:2,ver:String(APP_VER),names:{me:e.opp,cpu:netName()},winner:win?'cpu':'me',ev}).then(b=>MYLOG.patch(e.id,{rp:b})).catch(er=>console.error(er));
+      return e.id;
+    }catch(er){console.error(er);return null}
+  }};
+const MYP={f:'all',err:''};
+function renderMyPage(){
+  if(VIEW!=='mypage')return;setBg(null);
+  const all=MYLOG.get(),F=MYP.f,ms=F==='all'?all:all.filter(x=>x.mode===F);
+  const MODE={rank:'ランクマッチ',friend:'友達と対戦',cpu:'CPU戦'},END={heart:'心臓を当てて決着',raid:'襲撃で決着',deck:'山札切れ',quit:'降参'};
+  const st=a=>{const n=a.length,w=a.filter(x=>x.won).length;return{n,w,l:n-w,wr:n?Math.round(w/n*100):null}};
+  const pc=s=>s.wr==null?'－':s.wr+'%';
+  const T=st(ms),L50=ms.slice(0,50),S50=st(L50),S10=st(ms.slice(0,10));
+  // 連勝・連敗（新しい順に並んでいる）
+  let cur=0;while(cur<ms.length&&ms[cur].won===ms[0].won)cur++;
+  let best=0,run=0;ms.forEach(x=>{run=x.won?run+1:0;if(run>best)best=run});
+  const avgT=ms.length?Math.round(ms.reduce((a,x)=>a+(x.turns||0),0)/ms.length):null;
+  const tile=(l,v,sub)=>`<div class="mpTile"><span>${l}</span><b>${v}</b>${sub?`<small>${sub}</small>`:''}</div>`;
+  // 名前ごとにまとめて、対戦の多い順に並べる
+  const group=(a,key,name)=>{const g=new Map();a.forEach(x=>{const k=key(x);if(k==null)return;if(!g.has(k))g.set(k,[]);g.get(k).push(x)});return[...g.entries()].map(([k,v])=>({name:name(k),s:st(v)})).sort((p,q)=>q.s.n-p.s.n)};
+  const rows=g=>g.length?`<ul class="mpRows">${g.map(r=>`<li><span class="mpN">${esc(r.name)}</span><span class="mpBar"><i style="width:${r.s.wr||0}%"></i></span><span class="mpC">${r.s.n}戦 ${r.s.w}勝${r.s.l}敗</span><b>${pc(r.s)}</b></li>`).join('')}</ul>`:'<p class="note">まだありません。</p>';
+  const endRows=won=>{const a=ms.filter(x=>x.won===won),g=group(a,x=>x.end||null,k=>END[k]||k);return g.length?`<ul class="mpRows">${g.map(r=>`<li><span class="mpN">${esc(r.name)}</span><span class="mpBar"><i style="width:${Math.round(r.s.n/a.length*100)}%"></i></span><span class="mpC">${r.s.n}回</span><b>${Math.round(r.s.n/a.length*100)}%</b></li>`).join('')}</ul>`:'<p class="note">まだありません。</p>'};
+  const fmt=t=>new Date(t).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const busy=!!(NET.conn||NET.peer||MM.on),p=LADDER.prof;
+  $('#app').innerHTML=`<div class="top"><h1>マイページ</h1><button type="button" class="b small" id="mpBack">戻る</button></div>
+    <p class="note" style="margin-top:0">この端末で遊んだ対戦の記録です（2026年11月14日のアップデートのあとに遊んだ対戦から、新しい${MYLOG_MAX}試合まで）。ほかの端末で遊んだ対戦は入りません。</p>
+    <div class="mpTabs">${[['all','すべて'],['rank','ランクマッチ'],['friend','友達と対戦'],['cpu','CPU戦']].map(([k,l])=>`<button type="button" class="b small${F===k?' primary':''}" data-mpf="${k}" ${F===k?'aria-pressed="true"':''}>${l}</button>`).join('')}</div>
+    ${MYP.err?`<div class="onErr">${esc(MYP.err)}</div>`:''}
+    ${!ms.length?`<p class="note">まだ記録がありません。対戦が終わると、ここに戦績が並びます。</p>`:`
+    <div class="mpTiles">${tile('対戦数',T.n+'戦',`${T.w}勝 ${T.l}敗`)}${tile('勝率',pc(T),'記録のある全部の対戦')}${tile('直近50試合',pc(S50),`${S50.n}戦 ${S50.w}勝 ${S50.l}敗`)}${tile('直近10試合',pc(S10),`${S10.n}戦 ${S10.w}勝 ${S10.l}敗`)}${tile(ms[0].won?'いまの連勝':'いまの連敗',cur+(ms[0].won?'連勝':'連敗'),`いちばん長い連勝 ${best}`)}${tile('1試合の長さ',avgT+'ターン','平均')}</div>
+    <h2 class="mpH">直近50試合の勝ち負け</h2>
+    <div class="mpDots" role="img" aria-label="直近${S50.n}試合 ${S50.w}勝${S50.l}敗">${L50.slice().reverse().map(x=>`<i class="${x.won?'w':''}" title="${x.won?'勝ち':'負け'}"></i>`).join('')}</div>
+    <p class="note">左が古く、右が新しい対戦です。ぬりつぶした丸が勝ち、輪だけの丸が負けです。</p>
+    <h2 class="mpH">デッキごとの戦績</h2>${rows(group(ms,x=>x.dk||'そのほかのデッキ',k=>k))}
+    <p class="note">デッキの名前ごとにまとめています。</p>
+    ${F==='all'?`<h2 class="mpH">対戦の種類ごとの戦績</h2>${rows(group(ms,x=>x.mode,k=>MODE[k]||k))}`:''}
+    <h2 class="mpH">相手のシングルごとの戦績</h2>${rows(group(ms,x=>x.os&&C[x.os]?x.os:null,k=>'〈'+N(k)+'〉').slice(0,10))}
+    <h2 class="mpH">勝ったときの決まり方</h2>${endRows(true)}
+    <h2 class="mpH">負けたときの決まり方</h2>${endRows(false)}`}
+    ${p&&(F==='all'||F==='rank')?`<p class="note">ランクマッチの通算（サーバーの記録。すべての端末の合計）：${p.wins}勝${p.losses}敗</p>`:''}
+    ${ms.length?`<h2 class="mpH">対戦の記録とリプレイ</h2>
+    <p class="note" style="margin-top:0">新しい順に50試合です。「リプレイ」は、ランクマッチと友達との対戦の、新しい${MYLOG_RP}試合ぶんを見返せます。あなたが対戦中に見ていた画面で再生します（相手の手札と心臓は、対戦中に分かった所まで見えます）。${busy?'いまは対戦の部屋につないでいるので、リプレイは見られません。':''}</p>
+    <div class="rvList mpLog">${L50.map(x=>`<div class="rvRow"><div class="rvOpen mpM"><b><em class="${x.won?'w':''}">${x.won?'勝ち':'負け'}</em><i>vs</i>${esc(x.opp||'？')}</b><span>${fmt(x.at)}・${MODE[x.mode]||''}・${esc(x.dk||'')}・${x.turns||0}ターン・${END[x.end]||''}${x.delta!=null?'・'+(x.delta>=0?'+':'-')+Math.abs(x.delta)+'pt':''}</span></div>${x.rp?`<button type="button" class="b small" data-mrp="${esc(x.id)}" ${busy?'disabled':''}>リプレイ</button>`:''}</div>`).join('')}</div>`:''}`;
+  $('#mpBack').onclick=()=>{MYP.err='';go('menu')};
+  document.querySelectorAll('[data-mpf]').forEach(b=>b.onclick=()=>{MYP.f=b.dataset.mpf;MYP.err='';renderMyPage()});
+  document.querySelectorAll('[data-mrp]').forEach(b=>b.onclick=async()=>{
+    if(NET.conn||NET.peer||MM.on)return;
+    const x=MYLOG.get().find(y=>y.id===b.dataset.mrp);if(!x||!x.rp)return;
+    b.disabled=true;
+    try{const d=await REC.unzip(x.rp);if(VIEW!=='mypage')return;if(!(d&&d.v===2&&d.ev&&d.ev.length))throw new Error('empty');MYP.err='';rpcStart(d,{},'cpu',true)}
+    catch(e){console.error(e);MYP.err='このリプレイは、ひらけませんでした。';renderMyPage()}
+  });
+}
 const deckOk=d=>d&&Array.isArray(d.types)&&d.types.length===13&&new Set(d.types).size===13&&d.types.every(k=>C[k]&&!C[k].single)&&C[d.single]&&C[d.single].single;
 
 function netReset(){
@@ -5810,10 +5946,10 @@ function netRecv(m){
     case'bye':netLost(`${NET.opp||'相手'}さんが対戦をやめました。`);break;
     case'deck':if(!deckOk(m.deck)||NET.verBad)return;NET.ready.cpu=m.deck;if(NET.host)netMaybeStart();if(VIEW==='online')renderOnline();break;
     // ここから下はゲストが受け取るもの
-    case'start':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):null;ONL.save({role:'guest',code:NET.code,gid:m.gid||null,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});LADDER.startMatch(NET.mid);NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();
+    case'start':if(NET.host)return;NET.mid=typeof m.mid==='string'?m.mid.slice(0,64):null;ONL.save({role:'guest',code:NET.code,gid:m.gid||null,mid:NET.mid,opp:NET.opp,oppUid:NET.oppUid,ranked:NET.ranked});LADDER.startMatch(NET.mid);NET.ready={me:null,cpu:null};S=null;VIEW='battle';window.scrollTo(0,0);NET.fxq=Promise.resolve();MYREC.start();
       $('#app').innerHTML='<div class="onl"><p class="note">対戦を準備しています…</p></div>';vsShow();break;
-    case'snap':if(!NET.host)guestApply(m.s);break;
-    case'fx':if(!NET.host)guestFx(m.n,m.a);break;
+    case'snap':if(!NET.host){if(!NET.spec)MYREC.snap(m.s);guestApply(m.s)}break;
+    case'fx':if(!NET.host){if(!NET.spec)MYREC.fx(m.n,m.a);guestFx(m.n,m.a)}break;
     case'ask':if(!NET.host)NET.fxq=NET.fxq.then(()=>guestAsk(m)).catch(e=>console.error(e));break;
     case'over':if(!NET.host)NET.fxq=NET.fxq.then(()=>{if(!S||!S.guest)return;if(m.hh)S.cpu.heart={type:m.hh};S.over=false;gameOver(m.w==='me'?S.cpu:S.me)});break;
     // ホストが受け取るもの
@@ -5963,7 +6099,7 @@ async function startOnline(a,b){
   NET.sentQ=LOGQ;NET.lastSnap='';
   VIEW='battle';window.scrollTo(0,0);
   NET.mid=(a.draft||b.draft)?null:(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,'');
-  if(NET.ranked&&NET.mid)REC.start();else REC.on=false;
+  REC.start();  // ランクマッチ以外も記録する（サーバーに預けるのはランクマッチだけ。ほかは自分のマイページ用）
   const gid0=Date.now();NET.send({t:'start',mid:NET.mid,gid:gid0});NET.cast({t:'start'});vsShow();LADDER.startMatch(NET.mid);liveStart();
   S={me:{...newPlayer('@me',false,[...a.types],a.single),octo:SV.equip.octo||''},cpu:{...newPlayer('@cpu',false,[...b.types],b.single),octo:NET.oppOcto||''},know:{me:freshK(),cpu:freshK()},byId:{},log:[],hist:[],last:null,turnNo:0,phase:'none',sel:null,over:false,busy:false,seen:new Set(),shake:null,online:true,gid:gid0,names:{me:netName(),cpu:NET.opp||'相手'}};
   S.cpu.remote=true;const g=S;
@@ -6298,6 +6434,7 @@ function quitAsk(){
 }
 addEventListener('popstate',()=>{
   const live=VIEW==='battle'&&S&&!S.over&&!(typeof SP!=='undefined'&&SP);
+  if(VIEW==='battle'&&RPC.on&&RPC.mine){guardHist();rpcBack();return}  // 自分のリプレイを見ているときの「戻る」は、マイページへ
   if(live){guardHist();quitAsk();return}
   if(VIEW!=='menu'){guardHist();const m=$('#modal');if(m&&!m.hidden){m.hidden=true;m.innerHTML=''}if(VIEW==='online'&&(NET.conn||NET.peer))netLeave();else go('menu');return}
 });
