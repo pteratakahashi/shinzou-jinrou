@@ -2174,6 +2174,172 @@ html.fit-wide .bt .oppHand.open .tcg{margin-left:0;width:min(var(--tcw,58px),cal
 #rpcBar select{font:700 12px var(--pcf);background:#1a0b10;color:var(--ivory);border:1px solid var(--gold);padding:4px 6px;max-width:150px}
 #rpcBar button:disabled{opacity:.4;cursor:default}
 body:has(#rpcBar) #modal{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+/* ===== PC の配置を組み直す（2026-11-15 の案）：ボタンを手札の右に縦に並べ、手札を最大に。山札と捨て札は右はしへ ===== */
+.pilesW{display:contents}.setZone .szL{font:inherit}
+html.fit-wide .bt{grid-template-columns:minmax(0,1fr) var(--actW,220px) var(--colR,440px);grid-template-rows:auto auto minmax(0,1fr) auto auto;
+  grid-template-areas:"top top top" "opp opp mid" "field field mid" "me me mid" "hand act mid"}
+html.fit-wide .bt .btAct{grid-area:act;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;align-self:stretch;min-height:0}
+html.fit-wide .actBtns{display:flex;flex-direction:column;align-items:stretch;gap:9px;max-width:none;margin:0;width:100%}
+html.fit-wide .actBtns .b{min-height:clamp(42px,5vh,60px);font-size:clamp(15px,1.7vh,19px);padding:6px;width:100%;flex:none}
+html.fit-wide .btAct .phase{font-size:14px;text-align:left;line-height:1.5}
+html.fit-wide .btAct>.note{font-size:12.5px;line-height:1.5}
+html.fit-wide .bt .btHand{align-self:end}
+/* 山札と捨て札：それぞれの欄の右はし（ボタンの列の真上）にそろえる */
+html.fit-wide .bt .pilesW{display:flex;gap:12px;align-items:flex-end;justify-content:center;order:9;flex:none;width:calc(var(--actW,220px) - 16px)}
+html.fit-wide .bt .pilesW:last-child{margin-left:auto}
+html.fit-wide .bt .ohWrap,html.fit-wide .bt .myRecent,html.fit-wide .bt .tableRow>.oppHand{order:8;margin-right:14px}
+/* カードの説明は、えらんだときだけ自分の欄の上に浮かせる */
+html.fit-wide .btAct .detail.ph{display:none!important}
+html.fit-wide .btAct .detail:not(.ph){position:fixed;left:16px;width:calc(var(--centerW,600px) - var(--actW,220px) - 14px);box-sizing:border-box;bottom:var(--dB2,var(--dB,240px));height:auto!important;min-height:0!important;max-height:none!important;z-index:8;pointer-events:none;font-size:15px;line-height:1.55;padding:10px 16px;border:1px solid var(--hair2);border-radius:3px;background:linear-gradient(180deg,rgba(58,16,25,.97),rgba(24,6,10,.97));box-shadow:0 10px 26px rgba(0,0,0,.65)}
+html.fit-ws .btAct .detail:not(.ph){left:12px}
+/* 伏せの置き場：点線の枠と名札。伏せてあるときは金色に光らせて「伏せ中」 */
+html.fit-wide .bt .setZone{position:relative;padding:8px 10px 5px;margin:-8px 2px -5px;border:1.5px dashed rgba(232,200,140,.45);border-radius:4px;background:rgba(0,0,0,.28)}
+html.fit-wide .bt .setZone .szL{font-family:var(--pcf);font-weight:700;font-size:13px;letter-spacing:.14em;color:#cbb994}
+html.fit-wide .bt .setZone .emptySlot{border-color:transparent;background:repeating-linear-gradient(135deg,rgba(232,200,140,.07) 0 6px,transparent 6px 12px)}
+html.fit-wide .bt .setZone.on{border:1.5px solid #f6cf6a;background:linear-gradient(180deg,rgba(120,84,20,.38),rgba(40,22,6,.5));box-shadow:0 0 18px rgba(246,207,106,.45),0 0 0 1px rgba(0,0,0,.6) inset}
+html.fit-wide .bt .setZone.on .szL{color:#1b1206;background:linear-gradient(180deg,#ffe9a8,#f0b23a);padding:0 9px;border-radius:2px;letter-spacing:.1em}
+/* 相手の手札の枚数を大きく */
+html.fit-wide .ohN{padding:6px 18px 9px;gap:7px;border-color:rgba(232,200,140,.6)}
+html.fit-wide .ohN b{font-size:clamp(40px,calc(var(--tcw,56px) * .95),84px)}
+html.fit-wide .ohN small{font-size:16px}
+html.fit-wide .bt .slot{font-size:13px}
+html.fit-ws .bt .slot{font-size:11.5px}html.fit-ws .ohN small{font-size:13px}html.fit-ws .bt .setZone .szL{font-size:11.5px}
+/* 自分の欄の帯をなくす（2026-11-15 の案）：名前とライフ・心臓・伏せは場の左下、山札と捨て札は場の右下（ボタンの真上）に、じかに置く */
+html.fit-wide .bt{grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top top top" "opp opp mid" "field field mid" "hand act mid"}
+html.fit-wide .bt .btMe{grid-area:field;align-self:end;z-index:2;background:none!important;border:0!important;box-shadow:none!important;padding:0 6px 2px 10px;pointer-events:none;flex-direction:column;flex-wrap:nowrap;align-items:stretch;row-gap:10px}
+html.fit-wide .bt .btMe::before,html.fit-wide .bt .btMe::after{display:none!important}
+html.fit-wide .bt .btMe>*{pointer-events:auto}
+html.fit-wide .bt .btMe>.sh{align-self:flex-start;flex-direction:row;align-items:center;gap:12px;width:auto;max-width:calc(var(--actW,220px) + 60px);padding:6px 12px 7px;background:linear-gradient(180deg,rgba(40,14,20,.92),rgba(14,5,8,.94));border:1px solid var(--hair2,rgba(232,200,140,.4));border-radius:3px}
+html.fit-wide .bt .btMe.active>.sh{border-color:#f6cf6a;box-shadow:0 0 18px rgba(246,207,106,.4)}
+html.fit-wide .bt .btMe .mini,html.fit-wide .bt .btMe .myRecent{display:none}
+html.fit-wide .bt .btMe>.tableRow{flex:none;align-items:flex-end;gap:14px}html.fit-wide .bt .btMe>.badges{flex:none}
+html.fit-wide .bt .btMe .pilesW{margin-left:auto;width:var(--actW,220px)}
+html.fit-wide .bt .btMe .tableRow .tcg.s,html.fit-wide .bt .btMe .tableRow .emptySlot,html.fit-wide .bt .btMe .tableRow .deckPile{width:calc(var(--tcw,56px) * 1.2);font-size:calc(var(--tcw,56px) * .19)}
+html.fit-wide .bt .btMe .tableRow .deckPile{font-size:calc(var(--tcw,56px) * .36)}
+html.fit-wide .btField{padding-bottom:0}
+.cnt{display:none}
+/* 相手の欄の帯もなくす（2026-11-15 の案・その3）：上下をそろえた盤面にする。左に名札・心臓・伏せ、右に枚数の札（手札・山札・捨て札） */
+html.fit-wide .bt{grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top top top" "field field mid" "hand act mid"}
+html.fit-wide .bt .btOpp{grid-area:field;align-self:start;z-index:2;background:none!important;border:0!important;box-shadow:none!important;padding:2px 6px 0 10px;pointer-events:none;flex-direction:column;flex-wrap:nowrap;align-items:stretch;row-gap:10px}
+html.fit-wide .bt .btOpp::before,html.fit-wide .bt .btOpp::after{display:none!important}
+html.fit-wide .bt .btOpp>*{pointer-events:auto}
+html.fit-wide .bt .btOpp>.sh,html.fit-wide .bt .btMe>.sh{align-self:flex-start;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 12px;width:auto;max-width:calc(var(--tcw,56px) * 3.4 + 40px);padding:6px 12px 7px;background:linear-gradient(180deg,rgba(40,14,20,.92),rgba(14,5,8,.94));border:1px solid var(--hair2,rgba(232,200,140,.4));border-radius:3px}
+html.fit-wide .bt .btOpp.active>.sh{border-color:#ff7d8f;box-shadow:0 0 18px rgba(255,90,114,.45)}
+html.fit-wide .bt .btOpp .mini,html.fit-wide .bt .btMe .mini{display:block;flex:1 0 100%;font-size:11.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.fit-wide .bt .mini .mCnt{display:none}
+html.fit-wide .bt .btOpp>.tableRow{flex:none;align-items:flex-start;gap:14px}
+html.fit-wide .bt .btOpp>.badges,html.fit-wide .bt .btOpp>.oppLast{flex:none;align-self:flex-start;max-width:60%}
+html.fit-wide .bt .btOpp .pilesW,html.fit-wide .bt .btMe .pilesW,html.fit-wide .bt .btOpp .ohN{display:none}
+html.fit-wide .bt .btOpp .ohWrap{flex:1 1 0;min-width:0;justify-content:center;margin:0}
+html.fit-wide .bt .btOpp .ohWrap .oppHand{margin-left:0}
+/* 心臓と伏せは大きく。伏せてあるときは金の枠と「伏せ中」 */
+html.fit-wide .bt .btOpp .slot:not(.setZone)>.tcg.s,html.fit-wide .bt .btOpp .setZone .tcg.s,html.fit-wide .bt .btOpp .setZone .emptySlot,
+html.fit-wide .bt .btMe .tableRow .slot .tcg.s,html.fit-wide .bt .btMe .tableRow .slot .emptySlot{width:calc(var(--tcw,56px) * 1.5);font-size:calc(var(--tcw,56px) * .24)}
+html.fit-wide .bt .setZone .szL{font-size:15px}
+html.fit-wide .bt .setZone.on .szL{font-size:16px;padding:1px 12px}
+/* 枚数の札：手札・山札・捨て札を大きな数字で。捨て札は押すと一覧 */
+html.fit-wide .bt .cnt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));order:10;margin-left:auto;flex:none;width:var(--actW,220px);box-sizing:border-box;background:linear-gradient(180deg,rgba(40,14,20,.92),rgba(14,5,8,.94));border:1px solid var(--hair2,rgba(232,200,140,.4));border-radius:3px}
+html.fit-wide .bt .cnt .cI{display:flex;flex-direction:column;align-items:center;gap:0;padding:7px 2px 6px;background:none;border:0;border-left:1px solid rgba(232,200,140,.18);color:var(--ivory);font:inherit;min-width:0}
+html.fit-wide .bt .cnt .cI:first-child{border-left:0}
+html.fit-wide .bt .cnt button.cI{cursor:pointer}html.fit-wide .bt .cnt button.cI:hover{background:rgba(246,207,106,.12)}
+html.fit-wide .bt .cnt small{font:700 13px var(--pcf);letter-spacing:.06em;color:#cbb994;white-space:nowrap}
+html.fit-wide .bt .cnt b{font:700 clamp(26px,3.6vh,42px)/1.05 var(--pcf);color:#fff4dc;font-variant-numeric:tabular-nums}
+html.fit-wide .bt .btMe .cnt{align-self:flex-end}
+/* 上下の欄を、同じ4列の枠にそろえる：［心臓］［伏せ］［まん中（相手の手札）］［枚数の札］ */
+html.fit-wide .bt .btOpp,html.fit-wide .bt .btMe{display:grid!important;grid-template-columns:auto auto minmax(0,1fr) var(--actW,220px);grid-auto-rows:auto;gap:8px 12px;align-items:start;justify-items:start}
+html.fit-wide .bt .btOpp>.tableRow,html.fit-wide .bt .btMe>.tableRow{display:contents}
+html.fit-wide .bt .btOpp>.sh,html.fit-wide .bt .btMe>.sh{grid-column:1/3;grid-row:1;max-width:calc(var(--tcw,56px) * 3 + 50px);box-sizing:border-box;justify-self:stretch}
+html.fit-wide .bt .btOpp .tableRow>.slot:not(.setZone),html.fit-wide .bt .btMe .tableRow>.slot:not(.setZone){grid-column:1;grid-row:2}
+html.fit-wide .bt .btOpp .setZone,html.fit-wide .bt .btMe .setZone{grid-column:2;grid-row:2;margin:0}
+html.fit-wide .bt .btOpp .ohWrap{grid-column:3;grid-row:1/3;justify-self:center;align-self:start;width:auto}
+html.fit-wide .bt .btMe .tableRow>.oppHand{grid-column:3;grid-row:1/3;justify-self:center;align-self:end}
+html.fit-wide .bt .btOpp .cnt{grid-column:4;grid-row:1/3;align-self:start;margin:0}
+html.fit-wide .bt .btMe .cnt{grid-column:4;grid-row:1/3;align-self:end;margin:0}
+html.fit-wide .bt .btOpp>.badges,html.fit-wide .bt .btOpp>.oppLast,html.fit-wide .bt .btMe>.badges{grid-column:1/4;max-width:none}
+html.fit-wide .btField{padding-left:calc(var(--tcw,56px) * 3 + 100px);padding-right:calc(var(--actW,220px) + 20px);box-sizing:border-box}
+/* 低い画面：心臓と伏せを少し小さくして、上下の欄がぶつからないようにする */
+html.fit-ws .bt .btOpp .slot:not(.setZone)>.tcg.s,html.fit-ws .bt .btOpp .setZone .tcg.s,html.fit-ws .bt .btOpp .setZone .emptySlot,
+html.fit-ws .bt .btMe .tableRow .slot .tcg.s,html.fit-ws .bt .btMe .tableRow .slot .emptySlot{width:calc(var(--tcw,56px) * 1.15);font-size:calc(var(--tcw,56px) * .185)}
+html.fit-ws .bt .btOpp,html.fit-ws .bt .btMe{gap:5px 10px}
+html.fit-ws .bt .btOpp>.sh,html.fit-ws .bt .btMe>.sh{padding:4px 10px 5px}
+html.fit-ws .bt .btOpp .mini,html.fit-ws .bt .btMe .mini{display:none}
+html.fit-ws .bt .btOpp>.sh,html.fit-ws .bt .btMe>.sh{flex-wrap:nowrap;max-width:calc(var(--tcw,56px) * 3 + 90px);justify-self:start}html.fit-ws .bt .btOpp .sh .who,html.fit-ws .bt .btMe .sh .who{font-size:18px}
+html.fit-ws .bt .setZone{padding:5px 7px 3px}html.fit-ws .bt .setZone .szL,html.fit-ws .bt .setZone.on .szL{font-size:12px}
+html.fit-ws .bt .cnt small{font-size:11px}html.fit-ws .bt .cnt .cI{padding:4px 2px}
+/* 記録は、左の置き場の幅だけ細く出す（場のまん中のカードにかぶらない）。直近のログは、右の推理ボードの下に数行いつも出す（2026-11-15 の案） */
+html.fit-wide .drawer{width:calc(var(--tcw,56px) * 3 + 96px);min-width:250px;padding-left:10px;padding-right:10px}
+html.fit-wide .drawer .hlist .tcg.s{width:38px;font-size:6px}
+html.fit-wide .drawer .log{font-size:12.5px}
+.midLog{display:none}
+html.fit-wide .bt .btMid .midLog{display:flex;flex-direction:column;justify-content:flex-end;gap:2px;flex:none;height:calc(1.45em * 5 + 30px);box-sizing:border-box;overflow:hidden;position:relative;padding:22px 10px 6px;font-size:13px;line-height:1.45;background:rgba(0,0,0,.34);border:1px solid var(--hair,rgba(232,200,140,.25));border-radius:3px;cursor:pointer}
+html.fit-wide .bt .btMid .midLog .mlH{position:absolute;left:10px;top:3px;font:700 11.5px var(--pcf);letter-spacing:.14em;color:#cbb994}
+html.fit-wide .bt .btMid .midLog .lr{flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 0 0 7px;border-left:2px solid var(--line);color:#b9a58c;background:none;border-radius:0;margin:0}
+html.fit-wide .bt .btMid .midLog .lr.me{border-left-color:var(--candle)}html.fit-wide .bt .btMid .midLog .lr.cpu{border-left-color:var(--blood)}
+html.fit-wide .bt .btMid .midLog .lr.new{color:#fff4dc;font-weight:700}
+html.fit-ws .bt .btMid .midLog{height:calc(1.4em * 3 + 26px);font-size:12px;line-height:1.4;padding-top:19px}
+/* 「記録」「メニュー」は左上へ（2026-11-15 の案）。メニューも左から開く */
+html.fit-wide .btTop{justify-content:flex-start;gap:14px}
+html.fit-wide .btIcons{order:-1;margin-left:0}
+html.fit-wide .btMenu{right:auto;left:0}
+/* 心臓の入れ物（2026-11-15 の案）：ハート形の入れ物の窓に、心臓のカードをはめる。入れ物は着せかえできる（html の data-hv） */
+html.fit-wide .bt .hvSlot{position:relative;width:var(--hvs,calc(var(--tcw,56px) * 3));aspect-ratio:1;background:var(--hv) center/contain no-repeat;font-size:0!important;gap:0;filter:drop-shadow(0 8px 14px rgba(0,0,0,.6))}
+html.fit-wide .bt .hvSlot>.tcg,html.fit-wide .bt .hvSlot>.cardBtn{position:absolute;left:var(--hx);top:var(--hy);width:var(--hw)!important;height:var(--hh);padding:0;margin:0;overflow:hidden;display:block}
+html.fit-wide .bt .hvSlot>.cardBtn>.tcg{width:100%!important;height:100%}
+html.fit-wide .bt .hvSlot .tcg{font-size:calc(var(--tcw,56px) * .13)!important;aspect-ratio:auto;border-radius:2px}
+html.fit-wide .bt .btOpp>.sh,html.fit-wide .bt .btMe>.sh{max-width:calc(var(--hvs,240px) + var(--setw,84px) + 40px)}
+html.fit-wide .bt .btOpp .setZone,html.fit-wide .bt .btMe .setZone{align-self:center}
+html.fit-wide .btField{padding-left:calc(var(--leftW,360px) + 10px)}
+html.fit-wide .drawer{width:var(--leftW,360px);min-width:270px}
+/* 心臓の入れ物：はじめの見た目は「生きた心臓」。見えていない心臓は、窓のない閉じた心臓にする（カードの裏は出さない） */
+html.fit-wide .bt .hvSlot{--hv:url(heart/a_live.png);--hx:39.7%;--hy:43.1%;--hw:20.8%;--hh:33.1%}
+html.fit-wide .bt .hvSlot.hvClosed{--hv:url(heart/a_closed.png)}
+html.fit-wide .bt .hvSlot.hvClosed>.tcg{display:none}
+/* 当てられたときの演出：脈を2回 → 扉が開く → カードが出て大きくなる → 「的中」 */
+.hoWrap{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1.2vh;--hs:min(64vh,64vw)}
+.hoHeart{position:relative;width:var(--hs);height:var(--hs)}
+.hoHeart i{position:absolute;inset:0;background:center/contain no-repeat;image-rendering:pixelated}
+.hoHeart .hoC{background-image:url(heart/a_closed.png);animation:hoBeat .52s ease-in-out 2,hoGone .01s 1.12s both}
+.hoHeart .hoO{background-image:url(heart/a_open.png);opacity:0;animation:hoOpen 3s 1.12s forwards}
+.hoCard{position:absolute;left:50%;top:59.6%;width:calc(var(--hs) * .5);opacity:0;transform:translate(-50%,-50%) scale(.456);animation:hoCard 3s 1.12s both}
+.hoCard .tcg{width:100%!important;font-size:calc(var(--hs) * .058)!important;box-shadow:0 0 0 2px #f6cf6a,0 0 40px rgba(255,90,110,.7),0 20px 50px rgba(0,0,0,.7)}
+.hoT{position:absolute;left:50%;top:50%;font:900 min(15vh,15vw)/1 var(--pcf,serif);letter-spacing:.12em;color:#ffe9a8;-webkit-text-stroke:3px #5a0714;paint-order:stroke fill;text-shadow:0 0 30px rgba(255,80,100,.9);opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(2.4);animation:hoT .45s 2.35s cubic-bezier(.2,1.4,.4,1) both;pointer-events:none}
+.hoS{font:700 min(3.4vh,22px) var(--pcf,serif);letter-spacing:.08em;color:#fff4dc;opacity:0;animation:hoS .4s 2.6s both}
+@keyframes hoBeat{0%,100%{transform:scale(1)}30%{transform:scale(1.09)}55%{transform:scale(.98)}}
+@keyframes hoGone{to{opacity:0}}
+@keyframes hoOpen{0%{opacity:1;transform:scale(1.12)}6%{opacity:1;transform:scale(1)}30%{opacity:1;transform:scale(1)}55%,100%{opacity:.4;transform:scale(1.06)}}
+@keyframes hoCard{0%{opacity:0;transform:translate(-50%,-50%) scale(.456)}7%{opacity:1;transform:translate(-50%,-50%) scale(.456)}22%{opacity:1;transform:translate(-50%,-50%) scale(.456)}48%,100%{opacity:1;transform:translate(-50%,-62%) scale(1)}}
+@keyframes hoT{to{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1)}}
+@keyframes hoS{to{opacity:1}}
+.szL .szB{display:none}
+html.fit-wide .bt .setZone.on .szL .szA{display:none}html.fit-wide .bt .setZone.on .szL .szB{display:inline}
+/* カードの説明：えらんだときだけ、場の下のはし（手札のすぐ上、左の置き場と枚数の札の間）に出す */
+html.fit-wide .btAct .detail:not(.ph),html.fit-ws .btAct .detail:not(.ph){left:calc(16px + var(--leftW,360px) + 10px);width:calc(var(--centerW,900px) - var(--leftW,360px) - var(--actW,220px) - 44px);bottom:var(--dB,240px);text-align:center}
+/* 低い画面：ボタンを低くして、手札の列の高さに収める */
+html.fit-ws .actBtns{gap:6px}html.fit-ws .actBtns .b{min-height:34px;font-size:14px;padding:3px}
+html.fit-ws .btAct{gap:6px}html.fit-ws .btAct .phase{font-size:12.5px;line-height:1.35}
+html.fit-ws .bt .btOpp>.sh,html.fit-ws .bt .btMe>.sh{max-width:calc(var(--hvs,240px) + var(--setw,84px) + 40px)}
+/* 動きを止める設定（最軽量）のとき：心臓が開く演出は、開いた形とカードをはじめから出す */
+html.rm .hoHeart .hoC{display:none}html.rm .hoHeart .hoO{opacity:.4}
+html.rm .hoCard{opacity:1;transform:translate(-50%,-62%) scale(1)}
+html.rm .hoT{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1)}html.rm .hoS{opacity:1}
+/* 伏せカードの大きさは、場の高さから決めた --setw に合わせる */
+html.fit-wide .bt .btOpp .setZone .tcg.s,html.fit-wide .bt .btOpp .setZone .emptySlot,html.fit-wide .bt .btMe .setZone .tcg.s,html.fit-wide .bt .btMe .setZone .emptySlot{width:var(--setw,84px)!important;font-size:calc(var(--setw,84px) * .16)!important}
+html.fit-wide .bt .btMe .setZone .cardBtn{display:block;padding:0}
+/* 状態の印と「前のターン」は、左の置き場ではなく場のまん中の上下に出す（左の列の高さを食わないように） */
+html.fit-wide .bt .btOpp,html.fit-wide .bt .btMe{position:relative}
+html.fit-wide .bt .btOpp>.oppLast,html.fit-wide .bt .btOpp>.badges,html.fit-wide .bt .btMe>.badges{position:absolute;left:calc(var(--leftW,360px) + 12px);right:calc(var(--actW,220px) + 24px);width:auto;max-width:none;margin:0;display:flex;justify-content:center;flex-wrap:nowrap;overflow:hidden;background:none}
+html.fit-wide .bt .btOpp>.oppLast{top:calc(var(--tcw,56px) * 1.4 + 12px)}
+html.fit-wide .bt .btOpp>.badges{top:calc(var(--tcw,56px) * 1.4 + 40px)}
+html.fit-wide .bt .btMe>.badges{bottom:6px}
+html.fit-wide .btField{padding-top:calc(var(--tcw,56px) * 1.4 + 44px);padding-bottom:34px}
+/* 幅のせまい PC・横向きのタブレット：VS の間を詰める */
+html.fit-wn .btField{gap:0 14px}html.fit-wn .btField::after{font-size:18px}
+html.fit-wn .actBtns .b{font-size:13px;letter-spacing:0}
+html.fit-wn .bt .cnt b{font-size:22px}html.fit-wn .bt .cnt small{font-size:10px;letter-spacing:0}
+html.fit-wn .bt .lives .lfL{display:none}
+/* 低い画面：推理ボードの下の小さな注記（候補・除外の文）は出さず、ログは2行にする（タイルとログが重ならないように） */
+html.fit-ws .bt .btMid .duo .col>div:last-child{display:none}
+html.fit-ws .bt .btMid .midLog{height:calc(1.4em * 2 + 24px)}
 /* 観戦の視点を切りかえる帯（リプレイの帯と同じ見た目） */
 #wvBar{position:fixed;left:50%;bottom:calc(6px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(18,8,11,.94);border:1px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.6);white-space:nowrap}
 #wvBar .rcT{font:700 12px var(--pcf);color:var(--gold);padding:0 6px}
@@ -2314,7 +2480,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114185944';
+const APP_VER='20261114191924';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -3539,6 +3705,13 @@ async function candFx(silent){
     await fxNarrow(target,all,all.filter(t=>!was.includes(t)),gone);
   }
 }
+// 心臓が当てられたとき：閉じた心臓が2回脈を打ち、扉のように開いて、中からカードが出てくる（2026-11-15 の案）
+async function fxHeartOpen(victim,k){
+  if(!S||S.sim||!C[k])return;
+  SFX.heart();setTimeout(()=>SFX.heart(),520);
+  setTimeout(()=>{SFX.hit();hitstop(120);screenFlash('white');setTimeout(()=>screenFlash('red'),120);quake();FXC.burst('#ef5a68',110,12);FXC.ring('#ef5a68');FXC.ring('#ffffff')},1120);
+  await fxShow(`<div class="dim"></div><div class="hoWrap"><div class="hoHeart"><i class="hoC"></i><i class="hoO"></i><div class="hoCard">${cardHTML(k,'m')}</div></div><div class="hoT">的中</div><div class="hoS">${victim==='me'?MYH():OPN()}の心臓は〈${N(k)}〉</div></div><span class="tapHint fixed">タップで次へ</span>`,4200,true);fxClear();
+}
 async function fxCall(t){SFX.call();await fxShow(`<div class="dim"></div><div class="guessCall">「${esc(t)}」</div>`,1100);fxClear()}
 async function fxStamp(t,cls,k){
   if(cls==='hit'){setTimeout(()=>{SFX.hit();hitstop(120);screenFlash('white');setTimeout(()=>screenFlash('red'),120);quake();FXC.burst('#ef5a68',100,12);FXC.burst('#ffffff',40,9);FXC.ring('#ef5a68');FXC.ring('#ffffff')},250)}
@@ -3943,7 +4116,7 @@ const worst=p=>p.hand.map(h=>[h,cpuScore(p,h)]).sort((a,b)=>a[1]-b[1])[0][0];
 
 async function resolveHit(p,o){
   const w=whoOf(p);
-  await fxStamp('的中','hit',o.heart.type);
+  await fxHeartOpen(whoOf(o),o.heart.type);
   let dmg=p.f.curse?2:1;p.f.curse=false;
   const guarded=hasSet(o,'bodyguard');
   if(guarded){await triggerSet(o);dmg=0;o.f.noGuess=true;log(`用心棒が守った！ライフは減らない。そのかわり、${o.name}は次のターン宣言できない。`)}
@@ -4431,10 +4604,11 @@ const FIT={c:null,
     const colL=w3?Math.round(Math.max(270,Math.min(520,W*.2))):0,colR=wide?Math.round(Math.max(330,Math.min(680,W*.26))):0;
     const ws=wide&&h<860,centerW=wide?W-(ws?24:32)-colL-colR-(ws?12:14)*(w3?2:1):0;
     let handW=86;
-    if(wide)handW=Math.round(Math.max(76,Math.min(190,h*.122,centerW*.16)));
+    const actW=wide?Math.round(Math.max(W<1200?124:170,Math.min(270,W*.12))):0;  // 右に縦に並べるボタンの列の幅
+    if(wide)handW=Math.round(Math.max(90,Math.min(320,h*.21,(centerW-actW-14-20-40)/6)));
     else if(land)handW=Math.round(Math.max(46,Math.min(64,h*.15)));
     else if(phone)handW=Math.round(Math.max(48,Math.min(w<360?64:w*.21,h*.108)));
-    return this.c={w,h,land,phone,tight,xs,handW,handFr:.5,wide,w3,colL,colR,centerW,tcw:wide?Math.round(Math.max(38,Math.min(96,h*.058))):0};
+    return this.c={w,h,land,phone,tight,xs,handW,handFr:.5,wide,w3,colL,colR,centerW,actW,tcw:wide?Math.round(Math.max(44,Math.min(120,h*.074))):0};
   },
   apply(){
     const F=this.get(),r=document.documentElement;
@@ -4442,7 +4616,7 @@ const FIT={c:null,
     r.classList.toggle('fit-p',F.phone);r.classList.toggle('fit-tight',F.tight);r.classList.toggle('fit-xs',F.xs);r.classList.toggle('fit-land',F.land);r.classList.toggle('fit-tab',!F.phone&&!F.land&&F.w<1000);
     r.classList.toggle('fit-wide',F.wide);r.classList.toggle('fit-w3',F.w3);r.classList.toggle('fit-ws',F.wide&&F.h<860);
     if(!F.wide)r.removeAttribute('data-tw');
-    if(F.wide){r.style.setProperty('--colL',F.colL+'px');r.style.setProperty('--colR',F.colR+'px');r.style.setProperty('--tcw',F.tcw+'px');r.style.setProperty('--centerW',F.centerW+'px');r.style.setProperty('--colGap',(F.w3?(F.h<860?12:14):0)+'px')}
+    if(F.wide){r.style.setProperty('--colL',F.colL+'px');r.style.setProperty('--colR',F.colR+'px');r.style.setProperty('--actW',F.actW+'px');r.classList.toggle('fit-wn',F.centerW<800);r.style.setProperty('--tcw',F.tcw+'px');r.style.setProperty('--centerW',F.centerW+'px');r.style.setProperty('--colGap',(F.w3?(F.h<860?12:14):0)+'px')}
     return F;
   },
   // ホーム：右のアイコンの列が下のボタンに重なるときは、2列に折り返す。上の帯が高いとき（ノッチのある画面・称号が2段目に折り返したとき）は、お知らせと右のアイコンを帯の下まで下げる
@@ -4464,7 +4638,16 @@ const FIT={c:null,
       // PC：場のカードは場の高さいっぱいに。推理ボードは3列で、2つの表が縦に収まる行の高さにする
       const meZ=document.querySelector('.btMe');if(meZ)r.style.setProperty('--dB2',Math.round(F.h-meZ.getBoundingClientRect().top+6)+'px');
       const fld=document.querySelector('.btField');
-      if(fld){const fh=fld.getBoundingClientRect().height,sm=fh<175;r.style.setProperty('--fw',Math.round(Math.max(40,Math.min(300,(fh-(sm?10:58))/1.4,F.centerW*.22)))+'px');if(sm)r.setAttribute('data-fld','s');else r.removeAttribute('data-fld')}
+      if(fld){const fh=fld.getBoundingClientRect().height,sm=fh<175;
+        // 心臓の入れ物（--hvs）と伏せカード（--setw）は、上下2人ぶんが場の高さに収まる大きさに。左の置き場の幅（--leftW）＝入れ物＋伏せ
+        const sh=document.querySelector('.btMe>.sh'),ph=sh?sh.getBoundingClientRect().height:60,nar=F.centerW<800;
+        const avail=(fh-2*ph-44)/2,hvs=Math.round(Math.max(70,Math.min(F.tcw*(nar?2:3.6),avail))),setw=Math.round(Math.max(34,Math.min(F.tcw*(nar?1.1:1.5),(avail-52)/1.4)));
+        r.style.setProperty('--hvs',hvs+'px');r.style.setProperty('--setw',setw+'px');
+        // 左の置き場の幅は、実際に並んだ入れ物と伏せの右はしから測る
+        let rt=0;document.querySelectorAll('.btOpp .hvSlot,.btOpp .setZone,.btMe .hvSlot,.btMe .setZone').forEach(e=>{rt=Math.max(rt,e.getBoundingClientRect().right)});
+        const leftW=Math.round(rt?rt-fld.getBoundingClientRect().left+10:hvs+12+setw+44);
+        r.style.setProperty('--leftW',leftW+'px');
+        r.style.setProperty('--fw',Math.round(Math.max(40,Math.min(320,(fh-58-(F.tcw*1.4+44)-34)/1.4,(F.centerW-leftW-F.actW-40-(nar?50:2*Math.min(90,Math.max(20,F.w*.04))+90))/2)))+'px');if(sm)r.setAttribute('data-fld','s');else r.removeAttribute('data-fld')}
       r.removeAttribute('data-trow');
       const cols=[...mid.querySelectorAll('.duo .col')];if(!cols.length)return;
       const c=F.colR>=440&&F.h>=860?4:3,g=cols[0].querySelector('.grid'),n=g?g.children.length:14,rows=Math.ceil(n/c);
@@ -4488,7 +4671,7 @@ FIT.apply();
 function handFit(n){
   // 手札のカード幅は画面の高さで決める（低い画面では小さく、高い画面では大きく）。横向きは左の列の幅に収める
   const F=FIT.get(),gap=8;
-  const avail=F.wide?F.centerW-20:F.land?Math.floor((innerWidth-28)*F.handFr)-8:F.phone?innerWidth-28:Math.min(760,innerWidth)-32-26;
+  const avail=F.wide?F.centerW-F.actW-14-20:F.land?Math.floor((innerWidth-28)*F.handFr)-8:F.phone?innerWidth-28:Math.min(760,innerWidth)-32-26;
   const W=F.handW;
   if(n<=1||n*(W+gap)<=avail)return{fit:false,W,ov:0};
   const step=Math.max(16,(avail-W)/(n-1));return{fit:true,W,ov:Math.max(0,W-step)};
@@ -4530,7 +4713,7 @@ function badges(p){
 function stats(p){return`<div class="stats"><span>前回 <b>${p.lastAttr?p.lastAttr+'属性':'なし'}</b></span><span>手札 <b>${p.hand.length}</b></span><span>山札 <b>${p.deck.length}</b></span><span>捨て札 <b>${p.discard.length}</b></span><span>シングル <b>${N(p.single)}</b></span></div>`}
 function piles(p){
   const top=p.discard[p.discard.length-1];
-  return`<div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><button type="button" class="slot disBtn" data-dis="${whoOf(p)}" aria-label="捨て札の一覧を見る（${p.discard.length}枚）">${top?cardHTML(top.type,'s'):'<div class="emptySlot"></div>'}<span>捨て札<b>${p.discard.length}</b></span></button>`;
+  return`<div class="pilesW"><div class="slot"><div class="deckPile">${p.deck.length}</div>山札</div><button type="button" class="slot disBtn" data-dis="${whoOf(p)}" aria-label="捨て札の一覧を見る（${p.discard.length}枚）">${top?cardHTML(top.type,'s'):'<div class="emptySlot"></div>'}<span>捨て札<b>${p.discard.length}</b></span></button></div>`;
 }
 function trackGrid(target,obs,mark){
   const v=probs(obs);
@@ -4641,6 +4824,7 @@ function render0(){
   if(S&&S.online&&!S.guest)NET.sync();
   try{REC.snap()}catch(e){REC.on=false;console.error(e)}  // 記録でしくじっても、対戦は止めない
   if(VIEW!=='battle'||!S)return;
+  if(!window.__hvPre){window.__hvPre=1;['a_closed','a_open','a_live'].forEach(k=>{new Image().src='heart/'+k+'.png'})}  // 心臓の絵を先に読んでおく（演出の途中で絵が遅れて出ないように）
   const ph=PH();
   const me=S.me,cpu=S.cpu,ready=!!me.heart,SP=!!S.spec,RP=!!S.rpAll,HID=SP&&!RP,NM=SP||!!S.replay;  // NM＝観戦・リプレイ（「あなた」と言わず、名前で出す）  // HID＝観戦で手札などを伏せる。リプレイ（RP）では伏せない
   const logScroll=$('#log')?.scrollTop||0,logFScroll=$('#logF')?.scrollTop||0;
@@ -4666,7 +4850,8 @@ function render0(){
   me.hand.forEach(c=>S.seen.add(c.id));
   const shake=S.shake;S.shake=null;
   const wn=S.online?(NET.host?NET.specs.length:S.watchers||0):0;
-  const mini=p=>`<span class="mini">手札<b>${p.hand.length}</b> 山札<b>${p.deck.length}</b> 捨て<b>${p.discard.length}</b> 前回<b>${p.lastAttr||'－'}</b> 単〈${N(p.single)}〉</span>`;
+  const cnt=p=>`<div class="cnt"><span class="cI"><small>手札</small><b>${p.hand.length}</b></span><span class="cI"><small>山札</small><b>${p.deck.length}</b></span><button type="button" class="cI" data-dis="${whoOf(p)}" aria-label="捨て札の一覧を見る（${p.discard.length}枚）"><small>捨て札</small><b>${p.discard.length}</b></button></div>`;
+  const mini=p=>`<span class="mini"><span class="mCnt">手札<b>${p.hand.length}</b> 山札<b>${p.deck.length}</b> 捨て<b>${p.discard.length}</b> </span>前回<b>${p.lastAttr||'－'}</b> 単〈${N(p.single)}〉</span>`;
   const dr=$('#drawer'),drScroll=dr?dr.scrollTop:0;
   $('#app').innerHTML=`<div class="bt">
   <header class="btTop">
@@ -4685,7 +4870,7 @@ function render0(){
   </header>
   <section class="zone side btOpp ${S.cur===cpu&&!S.over?'active':''} ${shake==='cpu'?'shake':''}">
     <div class="sh"><span class="who">${OPN()}</span>${lives(cpu)}${mini(cpu)}</div>${badges(cpu)}
-    <div class="tableRow"><div class="slot">${RP&&cpu.heart&&cpu.heart.type?cardHTML(cpu.heart.type,'s'):backHTML('s')}心臓</div><div class="slot">${cpu.setCard?(RP&&cpu.setCard.type?cardHTML(cpu.setCard.type,'s'):backHTML('s','伏せ')):'<div class="emptySlot"></div>'}伏せ</div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand ${RP?'open':''}" style="--n:${Math.max(1,cpu.hand.length)}" aria-hidden="true">${cpu.hand.map(c=>RP&&c.type?cardHTML(c.type,'s'):backHTML('s')).join('')}</div></div></div>
+    <div class="tableRow"><div class="slot hvSlot ${RP&&cpu.heart&&cpu.heart.type?'':'hvClosed'}">${RP&&cpu.heart&&cpu.heart.type?cardHTML(cpu.heart.type,'s'):backHTML('s')}心臓</div><div class="slot setZone ${cpu.setCard?'on':''}">${cpu.setCard?(RP&&cpu.setCard.type?cardHTML(cpu.setCard.type,'s'):backHTML('s','伏せ')):'<div class="emptySlot"></div>'}<span class="szL"><span class="szA">伏せ</span><span class="szB">伏せ中</span></span></div>${piles(cpu)}<div class="ohWrap" aria-label="${OPN()}の手札${cpu.hand.length}枚"><span class="ohN ${cpu.hand.length?'':'zero'}" aria-hidden="true"><small>手札</small><b>${cpu.hand.length}</b><small>枚</small></span><div class="oppHand ${RP?'open':''}" style="--n:${Math.max(1,cpu.hand.length)}" aria-hidden="true">${cpu.hand.map(c=>RP&&c.type?cardHTML(c.type,'s'):backHTML('s')).join('')}</div></div>${cnt(cpu)}</div>
     ${lastActsHTML()}
   </section>
   <section class="zone tracker btMid">
@@ -4695,12 +4880,13 @@ function render0(){
       <div class="col"><div class="colh"><b>${OPN()}の心臓</b><span>${NM?MYN()+'の':'あなたの'}推理・候補 <em>${liveCount(me)}</em>種</span></div>${trackGrid(cpu,me,RP&&cpu.heart?cpu.heart.type:null)}<div>${kn.stale?'<div class="note">※妖狐より前の判定を含む</div>':''}${knowNotes(kn)}</div></div>
       <div class="col"><div class="colh"><b>${MYH()}の心臓</b><span>${OPN()}の推理・候補 <em>${liveCount(cpu)}</em>種</span></div>${trackGrid(me,cpu,HID?null:me.heart.type)}<div>${knowNotes(S.know.cpu)}</div></div>
     </div>`:`<div class="duo t-opp"><div class="col"><div class="colh"><b>${OPN()}のデッキ</b><span>相手の心臓は、この中の1枚</span></div><div class="grid">${typesOf(cpu).map(ty=>tileHTML(cpu,ty,{cnt:{},w:{[ty]:1}},'button','tip')).join('')}</div><div></div></div><div class="col"><div class="colh"><b>${MYN()}のデッキ</b><span>この中の1枚を心臓にする</span></div><div class="grid">${typesOf(me).map(ty=>tileHTML(me,ty,{cnt:{},w:{[ty]:1}},'button','tip')).join('')}</div><div></div></div></div>`}
+    <div class="midLog" id="midLog" role="button" tabindex="0" aria-label="直近のログ。押すと記録を開く"><span class="mlH">ログ</span>${(()=>{const it=S.log.filter(l=>!l.hdr&&(!l.to||l.to==='me')).slice(-5);return it.length?it.map((l,i)=>`<div class="lr ${l.who} ${i===it.length-1?'new':''}"><span class="lt">${fmtLog(l.t)}</span></div>`).join(''):'<div class="lr sys"><span class="lt">まだ記録がありません。</span></div>'})()}</div>
   </section>
   ${(()=>{const last=w=>{for(let i=S.hist.length-1;i>=0;i--)if(S.hist[i].who===w)return S.hist[i];return null};const side=(w,name)=>{const h=last(w);return`<div class="fldSide ${w}"><span class="fldL">${name}</span>${h?`<button type="button" class="cardBtn" data-card="${h.k}">${cardHTML(h.k,'m')}</button><span class="fldT">${h.turn}ターン目</span>`:'<div class="fldEmpty">まだ使っていません</div>'}</div>`};return`<div class="btField" aria-label="最後に使われたカード">${side('cpu',OPN()+'が最後に使った')}${side('me',MYN()+'が最後に使った')}</div>`})()}
   <div class="lastLog btLast llRow ${S.last?S.last.who:''}"><span class="llTx" aria-live="polite">${S.last?esc(nm(S.last.t)):'　'}</span><button type="button" class="llBtn" id="bLogFull" aria-label="ログを大きく開く"><span>ログ</span></button></div>
   <section class="zone side btMe ${S.cur===me&&!S.over?'active':''} ${shake==='me'?'shake':''}">
     <div class="sh"><span class="who">${MYN()}</span>${lives(me)}${mini(me)}</div>${badges(me)}
-    <div class="tableRow"><div class="slot">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}伏せ</div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${HID?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}</div>
+    <div class="tableRow"><div class="slot hvSlot ${ready&&!HID&&me.heart.type?'':'hvClosed'}">${ready&&!HID&&me.heart.type?`<button type="button" class="cardBtn" data-card="${me.heart.type}">${cardHTML(me.heart.type,'s')}</button>`:backHTML('s')}心臓</div><div class="slot setZone ${me.setCard?'on':''}">${me.setCard?(HID||!me.setCard.type)?backHTML('s','伏せ'):`<button type="button" class="cardBtn setMine" data-card="${me.setCard.type}">${cardHTML(me.setCard.type,'s')}</button>`:'<div class="emptySlot"></div>'}<span class="szL"><span class="szA">伏せ</span><span class="szB">伏せ中</span></span></div>${piles(me)}${SP?'':(()=>{const r=S.hist.filter(h=>h.who===whoOf(me)).slice(-5).reverse();return`<div class="myRecent"><span class="mrL">最近使ったカード</span><div class="mrRow">${r.length?r.map(h=>`<button type="button" class="cardBtn" data-card="${h.k}" aria-label="${N(h.k)}の効果を見る">${cardHTML(h.k,'s')}<span class="mrT">${h.turn}T</span></button>`).join(''):'<span class="mrE">まだありません</span>'}</div></div>`})()}${HID?`<div class="oppHand" aria-label="${MYN()}の手札${me.hand.length}枚">${me.hand.map(()=>backHTML('s')).join('')}</div>`:''}${cnt(me)}</div>
   </section>
   ${HID?'':(()=>{const hf=handFit(me.hand.length);return`<div class="btHand"><div class="hand ${hf.fit?'fit':''}" style="--cw:${hf.W}px;--ov:${hf.ov}px">${myHand||'<span class="note">手札がありません</span>'}</div></div>`})()}
   ${(NET.paused||S.paused)&&S.online&&!S.over?`<div class="pauseBar">${netSelfDown()?'あなたの接続が切れました。つなぎ直しています…':'相手との接続が切れました。戻ってくるのを待っています…'} <b id="pauseSec">${pauseLeftText()}</b>${netSelfDown()?(NET.ranked&&NET.mid?'（つながらなければ、あなたの負けになります）':'（つながらなければ、対戦を終了します）'):NET.ranked&&NET.mid?'（相手が戻ってこなければ、あなたの勝ちになります）':'（戻ってこなければ、対戦を終了します）'}</div>`:''}
@@ -4732,7 +4918,7 @@ function render0(){
   {const d=$('#drawer');if(d)d.scrollTop=drScroll}
   $('#bLogFull').onclick=()=>{LOGFULL=true;LOGNEW=true;BTMENU=false;render();LOGNEW=false};$('#bLogFullClose').onclick=()=>{LOGFULL=false;render()};
   {const lf=$('#logF');if(lf&&LOGFULL&&!LOGNEW)lf.scrollTop=logFScroll}
-  $('#bLog').onclick=()=>{LOGOPEN=true;BTMENU=false;render()};$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
+  $('#bLog').onclick=()=>{LOGOPEN=true;BTMENU=false;render()};{const ml=$('#midLog');if(ml)ml.onclick=e=>{if(e.target.closest('.cardBtn'))return;LOGOPEN=true;BTMENU=false;render()}}$('#bLogClose').onclick=()=>{LOGOPEN=false;render()};
   document.querySelectorAll('[data-trk]').forEach(b=>b.onclick=()=>{TRK=b.dataset.trk;render()});
   const lg=$('#log');if(lg)lg.scrollTop=logScroll;
   $('#bMenu').onclick=()=>{BTMENU=!BTMENU;render()};$('#bMenuBack').onclick=()=>{BTMENU=false;render()};
@@ -5332,6 +5518,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:133,d:'2026-11-15',t:'PCの対戦画面を組み直しました（スマホはそのままです）。手札を大きく、ボタンは手札の右に縦に並びます／上下の帯をなくし、名前とライフは左の名札に、手札・山札・捨て札の枚数は右の札に大きな数字で出ます（捨て札を押すと一覧）／伏せの置き場を大きくして、伏せているときは金色の枠と「伏せ中」が付きます／「記録」と「メニュー」は左上へ。記録は左に細く開き、直近のログは右下にいつも出ます／心臓のカードは「心臓」の中に入るようになりました。相手の心臓は閉じていて、当てると心臓が開いてカードが出てくる演出が入ります（この演出はスマホでも出ます）。'},
   {id:132,d:'2026-11-15',t:'ランクマッチ：接続が切れて対戦が終わったとき、「対戦の結果」の窓が出るようにしました。勝ち負け、ランクポイントの増減、もらったカードを見られます（どちらの人にも出ます）。これまでは、相手の切断で勝ったときにカードは届いていましたが、画面に何も出ていませんでした。相手の結果報告を待っているあいだは、決まりしだいお知らせします。マイページの記録にも「接続切れ」として残ります。'},
   {id:131,d:'2026-11-15',t:'ランクマッチ：おわびです。11月14日にお知らせした「マスターレートが1戦で動く数字を10〜22の間におさめる」変更が、サーバーに正しく入っておらず、前の計算のまま動いていました。申しわけありません。入れ直しましたので、ここからの対戦は10〜22の間で動きます。すでに終わった対戦のレートは、そのままです。'},
   {id:130,d:'2026-11-15',t:'「あなたの心臓」と出ていた所（推理ボード、心臓の候補が減る演出など）を、自分の名前で出すようにしました／カードをえらぶ画面（心臓えらびなど）は、カードの絵だけを並べるようにしました。効果の文を読みたいときは、下の「効果も見る」を押すと今までの表示になります。'},
@@ -6317,7 +6504,7 @@ function hostCmd(m){
 }
 // 演出はホストで呼ばれたらゲストにも同じものを流す（入れ子で呼ばれた分は送らない）
 let MXin=0;
-['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle'].forEach(n=>{
+['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle','fxHeartOpen'].forEach(n=>{
   const f=window[n];
   window[n]=async(...a)=>{if(!MXin&&S&&S.online&&!S.guest){NET.send({t:'fx',n,a});NET.cast({t:'fx',n,a});REC.fx(n,a)}MXin++;try{return await f(...a)}finally{MXin--}};
 });
@@ -6333,7 +6520,7 @@ let MXin=0;
     return Promise.resolve(r).then(v=>{done();return v},e=>{done();throw e});
   };
 });
-const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle']);
+const FX_OK=new Set(['fxPlay','fxBanner','fxCall','fxStamp','fxHeartBreak','fxRound','fxSet','fxRes','fxTrap','fxRaid','fxVs','fxFight','fxNarrow','fxBluff','fxFizzle','fxHeartOpen']);
 
 /* ゲスト側 */
 function guestApply(sn){
