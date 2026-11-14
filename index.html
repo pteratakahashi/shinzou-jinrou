@@ -178,6 +178,15 @@ html.fit-wide .hmDock .hmFoot{top:auto;right:clamp(18px,2vw,32px);bottom:3px;mar
 #opFoot{position:fixed;left:0;right:max(14px,env(safe-area-inset-right,0px));bottom:max(1px,env(safe-area-inset-bottom,0px));line-height:1.1;z-index:201;margin:0;pointer-events:none}#opFoot a{pointer-events:auto}
 body:not(:has(#boot)) #opFoot{display:none}
 .polLink{color:var(--gold,#e8c88c);font-size:12px;text-underline-offset:3px}.polNote{margin:6px 0 0}
+/* マイページの上の段：自分のアイコン・名前・称号と、ランク（2026-11-14） */
+.mpMe{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:4px 0 6px}
+.mpAv{flex:none;width:96px;height:96px;padding:0;border-radius:50%;overflow:hidden;border:2px solid var(--gold,#e8c88c);background:#120609;cursor:pointer}
+.mpAv img{width:100%;height:100%;object-fit:cover;display:block}
+.mpWho{min-width:0;flex:1;display:flex;flex-direction:column;gap:8px}.mpWho .btns{margin:0}
+.mpName{font-size:20px}.mpSub{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.mpRank #rkBoard{display:none}.mpRank .rankCard{margin-bottom:8px}
+.mpBoard svg{flex:none;width:34px;height:34px;color:var(--gold,#e8c88c)}
+@media (max-width:420px){.mpMe{gap:12px;padding:12px}.mpAv{width:72px;height:72px}}
 </style></head><body>
 <title>心臓人狼</title>
 <script>
@@ -2281,7 +2290,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114102949';
+const APP_VER='20261114105913';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -2733,7 +2742,6 @@ function renderMenu(){
       <nav class="hmSide">
       ${side('hmMsn',IC.msn,'ミッション',msOk||'')}
       ${side('hmOcto',IC.octo,'称号・タコ','')}
-      ${side('hmMy','<svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/></svg>','マイページ','')}
       ${side('hmDc','<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9.5L4 20z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>','Discord','')}
       ${inn&&LADDER.packs>0?side('mPacks',IC.gift,'パック',LADDER.packs,'glow'):''}
     </nav>
@@ -2771,7 +2779,7 @@ function renderMenu(){
   on('mRank',()=>{NET.err='';rankPrep()});
   on('updAll',showUpdates);on('updAll2',showUpdates);on('pAvatar',pickAvatar);on('mFriend',()=>go('online'));bindMissions();
   on('pOcto',()=>{OCTO_PV=null;go('octo')});on('hmOcto',()=>{OCTO_PV=null;go('octo')});
-  on('hmMsn',showMissions);on('hmMy',()=>go('mypage'));on('hmSet',showSettings);on('hmDc',()=>{window.open(DISCORD_URL,'_blank','noopener')});
+  on('hmMsn',showMissions);on('hmSet',showSettings);on('hmDc',()=>{window.open(DISCORD_URL,'_blank','noopener')});
   bindTabBar();
   setTimeout(showGifts,300);setTimeout(showUnlocks,700);
   setTimeout(async()=>{if(VIEW==='menu'&&$('#modal').hidden){await loginBonus();if(VIEW==='menu'&&$('#modal').hidden)a2hsHint()}},400);
@@ -4893,11 +4901,11 @@ function pickAvatar(){
     m.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{SV.equip.avatar=b.dataset.av;save();done(1)});m.querySelector('#avClose').onclick=()=>done(0);
     m.querySelector('#avDraw').onclick=()=>done('draw');
     {const am=m.querySelector('#avMine');if(am)am.onclick=()=>{SV.equip.avatar='custom';save();done(1)}}
-  }).then(async r=>{if(r==='draw')await drawAvatar();if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline()});
+  }).then(async r=>{if(r==='draw')await drawAvatar();if(VIEW==='menu')renderMenu();else if(VIEW==='online')renderOnline();else if(VIEW==='mypage')mpKeep()});
 }
 function tabBarHTML(cur){
-  const T=[['menu','ホーム','home'],['cards','カード','cards'],['shop','ショップ','shop'],['rank','ランキング','rank']];
-  const ic={home:'<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',cards:'<rect x="4" y="3" width="11" height="15" rx="2"/><rect x="9" y="6" width="11" height="15" rx="2"/>',shop:'<path d="M4 8h16l-1.5 12h-13zM8 8V6a4 4 0 0 1 8 0v2"/>',rank:'<path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/>'};
+  const T=[['menu','ホーム','home'],['cards','カード','cards'],['shop','ショップ','shop'],['mypage','マイページ','me']];
+  const ic={me:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',home:'<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',cards:'<rect x="4" y="3" width="11" height="15" rx="2"/><rect x="9" y="6" width="11" height="15" rx="2"/>',shop:'<path d="M4 8h16l-1.5 12h-13zM8 8V6a4 4 0 0 1 8 0v2"/>',rank:'<path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/>'};
   const bt=`<button type="button" class="tbBattle" data-tab="battle"><i>対戦</i><span>バトル</span></button>`;
   return`<nav class="tabBar" aria-label="メニュー">${T.map(([v,l,i],n)=>(n===2?bt:'')+`<button type="button" class="${v===cur?'on':''}" data-tab="${v}" ${v===cur?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ic[i]}</svg><span>${l}</span></button>`).join('')}</nav>`;
 }
@@ -4919,7 +4927,7 @@ function bindTabBar(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
     const v=b.dataset.tab;
     if(v==='battle')return battleSheet();
-    if(v==='rank'){if(LADDER.uid()&&LADDER.prof)return showBoard();return modal(`<div class="info"><div class="infoText"><h2>ランキング</h2><p>ランキングは、Googleでログインすると見られます。ホームの「対人ランク」からログインしてください。</p><div class="btns"><button type="button" class="b" id="rkC">閉じる</button></div></div></div>`,(m,done)=>{m.querySelector('#rkC').onclick=()=>done()})}
+    if(v==='mypage'){OCTO_BACK='';MYP.err=''}
     go(v);
   });
 }
@@ -4970,7 +4978,7 @@ function renderOcto(){
     <h2 class="shopH">称号（ホームの名前の下に出ます）</h2>
     <div class="ttGrid"><button type="button" class="ttOpt ${!SV.equip.title?'on':''}" data-tt=""><span class="ptitle none">称号なし</span></button>${titles.map(t=>{const ok=titleOwned(t),a=tAch(t);return`<button type="button" class="ttOpt ${SV.equip.title===t?'on':''} ${ok?'':'locked'}" data-tt="${t}" ${ok?'':'disabled'}><span class="ptitle">${esc(titleName(t))}</span><small>${SV.equip.title===t?'使用中':ok?'':'🔒 '+(a?cond(a):'')}</small></button>`}).join('')}</div>
     ${tabBarHTML('')}`;
-  $('#back').onclick=()=>{OCTO_PV=null;if(MM.on||NET.conn)go('online');else go('menu')};bindTabBar();
+  $('#back').onclick=()=>{OCTO_PV=null;if(MM.on||NET.conn)go('online');else go(OCTO_BACK||'menu')};bindTabBar();
   document.querySelectorAll('[data-oc]').forEach(b=>b.onclick=()=>{OCTO_PV=b.dataset.oc;const y=window.scrollY;renderOcto();window.scrollTo(0,y)});
   document.querySelectorAll('[data-tt]').forEach(b=>b.onclick=()=>{const t=b.dataset.tt;if(t&&!titleOwned(t))return;SV.equip.title=t;save();const y=window.scrollY;renderOcto();window.scrollTo(0,y)});
   const u=$('#ocUse');if(u)u.onclick=()=>{SV.equip.octo=pv;save();renderOcto()};
@@ -5098,7 +5106,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     SV.collCache={uid:me,map:COLL.map,at:COLL.at};save();
     gotCheck();
   },
-  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='packs'&&!P)renderPacks();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
+  redraw(){if(VIEW==='menu')renderMenu();else if(VIEW==='mypage')mpKeep();else if(VIEW==='packs'&&!P)renderPacks();else if(VIEW==='online')renderOnline();else if(VIEW==='free'||VIEW==='cards'){const y=window.scrollY;draw_();window.scrollTo(0,y)}},
   login(){try{if(NET.code&&VIEW==='online')sessionStorage.setItem('sj_room',NET.code)}catch(e){}if(LADDER.sb)LADDER.sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})},
   async logout(){if(LADDER.sb)await LADDER.sb.auth.signOut();LADDER.user=null;LADDER.prof=null;COLL.map={};COLL.at={};SH.ok=false;SH.n=0;LADDER.packs=null;SV.collCache=null;save();LADDER.state='out';LADDER.redraw()},
   async startMatch(mid){if(!LADDER.rated()||!mid)return;const {error}=await LADDER.sb.rpc('start_match',{p_match:mid,p_opp:NET.oppUid});if(error)console.error(error)},
@@ -5284,6 +5292,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:127,d:'2026-11-14',t:'マイページを、下のメニューのいちばん右（前の「ランキング」の場所）に移しました。アイコン・名前・称号をここで変えられ、自分のランクも見られます。「世界ランキング」を押すと、みんなの順位が開きます。戦績とリプレイは、同じページの下にあります。'},
   {id:126,d:'2026-11-14',t:'対戦中のログ（記録）のいちばん上に、この試合でどちらが先攻・後攻かをいつも出すようにしました。'},
   {id:125,d:'2026-11-14',t:'「マイページ」ができました（ホームのグラフのアイコンから）。自分の勝率、直近50試合の勝ち負け、デッキごとの戦績、相手のシングルごとの戦績などを見られます。ランクマッチと友達との対戦は、あとから「リプレイ」で自分の視点のまま見返せます（新しい30試合ぶん）。記録はこの端末に残り、このアップデートのあとに遊んだ対戦から入ります。'},
   {id:124,d:'2026-11-14',t:'ランクマッチ：マスターレートの動き方を見直しました。1戦で動く数字を10〜22の間におさめたので、勝っても少ししか増えず、負けると大きく減る、という差が小さくなります。「あなたの最近の対戦」のレートの増減は、どの端末で遊んだ対戦にも出るようになりました。'},
@@ -5823,7 +5832,22 @@ const MYLOG={
     }catch(er){console.error(er);return null}
   }};
 const MYP={f:'all',err:''};
+let OCTO_BACK='';  // 「称号とタコ」の「戻る」の行き先（マイページから開いたときは 'mypage'）
+const mpKeep=()=>{const y=window.scrollY;renderMyPage();window.scrollTo(0,y)};  // 画面の位置を変えずに描き直す
+// 称号を選ぶ窓（マイページから）
+function pickTitle(){
+  achCheck();
+  const cond=a=>`${esc(a.n)}${!a.np&&achGoal(a)>1?`（${Math.min(a.v(),achGoal(a))}/${achGoal(a)}）`:''}`;
+  const titles=Object.keys(TITLES).concat(SHOP.filter(x=>x.kind==='title'&&!TITLES[x.id]&&SV.owned.includes(x.id)).map(x=>x.id));
+  modal(`<div class="mHead"><h2>称号を選ぶ</h2><button type="button" class="xBtn" id="ttX" aria-label="閉じる">×</button></div><p class="note" style="margin-top:0">選んだ称号は、ホームの名前の下と、対戦のはじまりに出ます。</p>
+    <div class="ttGrid"><button type="button" class="ttOpt ${!SV.equip.title?'on':''}" data-tt=""><span class="ptitle none">称号なし</span></button>${titles.map(t=>{const ok=titleOwned(t),a=ACH.find(x=>x.title===t);return`<button type="button" class="ttOpt ${SV.equip.title===t?'on':''} ${ok?'':'locked'}" data-tt="${t}" ${ok?'':'disabled'}><span class="ptitle">${esc(titleName(t))}</span><small>${SV.equip.title===t?'使用中':ok?'':'🔒 '+(a?cond(a):'')}</small></button>`}).join('')}</div>`,(m,done)=>{
+    m.querySelector('#ttX').onclick=()=>done();m.onclick=e=>{if(e.target===m)done()};
+    m.querySelectorAll('[data-tt]').forEach(b=>b.onclick=()=>{const t=b.dataset.tt;if(t&&!titleOwned(t))return;SV.equip.title=t;save();done()});
+  }).then(()=>{if(VIEW==='mypage')mpKeep()});
+}
 function renderMyPage(){
+  ecoInit();
+  const tn=SV.equip.title&&titleName(SV.equip.title),inn=!!(LADDER.uid()&&LADDER.prof);
   if(VIEW!=='mypage')return;setBg(null);
   const all=MYLOG.get(),F=MYP.f,ms=F==='all'?all:all.filter(x=>x.mode===F);
   const MODE={rank:'ランクマッチ',friend:'友達と対戦',cpu:'CPU戦'},END={heart:'心臓を当てて決着',raid:'襲撃で決着',deck:'山札切れ',quit:'降参'};
@@ -5841,7 +5865,17 @@ function renderMyPage(){
   const endRows=won=>{const a=ms.filter(x=>x.won===won),g=group(a,x=>x.end||null,k=>END[k]||k);return g.length?`<ul class="mpRows">${g.map(r=>`<li><span class="mpN">${esc(r.name)}</span><span class="mpBar"><i style="width:${Math.round(r.s.n/a.length*100)}%"></i></span><span class="mpC">${r.s.n}回</span><b>${Math.round(r.s.n/a.length*100)}%</b></li>`).join('')}</ul>`:'<p class="note">まだありません。</p>'};
   const fmt=t=>new Date(t).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
   const busy=!!(NET.conn||NET.peer||MM.on),p=LADDER.prof;
-  $('#app').innerHTML=`<div class="top"><h1>マイページ</h1><button type="button" class="b small" id="mpBack">戻る</button></div>
+  $('#app').innerHTML=`<div class="top"><h1>マイページ</h1></div>
+    <section class="mpMe">
+      <button type="button" class="mpAv" id="pAvatar" aria-label="アイコンを変える">${avatarImg()}</button>
+      <div class="mpWho"><div class="mpName">${nameEdHTML('mpName')}</div>
+        <div class="mpSub">${tn?`<span class="ptitle">${esc(tn)}</span>`:'<span class="ptitle none">称号なし</span>'}${inn?tierHTML(LADDER.prof.rp):''}</div>
+        <div class="btns"><button type="button" class="b small" id="mpAv">アイコンを変える</button><button type="button" class="b small" id="mpTt">称号を変える</button><button type="button" class="b small" id="mpOcto">タコを変える</button></div></div>
+    </section>
+    <h2 class="mpH">ランク</h2>
+    <div class="mpRank">${rankCardHTML()||'<p class="note">ランクは、いまは使えません。</p>'}</div>
+    ${inn?`<button type="button" class="ocLink mpBoard" id="mpBoard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0zM6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3"/></svg><span><b>世界ランキング</b><span class="note">みんなの順位と、あなたの最近の対戦を見られます</span></span></button>`:''}
+    <h2 class="mpH">戦績</h2>
     <p class="note" style="margin-top:0">この端末で遊んだ対戦の記録です（2026年11月14日のアップデートのあとに遊んだ対戦から、新しい${MYLOG_MAX}試合まで）。ほかの端末で遊んだ対戦は入りません。</p>
     <div class="mpTabs">${[['all','すべて'],['rank','ランクマッチ'],['friend','友達と対戦'],['cpu','CPU戦']].map(([k,l])=>`<button type="button" class="b small${F===k?' primary':''}" data-mpf="${k}" ${F===k?'aria-pressed="true"':''}>${l}</button>`).join('')}</div>
     ${MYP.err?`<div class="onErr">${esc(MYP.err)}</div>`:''}
@@ -5859,8 +5893,12 @@ function renderMyPage(){
     ${p&&(F==='all'||F==='rank')?`<p class="note">ランクマッチの通算（サーバーの記録。すべての端末の合計）：${p.wins}勝${p.losses}敗</p>`:''}
     ${ms.length?`<h2 class="mpH">対戦の記録とリプレイ</h2>
     <p class="note" style="margin-top:0">新しい順に50試合です。「リプレイ」は、ランクマッチと友達との対戦の、新しい${MYLOG_RP}試合ぶんを見返せます。あなたが対戦中に見ていた画面で再生します（相手の手札と心臓は、対戦中に分かった所まで見えます）。${busy?'いまは対戦の部屋につないでいるので、リプレイは見られません。':''}</p>
-    <div class="rvList mpLog">${L50.map(x=>`<div class="rvRow"><div class="rvOpen mpM"><b><em class="${x.won?'w':''}">${x.won?'勝ち':'負け'}</em><i>vs</i>${esc(x.opp||'？')}</b><span>${fmt(x.at)}・${MODE[x.mode]||''}・${esc(x.dk||'')}・${x.turns||0}ターン・${END[x.end]||''}${x.delta!=null?'・'+(x.delta>=0?'+':'-')+Math.abs(x.delta)+'pt':''}</span></div>${x.rp?`<button type="button" class="b small" data-mrp="${esc(x.id)}" ${busy?'disabled':''}>リプレイ</button>`:''}</div>`).join('')}</div>`:''}`;
-  $('#mpBack').onclick=()=>{MYP.err='';go('menu')};
+    <div class="rvList mpLog">${L50.map(x=>`<div class="rvRow"><div class="rvOpen mpM"><b><em class="${x.won?'w':''}">${x.won?'勝ち':'負け'}</em><i>vs</i>${esc(x.opp||'？')}</b><span>${fmt(x.at)}・${MODE[x.mode]||''}・${esc(x.dk||'')}・${x.turns||0}ターン・${END[x.end]||''}${x.delta!=null?'・'+(x.delta>=0?'+':'-')+Math.abs(x.delta)+'pt':''}</span></div>${x.rp?`<button type="button" class="b small" data-mrp="${esc(x.id)}" ${busy?'disabled':''}>リプレイ</button>`:''}</div>`).join('')}</div>`:''}
+    ${tabBarHTML('mypage')}`;
+  bindTabBar();bindRankCard();bindNameEd('mpName',mpKeep);
+  $('#pAvatar').onclick=pickAvatar;$('#mpAv').onclick=pickAvatar;$('#mpTt').onclick=pickTitle;
+  $('#mpOcto').onclick=()=>{OCTO_PV=null;OCTO_BACK='mypage';go('octo')};
+  {const b=$('#mpBoard');if(b)b.onclick=showBoard}
   document.querySelectorAll('[data-mpf]').forEach(b=>b.onclick=()=>{MYP.f=b.dataset.mpf;MYP.err='';renderMyPage()});
   document.querySelectorAll('[data-mrp]').forEach(b=>b.onclick=async()=>{
     if(NET.conn||NET.peer||MM.on)return;
