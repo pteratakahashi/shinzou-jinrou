@@ -2866,7 +2866,7 @@ function showGifts(){
 
 /* ---- deck ---- */
 /* ---- 絞り込み：「系統」と「属性」は別の段。両方選ぶと両方に当てはまるカードだけ ---- */
-const fState=()=>({cat:'all',attr:'all',inDeck:false,sort:'def'});
+const fState=()=>({cat:'all',attr:'all',tier:'all',inDeck:false,sort:'def'});
 // 並び「手に入れた順」：最近手に入れたカードが先（COLL.at＝サーバーの got_at。かぶりで手に入れたときも新しくなる）。時刻のないカード（はじめから持っているもの）はその後ろ、持っていないカードは最後
 const sortGot=(st,a)=>st.sort!=='got'?a:[...a].sort((x,y)=>(owns(y.k)?1:0)-(owns(x.k)?1:0)||(COLL.at[y.k]||0)-(COLL.at[x.k]||0));
 function filterBar(st,o={}){
@@ -2875,14 +2875,16 @@ function filterBar(st,o={}){
   return`<div class="fRows">
     <div class="fRow"><span class="fLab">系統</span>${cats.map(([k,l])=>`<button type="button" class="chip fc ${st.cat===k?'on':''}" data-fc="${k}" ${k!=='all'?`style="--cc:var(--c-${k})"`:''}>${l}</button>`).join('')}</div>
     <div class="fRow"><span class="fLab">属性</span>${ats.map(([k,l])=>`<button type="button" class="chip fa ${st.attr===k?'on':''}" data-fa="${k}" ${ATTR_COL[k]?`style="--ac:${ATTR_COL[k]}"`:''}>${ATTR_COL[k]?'<i class="adot"></i>':''}${l}</button>`).join('')}</div>
+    <div class="fRow"><span class="fLab" style="width:auto;white-space:nowrap">ランク</span>${[['all','すべて'],['B','ブロンズ'],['S','シルバー'],['G','ゴールド'],['L','レジェンド']].map(([k,l])=>`<button type="button" class="chip ft ${st.tier===k?'on':''}" data-ft="${k}">${l}</button>`).join('')}</div>
     ${o.sort&&LADDER.uid()?`<div class="fRow"><span class="fLab">並び</span>${[['def','いつもの順'],['got','手に入れた順']].map(([k,l])=>`<button type="button" class="chip fs ${st.sort===k?'on':''}" data-fs="${k}">${l}</button>`).join('')}</div>`:''}
     ${o.inDeck?`<label class="fIn"><input type="checkbox" data-fin ${st.inDeck?'checked':''}> デッキに入れたカードだけ</label>`:''}
   </div>`;
 }
-const fMatch=(st,c,inn)=>(st.cat==='all'||c.cat===st.cat)&&(st.attr==='all'||(st.attr==='plain'?c.plain:c.attr===st.attr))&&(!st.inDeck||inn);
+const fMatch=(st,c,inn)=>(st.cat==='all'||c.cat===st.cat)&&(st.attr==='all'||(st.attr==='plain'?c.plain:c.attr===st.attr))&&(!st.tier||st.tier==='all'||c.t===st.tier)&&(!st.inDeck||inn);
 function bindFilter(st,redraw){
   document.querySelectorAll('[data-fc]').forEach(b=>b.onclick=()=>{st.cat=b.dataset.fc;redraw()});
   document.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{st.attr=b.dataset.fa;redraw()});
+  document.querySelectorAll('[data-ft]').forEach(b=>b.onclick=()=>{st.tier=b.dataset.ft;redraw()});
   document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{st.sort=b.dataset.fs;redraw()});
   const fi=document.querySelector('[data-fin]');if(fi)fi.onchange=()=>{st.inDeck=fi.checked;redraw()};
 }
@@ -5262,6 +5264,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:123,d:'2026-11-14',t:'デッキ編成とカード一覧で、カードのランク（ブロンズ・シルバー・ゴールド・レジェンド）ごとに絞り込めるようになりました。系統・属性の下にある「ランク」の段から選べます。'},
   {id:122,d:'2026-11-14',t:'マスターの人向け：対戦の結果画面に、マスターレートがいくつからいくつに変わったかを出すようにしました。ランキングの「あなたの最近の対戦」にも、ランクポイント（pt）とは別に、レートの増減を並べます（この端末で結果画面まで見た対戦から）。'},
   {id:121,d:'2026-11-14',t:'カードの調整：今回の調整の理由です。ランクマッチの記録を調べたところ、山札切れで決まった試合が全体の約8%ありました。一方で、山札切れに備えられるカードはほとんどありませんでした。そこで、捨て札を山札に戻せる効果を、墓守・パン屋・聖女に入れました。あわせて、使われることが少なかった罠師と、占星術師も見直しています。'},
   {id:120,d:'2026-11-14',t:'PCの対戦画面：左にいつも出ていた「使われたカード」と「ログ」をしまいました。右上の「記録」を押すと、左から出てきます。そのぶん中央の盤面が広くなり、右の推理ボードも大きくなりました。'},
