@@ -1464,6 +1464,10 @@ html.fit-wide .btTurn{font-size:17px;padding:7px 22px}
 html.fit-wide .ib{height:42px;padding:0 14px;font-size:13px}
 html.fit-w3 #bLog{display:none}
 
+/* PC の記録（使われたカード・ログ）：ふだんはしまってあり、上の「記録」を押すと左から出る */
+html.fit-wide .drawer{right:auto;left:0;width:min(480px,42vw);border-left:0;border-right:1px solid var(--line);box-shadow:12px 0 32px rgba(0,0,0,.5);transform:translateX(-105%)}
+html.fit-wide .drawer.open{transform:none}
+html.fit-wide .drawer .zone:last-child{flex:1;min-height:0;display:flex;flex-direction:column}html.fit-wide .drawer .zone:last-child .log{flex:1;min-height:0;max-height:none}
 /* 左：記録（いつも開いている） */
 html.fit-w3 .drawer{grid-area:log;position:static;transform:none;visibility:visible;width:auto;z-index:auto;min-height:0;box-shadow:none;border:0;background:none;padding:0;gap:10px;overflow:hidden}
 html.fit-w3 .drawer>.sh{display:none}
@@ -2262,7 +2266,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114063456';
+const APP_VER='20261114063917';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -4346,8 +4350,9 @@ const FIT={c:null,
     const vv=window.visualViewport,w=Math.round(innerWidth),h=Math.round(vv&&vv.height&&Math.abs(vv.scale-1)<.01?Math.min(innerHeight,vv.height):innerHeight);
     if(this.c&&this.c.w===w&&this.c.h===h)return this.c;
     const land=w>h&&h<=520&&w>=480,phone=w<=700&&!land,tight=phone&&h<700,xs=phone&&h<540;
-    const wide=w>=1000&&!land,w3=wide&&w>=1200,W=Math.min(w,2800);
-    const colL=w3?Math.round(Math.max(270,Math.min(520,W*.2))):0,colR=wide?Math.round(Math.max(330,Math.min(680,W*.26))):0;
+    /* w3（左に記録の欄をいつも出す3列の配置）は使わない：PC でも記録はしまっておき、上の「記録」を押すと左から出る。そのぶん中央が広くなる（2026-11-14 プテラ：配信で画面が小さくなるため） */
+    const wide=w>=1000&&!land,w3=false,W=Math.min(w,2800);
+    const colL=w3?Math.round(Math.max(270,Math.min(520,W*.2))):0,colR=wide?Math.round(Math.max(330,Math.min(760,W*.3))):0;
     const ws=wide&&h<860,centerW=wide?W-(ws?24:32)-colL-colR-(ws?12:14)*(w3?2:1):0;
     let handW=86;
     if(wide)handW=Math.round(Math.max(76,Math.min(190,h*.122,centerW*.16)));
@@ -5250,6 +5255,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:120,d:'2026-11-14',t:'PCの対戦画面：左にいつも出ていた「使われたカード」と「ログ」をしまいました。右上の「記録」を押すと、左から出てきます。そのぶん中央の盤面が広くなり、右の推理ボードも大きくなりました。'},
   {id:120,d:'2026-11-14',t:'カードの調整：5枚を変えました。墓守は、さらに捨て札からランダムに3枚を山札に戻す／パン屋は「捨て札から3枚まで選んで山札に戻し、1枚引く。共鳴で1つ知る」に（属性は聖）／罠師は「相手が攻撃系カードを使ったとき、相手の手札の攻撃系カードをすべて捨てさせる。共鳴で2枚引く」に／占星術師は1〜3種類まで選べるように（共鳴は1枚引くだけ）／聖女は「すべてのカードを山札に戻して心臓を入れかえ、相手の推理をリセットし、ライフを1回復」に。山札切れへの対策として、捨て札を山札に戻せるカードができました。'},
   {id:119,d:'2026-11-14',t:'設定（歯車）に「重さ」を足しました。スマホが熱くなるときは「軽い」にすると、カードの光や背景の動きなど、ずっと動いている飾りが止まります（カードを使ったときの演出はそのまま）。「最軽量」は動きを全部止めます。どちらも、進む速さや何が起きたかの表示は「ふつう」と同じです。端末ごとに選べます。'},
   {id:118,d:'2026-11-14',t:'演出が飛んだり、とても速く進んだりすることがあるのを直しました。パソコンやスマホで「アニメーション効果」を切っていると、ゲームの演出まで止まっていました。これからは端末の設定に関係なく、ふつうの演出で動きます。演出を減らしたいときは、設定（歯車）の「重さ」で選べます。'},
