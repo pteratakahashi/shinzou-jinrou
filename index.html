@@ -2314,7 +2314,7 @@ const ATTR_COL={'月':'#9fb8ff','血':'#e0525a','聖':'#e8c35a','影':'#a77ce0'}
 const CARDS=RAW.map(([k,n,g,cat,r,e,st])=>({k,n,g,cat,r,e,st:!!st,single:r==='L',set:e.startsWith('【伏せ専用】'),attr:ATTR[k]||null,plain:r!=='L'&&!ATTR[k]}));
 // 表示はどこでも 情報→攻撃→防御→補助→シングル の順（同じ系統の中はカード一覧の順）
 // ゲームの版。対戦相手と版がちがうと対戦できない／新しい版が出たら更新ボタンを出す。更新を出すときは日時（UTC）に書きかえる
-const APP_VER='20261114185648';
+const APP_VER='20261114185944';
 const CAT_ORD={info:0,atk:1,grd:2,sup:3,cur:4,one:5};
 CARDS.sort((a,b)=>CAT_ORD[a.cat]-CAT_ORD[b.cat]);
 const CIDX={};CARDS.forEach((c,i)=>CIDX[c.k]=i);
@@ -5117,6 +5117,7 @@ const LADDER={sb:null,user:null,prof:null,state:'off',err:'',
     if(error){console.error(error);LADDER.state='err';LADDER.err='戦績を読み込めませんでした。'}else{LADDER.prof=data;LADDER.state='in';if(data&&data.name&&data.name!==SV.nick){SV.nick=data.name;save()}}
     await LADDER.loadColl();
     await LADDER.loadPacks();
+    try{dcBoot()}catch(e){console.error(e)}
     await CLOUD.pull();
     try{const a=await LADDER.sb.rpc('am_admin');LADDER.admin=!a.error&&a.data===true}catch(e){LADDER.admin=false}
     LADDER.redraw();
@@ -5331,6 +5332,7 @@ async function saveName(v){
 }
 /* アップデート情報（トップ画面に新しい順で出す）。更新したら先頭に1行足す。id は増やしていく */
 const UPDATES=[
+  {id:132,d:'2026-11-15',t:'ランクマッチ：接続が切れて対戦が終わったとき、「対戦の結果」の窓が出るようにしました。勝ち負け、ランクポイントの増減、もらったカードを見られます（どちらの人にも出ます）。これまでは、相手の切断で勝ったときにカードは届いていましたが、画面に何も出ていませんでした。相手の結果報告を待っているあいだは、決まりしだいお知らせします。マイページの記録にも「接続切れ」として残ります。'},
   {id:131,d:'2026-11-15',t:'ランクマッチ：おわびです。11月14日にお知らせした「マスターレートが1戦で動く数字を10〜22の間におさめる」変更が、サーバーに正しく入っておらず、前の計算のまま動いていました。申しわけありません。入れ直しましたので、ここからの対戦は10〜22の間で動きます。すでに終わった対戦のレートは、そのままです。'},
   {id:130,d:'2026-11-15',t:'「あなたの心臓」と出ていた所（推理ボード、心臓の候補が減る演出など）を、自分の名前で出すようにしました／カードをえらぶ画面（心臓えらびなど）は、カードの絵だけを並べるようにしました。効果の文を読みたいときは、下の「効果も見る」を押すと今までの表示になります。'},
   {id:129,d:'2026-11-15',t:'対戦まわりをまとめて直しました。「使わずに進む」ボタンをなくしました（「心臓を宣言」と「ターン終了」を、カードを使う前からそのまま押せます。何もせずにターン終了を押したときは、もう一度押して確かめます）／心臓をえらぶ画面で、うしろの盤面が暗くならなくなりました。相手のデッキが最初から推理ボードに出ていて、「盤面を見る」を押すとえらぶ画面をたためます／リプレイで、好きなターンへ飛べるようになりました（下の帯の ◀ ▶ と、ターンの選択）／観戦とリプレイで、「あなた」ではなくプレイヤーの名前が出るようにしました／観戦で見えている相手の手札を、重ねずに並べました／PCの対戦画面で、右の推理ボードを元の幅に戻し、中央を広くしました／マイページの戦績に、CPU戦を入れないようにしました。'},
@@ -5886,14 +5888,14 @@ const MYLOG={
   },
   patch(id,o){if(!id)return;try{const m=MYLOG.get(),x=m.find(y=>y.id===id);if(x){Object.assign(x,o);MYLOG.put(m)}}catch(e){console.error(e)}},
   // 対戦が終わったとき（gameOver）に呼ぶ。うまくいかなくても対戦には影響させない
-  add(win){
+  add(win,endAs){
     try{
       if(!S||S.tut||S.replay||S.spec||S.watch||!S.online)return null;  // CPU戦は戦績に入れない（2026-11-15）
       const on=!!S.online,me=S.me,op=S.cpu,dsig=x=>[...(x.types||[])].sort().join()+'|'+(x.single||''),sig=dsig(me);
       deckInit();const dk=SV.decks.find(x=>dsig(x)===sig);
       const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:Date.now(),mode:on?(NET.ranked?'rank':'friend'):'cpu',won:!!win,opp:on?String(NET.opp||'相手').slice(0,24):'CPU',
         dk:dk?dk.name:sig===dsig(stdDeck())?'スタンダードデッキ':'そのほかのデッキ',turns:S.turnNo||0,os:op.single||null,
-        end:S.deckOut?'deck':(win?op:me).life>0?'quit':(S.acts||[]).slice(-3).some(a=>a.kind==='raid')?'raid':'heart'};
+        end:endAs?endAs:S.deckOut?'deck':(win?op:me).life>0?'quit':(S.acts||[]).slice(-3).some(a=>a.kind==='raid')?'raid':'heart'};
       let ev=null;
       if(on&&typeof CompressionStream!=='undefined'){
         if(S.guest){if(MYREC.on&&MYREC.ev.length)ev=MYREC.ev;MYREC.on=false}
@@ -5924,7 +5926,7 @@ function renderMyPage(){
   if(VIEW!=='mypage')return;setBg(null);
   if(MYP.f==='cpu')MYP.f='all';
   const all=MYLOG.get(),F=MYP.f,ms=F==='all'?all:all.filter(x=>x.mode===F);
-  const MODE={rank:'ランクマッチ',friend:'友達と対戦',cpu:'CPU戦'},END={heart:'心臓を当てて決着',raid:'襲撃で決着',deck:'山札切れ',quit:'降参'};
+  const MODE={rank:'ランクマッチ',friend:'友達と対戦',cpu:'CPU戦'},END={heart:'心臓を当てて決着',raid:'襲撃で決着',deck:'山札切れ',quit:'降参',dc:'接続切れ'};
   const st=a=>{const n=a.length,w=a.filter(x=>x.won).length;return{n,w,l:n-w,wr:n?Math.round(w/n*100):null}};
   const pc=s=>s.wr==null?'－':s.wr+'%';
   const T=st(ms),L50=ms.slice(0,50),S50=st(L50),S10=st(ms.slice(0,10));
@@ -6021,6 +6023,48 @@ async function netJoin(code){
   peer.on('error',e=>{if(NET.peer!==peer||NET.paused)return;if(NET.conn&&NET.conn.open)return;netFail(netErr(e))});
   NET.joinTimer=setTimeout(()=>{if(NET.peer===peer&&NET.state==='joining')netFail('部屋につながりませんでした。コードを確かめて、もう一度試してください。')},25000);
 }
+/* 接続切れで終わったランクマッチの結果の知らせ（2026-11-15）。
+   前は、切断で終わると結果画面が出ず、勝った側はもらったカードも見えなかった（サーバーでは配られていた）。
+   ・dcNotice(d,…)：結果報告の返事 d から、勝ち負け・ランクポイント・もらったカードを窓で見せる。両方の人に出る
+   ・相手の報告待ち（pending）のときは SV.pendRes に覚えておき、20秒おきに確かめて、決まったら知らせる（30分まで）
+   ・dcLeft(o)：対戦に戻れなかった／戻らなかったとき、自分の負けとして報告してから知らせる
+   ・dcBoot()：前の対戦の記録（ONL）が30分をすぎて残っていたら、開いたときに結果を知らせる */
+async function dcAsk(mid,opp,claimWin){
+  const me=LADDER.uid();if(!me||!opp||!mid||!LADDER.sb)return null;
+  const {data,error}=await LADDER.sb.rpc('report_result',{p_match:mid,p_opp:opp,p_winner:claimWin?me:opp,p_reason:'disconnect'});
+  if(error){console.error(error);return null}return data;
+}
+function dcNotice(d,mid,opp,claimWin,later){
+  if(!d||!d.status||d.status==='error'||!d.ranked)return;
+  if(d.status==='pending'){SV.pendRes={mid,opp,win:!!claimWin,at:(SV.pendRes&&SV.pendRes.mid===mid?SV.pendRes.at:Date.now())};save()}
+  else if(SV.pendRes&&SV.pendRes.mid===mid){SV.pendRes=null;save()}
+  if(later&&d.status==='pending')return;
+  const head=later?'前回の対戦は、接続が切れて終わりました。':'接続が切れたため、対戦が終わりました。';
+  const body=d.status==='done'?`<span class="big ${d.won?'win':'lose'}" style="font-size:30px">${d.won?'勝利':'敗北'}</span><p>${head}<br>${d.won?'この対戦は、あなたの勝ちになりました。':'この対戦は、あなたの負けになりました。'}</p>${Number.isFinite(d.delta)?`<p class="rateLine rrHead">ランクポイント <b class="${d.won?'up':'down'}">${d.won?'+':'-'}${d.delta}pt</b></p>`:''}${Array.isArray(d.got)&&d.got.length?`<b>カードを手に入れました</b>${gotRevealHTML(d.got,COLL.map)}`:''}`
+    :d.status==='disputed'?`<p>${head}<br>おたがいの結果報告が食い違ったため、この対戦は無効になりました。ランクは動きません。</p>`
+    :`<p>${head}<br>いまは、相手の結果報告を待っています（長くて10分ほど）。結果が決まったら、お知らせします。</p>`;
+  const show=()=>{
+    if(VIEW==='battle'||!$('#modal').hidden||!$('#fx').hidden){setTimeout(show,1500);return}
+    modal(`<div class="result"><h2 style="margin-top:0">対戦の結果</h2>${body}<div class="btns"><button type="button" class="b primary" id="dcOk">閉じる</button></div></div>`,(m,done)=>{m.querySelector('#dcOk').onclick=()=>done();gotRun(m)}).then(()=>{if(d.status==='done')LADDER.refresh()});
+  };
+  show();
+}
+function dcLeft(o){
+  if(!o||!o.ranked||!o.mid||!o.oppUid||!LADDER.uid())return;
+  dcAsk(o.mid,o.oppUid,false).then(d=>dcNotice(d,o.mid,o.oppUid,false,true)).catch(e=>console.error(e));
+}
+let DC_BOOT=false;
+function dcBoot(){
+  if(DC_BOOT||!LADDER.uid()||!LADDER.sb)return;DC_BOOT=true;
+  const o=lsGet(ONL_KEY);
+  if(o&&o.ranked&&o.mid&&o.oppUid&&o.at&&Date.now()-o.at>=30*60000&&Date.now()-o.at<7*864e5){ONL.clear();dcLeft(o)}
+}
+setInterval(()=>{
+  const pr=SV.pendRes;if(!pr||document.hidden||!LADDER.sb||!LADDER.uid())return;
+  if(Date.now()-pr.at>30*60000){SV.pendRes=null;save();return}
+  if(VIEW==='battle'||NET.conn||MM.on)return;
+  LADDER.sb.rpc('my_profile',{p_name:netName()}).then(()=>dcAsk(pr.mid,pr.opp,pr.win)).then(d=>{if(d&&d.status!=='pending')dcNotice(d,pr.mid,pr.opp,pr.win,true)}).catch(e=>console.error(e));
+},20000);
 function netBind(c,rejoin){
   NET.conn=c;
   c.on('open',()=>{if(c.__dead||NET.conn!==c)return;clearTimeout(NET.joinTimer);NET.state='connected';
@@ -6039,8 +6083,11 @@ function netLost(msg,self){
   NET.paused=false;NET.resumedAt=0;clearTimeout(NET.pauseT);clearTimeout(NET.retryT);ONL.clear();
   if(!NET.conn&&!NET.peer)return;
   const live=!!(S&&S.online&&!S.over&&NET.mid),mid=NET.mid,opp=NET.oppUid;
-  const leaving=NET.leaving;netReset();
-  if(live&&!leaving)LADDER.report(mid,!self,'disconnect',opp);  // self＝切れていたのが自分の側（勝ちとして報告しない）
+  const leaving=NET.leaving,rk=LADDER.rated();netReset();  // rk は netReset の前に見る（あとだと相手の情報が消えている）
+  if(live&&!leaving){  // self＝切れていたのが自分の側（勝ちとして報告しない）
+    try{MYLOG.add(!self,'dc')}catch(e){console.error(e)}
+    LADDER.report(mid,!self,'disconnect',opp).then(d=>{if(rk)dcNotice(d,mid,opp,!self,false)}).catch(e=>console.error(e));
+  }
   if(S&&S.online)S.over=true;
   if(leaving)return;
   NET.err=msg||'相手との接続が切れました。';
@@ -6179,8 +6226,8 @@ async function onlineRejoin(){
   if(o.role==='guest'){
     NET.host=false;NET.state='joining';NET.paused=true;S=null;
     $('#app').innerHTML='<div class="onl"><p class="note">対戦に戻っています…（相手が対戦を続けていれば、つながります）</p><div class="btns"><button type="button" class="b" id="rjStop">あきらめてメニューへ</button></div></div>';
-    $('#rjStop').onclick=()=>{ONL.clear();netReset();go('menu')};
-    clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused&&!S){NET.paused=false;ONL.clear();netReset();NET.err='対戦に戻れませんでした（相手が対戦をやめた可能性があります）。';go('online')}},REJOIN_MS);
+    $('#rjStop').onclick=()=>{dcLeft(o);ONL.clear();netReset();go('menu')};
+    clearTimeout(NET.pauseT);NET.pauseT=setTimeout(()=>{if(NET.paused&&!S){NET.paused=false;dcLeft(o);ONL.clear();netReset();NET.err='対戦に戻れませんでした（相手が対戦をやめた可能性があります）。';go('online')}},REJOIN_MS);
     guestRetry();return;
   }
   // ホスト：保存したターンのはじめから再開。同じ部屋コードで部屋を開き直して、相手が戻るのを待つ
