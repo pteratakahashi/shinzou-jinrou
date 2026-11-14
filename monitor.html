@@ -24,6 +24,12 @@ h1{font:800 22px var(--pcf);letter-spacing:.08em;margin:0}h1 span{color:var(--re
 .ch h2{font:700 13px var(--pcf);color:var(--gold);letter-spacing:.1em;margin:0 0 2px;display:flex;justify-content:space-between;gap:8px}.ch h2 em{font:400 12px var(--body);color:var(--dim);font-style:normal}
 svg{width:100%;height:auto;display:block}
 .ax{font:400 10px var(--body);fill:#8c8174}.gl{stroke:rgba(232,200,140,.12)}
+.sec{font:800 15px var(--pcf);color:var(--gold);letter-spacing:.12em;margin:22px 0 8px;border-bottom:1px solid var(--hair);padding-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.sec em{font:400 12px var(--body);color:var(--dim);font-style:normal;letter-spacing:0}
+.tw{border:1px solid var(--hair);background:var(--panel);overflow-x:auto;margin-bottom:10px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-variant-numeric:tabular-nums}
+th{font:700 12px var(--pcf);color:var(--gold);letter-spacing:.06em;text-align:right;padding:8px 10px;border-bottom:1px solid var(--hair);white-space:nowrap}
+td{text-align:right;padding:6px 10px;border-bottom:1px solid rgba(232,200,140,.1);white-space:nowrap}td.z{color:#6f665c}
+th:first-child,td:first-child{text-align:left}tr.td0 td{color:#fff;background:rgba(163,29,46,.18)}td .u{color:var(--dim);font-size:11px;margin-left:2px}
 .msg{border:1px solid var(--red);padding:12px 14px;color:#f0a8ae;margin:12px 0}
 input{width:100%;background:#120708;border:1px solid var(--hair);color:var(--ivory);padding:10px;font:14px var(--body)}
 .b{font:700 14px var(--pcf);background:#8c1a2a;color:#fff;border:1px solid var(--gold);padding:8px 18px;cursor:pointer;margin-top:8px}
@@ -37,7 +43,7 @@ const URL_='https://evxljdiiyzynvhcznpou.supabase.co',PK='sb_publishable_QlWNeJa
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 // 合言葉は要らない。サーバーが前の版（合言葉つき）のままの間だけ、前のリンク（#k=…）の合言葉を使って読む
 const OLDKEY=(location.hash.match(/k=([A-Za-z0-9]+)/)||[])[1]||LS.get('sj_mon_key')||'';if(OLDKEY)LS.set('sj_mon_key',OLDKEY);if(location.hash)history.replaceState(null,'',location.pathname);
-let HOURS=+LS.get('sj_mon_h')||12,ROWS=[],ERR='';
+let HOURS=+LS.get('sj_mon_h')||12,ROWS=[],ERR='',DAYS=null,DERR='',DAT=0;
 const NAME={menu:'ホーム',cpu:'CPU対戦',tut:'チュートリアル',friend:'友達と対戦',rank:'ランクマッチ',wait:'相手待ち',lobby:'対戦の入口',watch:'観戦',other:'そのほか'};
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hm=t=>new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
@@ -50,6 +56,35 @@ async function load(){
     else{const j=await r.json();ERR='';ROWS=(j.rows||[]).filter(x=>x&&x.t);if(!ROWS.length)ERR='記録がまだありません。1〜2分待つと出始めます。'}
   }catch(e){ERR='読みこめませんでした（'+esc(e.message)+'）。'}
   draw();
+}
+// 1日ごとの数（対戦数など）。5分に1回読む
+async function loadDaily(){
+  if(Date.now()-DAT<5*60e3)return;DAT=Date.now();
+  try{const r=await fetch(URL_+'/rest/v1/rpc/stat_daily',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+PK,'Content-Type':'application/json'},body:JSON.stringify({p_days:14})});
+    if(r.status===404){DERR='1日ごとの数は、サーバーの準備がまだです（SQL を流すと出ます）。';DAYS=null}
+    else{const j=await r.json();DAYS=j.days||[];DERR=''}
+  }catch(e){DERR='1日ごとの数を読みこめませんでした（'+esc(e.message)+'）。';DAT=0}
+  draw();
+}
+const WD='日月火水木金土',dayL=d=>{const[y,m,x]=d.split('-').map(Number);return m+'/'+x+'（'+WD[new Date(y,m-1,x).getDay()]+'）'};
+const mmss=s=>s==null?'—':Math.floor(s/60)+'分'+String(Math.round(s%60)).padStart(2,'0')+'秒';
+function daily(){
+  if(DERR)return`<div class="sec">1日ごとの数</div><div class="msg">${DERR}</div>`;
+  if(!DAYS)return'';
+  const t=DAYS[0]||{},y=DAYS[1]||{},n=v=>v==null?'—':v,z=v=>v==null?'<td class="z">—</td>':v===0?'<td class="z">0</td>':`<td>${v}</td>`;
+  const mx=Math.max(1,...DAYS.map(d=>d.ranked||0));
+  return`<div class="sec">きょうの数<em>日本時間の0時で区切り</em></div>
+  <div class="big">
+    <div class="card main"><div class="l">ランクマッチの対戦</div><div class="v">${n(t.ranked)}<small>戦</small></div><div class="s">きのう ${n(y.ranked)}戦${t.ranked_open?'・決着待ち '+t.ranked_open:''}</div></div>
+    <div class="card"><div class="l">対戦した人</div><div class="v">${n(t.players)}<small>人</small></div><div class="s">きのう ${n(y.players)}人</div></div>
+    <div class="card"><div class="l">来た端末</div><div class="v">${n(t.dev)}<small>台</small></div><div class="s">きのう ${n(y.dev)}台</div></div>
+    <div class="card"><div class="l">新しく登録した人</div><div class="v">${n(t.new)}<small>人</small></div><div class="s">きのう ${n(y.new)}人</div></div>
+  </div>
+  <div class="sec">1日ごとの数<em>14日ぶん・新しい日が上</em></div>
+  <div class="tw"><table><thead><tr><th>日</th><th>ランクマッチ</th><th></th><th>友達対戦</th><th>対戦した人</th><th>1戦の平均</th><th>来た端末</th><th>新しい登録</th><th>同時の最大</th><th>同時の平均</th></tr></thead><tbody>
+  ${DAYS.map((d,i)=>`<tr class="${i?'':'td0'}"><td>${dayL(d.d)}${i?'':' きょう'}</td>${z(d.ranked)}<td style="width:90px;padding-left:0"><div style="height:8px;width:${Math.round(80*(d.ranked||0)/mx)}px;background:var(--red)"></div></td>${z(d.friend)}${z(d.players)}<td${d.secs==null?' class="z"':''}>${mmss(d.secs)}</td>${z(d.dev)}${z(d.new)}${z(d.peak)}${z(d.avg)}</tr>`).join('')}
+  </tbody></table></div>
+  <p class="upd">友達対戦は、2人ともログインしている対戦だけ数えます。CPU対戦は数えていません。「来た端末」はこの数え方を入れた日から、「同時の最大・平均」は記録が残っている21日ぶんだけ出ます。</p>`;
 }
 // 折れ線グラフ。series：[{k,label,color}]。値がない所は線を切る
 function chart(title,series,fmt=v=>v,note=''){
@@ -81,6 +116,8 @@ function draw(){
     <div class="card"><div class="l">メモリの空き</div><div class="v">${last.memAvailMB??'—'}<small>MB</small></div><div class="s">全体 ${last.memTotalMB||'?'}MB・ディスク ${last.disk||'?'}</div></div>
   </div>
   <div class="by">${by.map(([k,v])=>`<span>${NAME[k]||k}<b>${v}</b></span>`).join('')||'<span>内訳はまだありません</span>'}</div>`:''}
+  ${daily()}
+  <div class="sec">時間ごとの動き</div>
   <div class="rng">${[[3,'3時間'],[12,'12時間'],[24,'1日'],[72,'3日'],[168,'7日']].map(([h,l])=>`<button data-h="${h}" class="${h===HOURS?'on':''}">${l}</button>`).join('')}</div>
   ${chart('遊んでいる人',[{label:'合計',color:'#f1e8d8',get:r=>r.online},{label:'対戦中（友達・ランク）',color:'#c8283a',get:r=>r.by?((r.by.friend||0)+(r.by.rank||0)):null},{label:'CPU・チュートリアル',color:'#e8c88c',get:r=>r.by?((r.by.cpu||0)+(r.by.tut||0)):null}])}
   ${chart('対戦のつなぎ役につながっている数',[{label:'',color:'#7fb3d5',get:r=>r.peers}],v=>v,'友達対戦の部屋・ランクマッチ待ち・対戦中の合計')}
@@ -88,5 +125,5 @@ function draw(){
   ${chart('メモリの空き（MB）',[{label:'',color:'#a8d08d',get:r=>r.memAvailMB}],v=>v,'少なくなるほど危ない')}`;
   document.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{HOURS=+b.dataset.h;LS.set('sj_mon_h',HOURS);load()});
 }
-load();setInterval(()=>{if(!document.hidden)load()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+const all=()=>{load();loadDaily()};all();setInterval(()=>{if(!document.hidden)all()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)all()});
 </script></body></html>

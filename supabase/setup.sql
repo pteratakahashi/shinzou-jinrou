@@ -882,3 +882,61 @@ begin
 end $$;
 revoke execute on function public.replay_dump(text, integer, timestamptz) from public;
 grant execute on function public.replay_dump(text, integer, timestamptz) to anon, authenticated;
+
+-- ================= 1日ごとのまとめ（見るページ用。2026-11-14） =================
+-- 日づけは日本時間で区切る。だれが遊んだかは返さない（数だけ）。
+-- その日に来た端末（合図 beat を送った端末のランダムな番号）。「1日に遊んだ人数」を数えるためだけに使う。60日で消す
+create table if not exists public.presence_day (
+  d date not null,
+  id text not null,
+  primary key (d, id)
+);
+alter table public.presence_day enable row level security;
+revoke all on public.presence_day from anon, authenticated;
+
+-- beat を置きかえる：その端末のその日の最初の合図のとき、presence_day に1行足す
+create or replace function public.beat(p_id text, p_state text, p_ver text default '')
+returns void language plpgsql security definer set search_path = public as $$
+declare prev timestamptz; today date := (now() at time zone 'Asia/Tokyo')::date;
+begin
+  if p_id is null or p_id !~ '^[A-Za-z0-9_-]{8,40}$' then return; end if;
+  if p_state is null or p_state not in ('menu','cpu','tut','friend','rank','wait','lobby','watch','other') then p_state := 'other'; end if;
+  select at into prev from presence where id = p_id;
+  insert into presence(id, state, ver, at) values (p_id, p_state, left(coalesce(p_ver, ''), 20), now())
+  on conflict (id) do update set state = excluded.state, ver = excluded.ver, at = now();
+  if prev is null or (prev at time zone 'Asia/Tokyo')::date <> today then
+    insert into presence_day(d, id) values (today, p_id) on conflict do nothing;
+  end if;
+  if random() < 0.02 then
+    delete from presence where at < now() - interval '1 day';
+    delete from presence_day where d < today - 60;
+  end if;
+end $$;
+grant execute on function public.beat(text, text, text) to anon, authenticated;
+
+-- 1日ごとの数：ランクマッチの対戦数・友達対戦（ログインした2人）の数・対戦した人数・1試合の平均時間・新しく登録した人・来た端末・同時にいた人数の最大と平均
+create or replace function public.stat_daily(p_days integer default 14)
+returns json language sql security definer set search_path = public stable as $$
+  with a as (select least(greatest(coalesce(p_days, 14), 1), 60) n, (now() at time zone 'Asia/Tokyo')::date today),
+  days as (select (select today from a) - g as d from generate_series(0, (select n from a) - 1) g),
+  m as (select (created_at at time zone 'Asia/Tokyo')::date d, p1, p2, ranked, status,
+          case when p1_says is not null and p2_says is not null and decided_at - created_at < interval '2 hours'
+               then extract(epoch from decided_at - created_at) end secs
+        from matches where p1_in and p2_in and created_at > now() - make_interval(days => (select n from a) + 1)),
+  mm as (select d, count(*) filter (where ranked and status = 'done') ranked,
+           count(*) filter (where ranked and status <> 'done') ranked_open,
+           count(*) filter (where not ranked) friend,
+           round(avg(secs) filter (where ranked and status = 'done')) secs from m group by d),
+  pl as (select d, count(distinct u) n from (select d, p1 u from m union all select d, p2 from m) x group by d),
+  np as (select (created_at at time zone 'Asia/Tokyo')::date d, count(*) n from players
+         where created_at > now() - make_interval(days => (select n from a) + 1) group by 1),
+  dv as (select d, count(*) n from presence_day group by d),
+  sl as (select (t at time zone 'Asia/Tokyo')::date d, max((r->>'online')::integer) peak, round(avg((r->>'online')::integer), 1) avg
+         from stat_log where t > now() - make_interval(days => (select n from a) + 1) and r ? 'online' group by 1)
+  select json_build_object('ok', true, 'days', coalesce(json_agg(json_build_object(
+    'd', days.d, 'ranked', coalesce(mm.ranked, 0), 'ranked_open', coalesce(mm.ranked_open, 0), 'friend', coalesce(mm.friend, 0),
+    'secs', mm.secs, 'players', coalesce(pl.n, 0), 'new', coalesce(np.n, 0), 'dev', dv.n, 'peak', sl.peak, 'avg', sl.avg) order by days.d desc), '[]'::json))
+  from days left join mm on mm.d = days.d left join pl on pl.d = days.d left join np on np.d = days.d
+    left join dv on dv.d = days.d left join sl on sl.d = days.d
+$$;
+grant execute on function public.stat_daily(integer) to anon, authenticated;
